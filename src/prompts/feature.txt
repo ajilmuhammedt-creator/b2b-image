@@ -1,0 +1,46 @@
+Create ONE premium square e-commerce feature image using the attached product photograph and the supplied product information.
+
+PRODUCT INFORMATION
+Product name: [PRODUCT NAME]
+All verified key features: [FULL FEATURE LIST]
+Features to highlight in THIS image: [SELECTED FEATURE GROUP]
+Image number: [IMAGE NUMBER] of 5
+Language: English
+
+PRODUCT ACCURACY
+Treat the uploaded product photograph as the source of truth for the product's appearance.
+Faithfully preserve its shape, proportions, colors, materials, texture, buttons, ports, branding, labels, and visible components.
+Keep the product clearly recognizable and accurately represented.
+Do not redesign it, add components, change its color, or invent accessories.
+Use only the supplied specifications and claims. Do not invent certifications, performance figures, dimensions, benefits, or included items.
+If a feature involves a component or mechanism not visible in the photograph, communicate it through text and a simple icon instead of inventing a detailed product view.
+Show alternative colors as labeled swatches only when those colors are explicitly supplied.
+
+VISUAL STYLE
+Create polished e-commerce feature artwork with realistic product photography, soft studio lighting, subtle shadows, and a clean [BACKGROUND] background.
+Choose one restrained accent color that complements the actual product.
+[ACCENT LINE]
+Use dark, high-contrast text and modern, bold sans-serif typography.
+Keep the overall style consistent across the image series.
+If an additional image is supplied as a style reference, use it only for layout, typography, and color treatment; use the original product photograph for product identity.
+
+LAYOUT
+Make the product prominent, with a balanced arrangement of product, headline, icons, and supporting text.
+Keep the product's defining parts visible.
+Use a short headline, one clear main benefit, and up to three concise supporting callouts.
+Use small, relevant icons or subtle visual effects only when they help explain the selected features.
+Choose a layout appropriate to the product category. Include a usage scene only when supported by the supplied information.
+Leave generous spacing and safe margins. Ensure text is readable on a mobile screen.
+Avoid clutter, excessive decorations, tiny paragraphs, and overlapping text.
+
+COPY
+Write clear, concise English based only on the selected feature group.
+Preserve every supplied number, unit, and technical specification accurately.
+Avoid exaggerated claims and unsupported superlatives.
+Do not include the image number, instructions, placeholders, or production notes in the artwork.
+
+OUTPUT
+Generate exactly ONE complete 1:1 square image.
+This is one individual feature image, not a collage, contact sheet, or three-panel design.
+No outer frame or watermark.
+
