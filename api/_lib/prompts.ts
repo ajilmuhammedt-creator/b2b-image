@@ -7,7 +7,7 @@ Use only the supplied specifications and claims. Do not invent certifications or
 
 export function buildSanfordSlotPrompt(params: {
   productName: string;
-  theme: 'hero' | 'lifestyle' | 'technical' | 'battery_display' | 'flexibility' | 'infographic';
+  theme: 'hero' | 'lifestyle' | 'specs_part_1' | 'specs_part_2' | 'colors' | 'size_warranty' | 'poster' | string;
   slotTitle: string;
   headline?: string;
   features: string[];
@@ -29,6 +29,7 @@ export function buildSanfordSlotPrompt(params: {
     weight,
     whatsInTheBox,
     warranty,
+    colors,
     accentColor,
     background,
   } = params;
@@ -41,57 +42,90 @@ export function buildSanfordSlotPrompt(params: {
 
   switch (theme) {
     case 'hero':
-      specificStyle = `SLOT 1: HERO STUDIO VIEW (SANFORD PATTERN)
+      specificStyle = `SLOT 1: HERO STUDIO VIEW (PURE WHITE BACKGROUND)
 - Make the product the undisputed hero, centered at a clean front or three-quarter angle.
-- Clean ${bgDesc} studio background with soft, natural contact floor shadow.
+- Clean pure seamless white (#FFFFFF) studio background with soft, natural contact floor shadow.
 - Studio softbox lighting creating crisp highlights on the product's metallic and matte surfaces.
-- NO text, NO watermarks, NO badges. Just a flawless commercial product photograph.`;
+- STRICT CONSTRAINT: ABSOLUTELY NO text, NO numbers, NO specifications, NO badges, NO watermarks, NO icons. Flawless commercial product photograph on pure white only.`;
       break;
 
     case 'lifestyle':
-      specificStyle = `SLOT 2: LIFESTYLE & IN-USE SCENE (SANFORD PATTERN)
-- Depict the product in an active, realistic everyday environment (e.g. outdoors in soft daylight, park, travel, or modern indoor desk).
+      specificStyle = `SLOT 2: LIFESTYLE & IN-USE SCENE (NO SPECIFICATIONS)
+- Depict the product in an active, realistic everyday environment (e.g. outdoors in soft daylight, park, commute, or modern indoor desk).
 - A person is naturally using or holding the product (or wearing it with the lanyard if applicable).
 - The product itself remains sharp, clearly in focus, and matching the reference photograph.
 - Prominently feature a bold, clean headline at the top: "${headline || 'The Smartest Breeze!'}".
-- Dark, high-contrast, modern bold sans-serif typography with generous margins.`;
+- Dark, high-contrast, modern bold sans-serif typography with generous margins.
+- STRICT CONSTRAINT: STRICTLY NO technical product specifications, NO feature lists, NO numbers/specs text, NO battery/power specs. Slogan or lifestyle headline only.`;
       break;
 
-    case 'technical':
-      specificStyle = `SLOT 3: CORE TECHNOLOGY & AIRFLOW (SANFORD PATTERN)
-- Feature artwork highlighting the core innovation: ${featureListStr}.
+    case 'specs_part_1':
+      specificStyle = `SLOT 3: PRODUCT SPECIFICATIONS — PART 1
+- Feature artwork highlighting the core functional specifications: ${featureListStr}.
 - Show the product with subtle, elegant visual flow effects (e.g. refreshing cool airwaves, cold-plate indicator, or turbine vortex).
 - Place 2 or 3 concise feature callouts with small minimal tech icons.
-- Clean modern layout, professional e-commerce presentation with dark legible text. ${accentLine}`;
+- Clean modern layout, professional BuySanford e-commerce presentation with dark legible text. ${accentLine}`;
+      break;
+
+    case 'specs_part_2':
+      specificStyle = `SLOT 4: PRODUCT SPECIFICATIONS — PART 2 (NON-OVERLAPPING)
+- Highlight the remaining distinct specifications: ${featureListStr}.
+- Feature a crisp view of internal power and smart interface (e.g. digital LED display glowing with gear/battery readout, rechargeable battery, Type-C charging port).
+- High-contrast e-commerce commercial typography with icon badges.
+- STRICT CONSTRAINT: Do NOT repeat any feature or specification from Slot 3. Only showcase the distinct features assigned to this slot.`;
+      break;
+
+    case 'colors':
+      specificStyle = `SLOT 5: AVAILABLE COLOUR MODELS ONLY (NO SPECIFICATIONS)
+- Show the product in its available color models / options: ${colors || 'Graphite Black, Arctic White, Slate Grey, Pastel Blue'}.
+- Present the color options cleanly: either multiple product units arranged side-by-side showing each color variant, or a hero unit with elegant circular color swatches below.
+- Headline: "Available Colors" or "${productName} Colors".
+- STRICT CONSTRAINT: STRICTLY NO technical product specifications, NO wattage, NO battery numbers, NO feature descriptions. Focus exclusively on showing the available color models and variants.`;
+      break;
+
+    case 'size_warranty':
+      specificStyle = `SLOT 6: PRODUCT SIZE & WARRANTY ONLY
+- Professional dimensional measurement diagram and warranty trust badge.
+- Display the product with clear dimensional measurement callouts: ${dimensions || '197mm height, 78mm width, 57mm base'} and weight (${weight || 'Unit 225g'}).
+- Prominently include an official "${warranty || '1 Year Service Warranty'}" shield trust badge.
+${whatsInTheBox && whatsInTheBox.length > 0 ? `- Show what's in the box: ${whatsInTheBox.join(', ')}.` : ''}
+- Crisp, legible diagrammatic layout designed for mobile and desktop product pages.
+- STRICT CONSTRAINT: STRICTLY NO other product specifications, NO speed levels, NO cooling descriptions. Show ONLY product size, dimensions, weight, and the warranty badge.`;
+      break;
+
+    // Backward compatibility with legacy theme names
+    case 'technical':
+      specificStyle = `SLOT 3: PRODUCT SPECIFICATIONS — PART 1
+- Feature artwork highlighting the core functional specifications: ${featureListStr}.
+- Clean modern layout with concise feature callouts and minimal tech icons. ${accentLine}`;
       break;
 
     case 'battery_display':
-      specificStyle = `SLOT 4: BATTERY, POWER & SMART DISPLAY (SANFORD PATTERN)
-- Focus on internal endurance and smart interface: ${featureListStr}.
-- Feature a crisp view of the product's digital LED display glowing with gear/battery readout.
-- Highlight the 3600mAh battery life and Type-C fast charging port with a clean graphic badge.
-- High-contrast e-commerce commercial typography with icon badges.`;
+      specificStyle = `SLOT 4: PRODUCT SPECIFICATIONS — PART 2
+- Highlight specifications: ${featureListStr}.
+- Crisp view of digital display and battery endurance with icon badges.`;
       break;
 
     case 'flexibility':
-      specificStyle = `SLOT 5: 90° ROTATION, FOLD & PORTABILITY (SANFORD PATTERN)
-- Demonstrate product versatility and articulation: ${featureListStr}.
-- Show the 90° rotation folding head (articulated up/down) and the wearable lanyard / loop holder stand.
-- Headline: "${headline || '90° Foldable Rotation & Hands-Free Wear'}".
-- Multi-angle clarity with balanced layout and clean background.`;
+      specificStyle = `SLOT 5: AVAILABLE COLOUR MODELS ONLY
+- Show the product in its available color options: ${colors || 'Graphite Black, Arctic White, Slate Grey'}.
+- STRICT CONSTRAINT: Show only color models and color swatches, no technical specs.`;
       break;
 
     case 'infographic':
-      specificStyle = `SLOT 6: SPECIFICATIONS, WHAT'S IN THE BOX & WARRANTY (SANFORD PATTERN)
-- Professional technical specification sheet infographic.
-- Display the product with clear dimensional measurement callouts: ${dimensions || '197mm height, 78mm width, 57mm base'} and weight (${weight || 'Unit 225g'}).
-- Show "What's in the box" icons: ${whatsInTheBox?.join(', ') || 'Hand Fan, Type-C Cable, User Manual'}.
-- Include an official "${warranty || '1 Year Service Warranty'}" shield trust badge in the top corner.
-- Crisp, legible diagrammatic layout designed for mobile and desktop product pages.`;
+      specificStyle = `SLOT 6: PRODUCT SIZE & WARRANTY ONLY
+- Display dimensional measurement callouts (${dimensions || '197mm x 78mm x 57mm'}) and "${warranty || '1 Year Service Warranty'}" badge.
+- STRICT CONSTRAINT: Show ONLY size, weight, and warranty badge.`;
+      break;
+
+    default:
+      specificStyle = `SLOT FEATURE ARTWORK
+- Feature artwork for: ${featureListStr}.
+- Clean ${bgDesc} background with high-contrast text. ${accentLine}`;
       break;
   }
 
-  return `Create ONE premium 1:1 square e-commerce product image for Sanford online store (patterned after Sanford product page).
+  return `Create ONE premium 1:1 square e-commerce product image for BuySanford online store (patterned after BuySanford product page rules: https://www.buysanford.com).
 
 PRODUCT INFORMATION
 Product Name: ${productName}

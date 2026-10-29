@@ -307,9 +307,34 @@ export function ResultsGrid({
         </div>
       </div>
 
-      {/* 5 Feature Cards Grid */}
+      {/* 6 BuySanford Pattern Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {featureCards.map((item) => (
+        {featureCards.map((item) => {
+          const theme = item.sanfordSlot?.theme || item.theme;
+          let themeBadge = 'Slot ' + item.slot;
+          let themeBadgeColor = 'bg-slate-800 text-slate-300 border-slate-700';
+
+          if (theme === 'hero') {
+            themeBadge = 'White Studio Hero • No Text';
+            themeBadgeColor = 'bg-blue-500/10 text-blue-300 border-blue-500/20';
+          } else if (theme === 'lifestyle') {
+            themeBadge = 'Lifestyle In-Use • No Specs';
+            themeBadgeColor = 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20';
+          } else if (theme === 'specs_part_1') {
+            themeBadge = 'Specifications Part 1';
+            themeBadgeColor = 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20';
+          } else if (theme === 'specs_part_2') {
+            themeBadge = 'Specifications Part 2';
+            themeBadgeColor = 'bg-purple-500/10 text-purple-300 border-purple-500/20';
+          } else if (theme === 'colors') {
+            themeBadge = 'Available Colors Only';
+            themeBadgeColor = 'bg-amber-500/10 text-amber-300 border-amber-500/20';
+          } else if (theme === 'size_warranty') {
+            themeBadge = 'Size & Warranty Only';
+            themeBadgeColor = 'bg-rose-500/10 text-rose-300 border-rose-500/20';
+          }
+
+          return (
           <div
             key={item.id}
             className={`bg-slate-900 border rounded-2xl overflow-hidden shadow-xl flex flex-col transition-all duration-200 ${
@@ -333,11 +358,9 @@ export function ResultsGrid({
               </div>
 
               <div className="flex items-center space-x-1.5">
-                {item.sanfordSlot?.theme && (
-                  <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                    {item.sanfordSlot.theme}
-                  </span>
-                )}
+                <span className={`text-[10px] uppercase font-mono px-1.5 py-0.5 rounded border ${themeBadgeColor}`}>
+                  {themeBadge}
+                </span>
                 {item.usage && (
                   <span className="text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700 px-1.5 py-0.5 rounded">
                     {item.usage.total_tokens || 0} tok
@@ -398,21 +421,76 @@ export function ResultsGrid({
             </div>
 
             {/* Feature Group Preview */}
-            {(item.sanfordSlot?.headline || (item.featureGroup && item.featureGroup.length > 0)) && (
-              <div className="px-3.5 py-2 bg-slate-950/40 border-b border-slate-800 text-[11px] text-slate-400 space-y-0.5">
-                {item.sanfordSlot?.headline && (
+            <div className="px-3.5 py-2 bg-slate-950/40 border-b border-slate-800 text-[11px] text-slate-400 space-y-0.5">
+              {item.slot === 1 && (
+                <div className="text-[11px] text-blue-300/90 font-medium">
+                  Studio hero centered on pure white (#FFFFFF). Strictly NO text or specs.
+                </div>
+              )}
+              {item.slot === 2 && (
+                <div>
                   <div className="font-semibold text-slate-200 truncate">
-                    "{item.sanfordSlot.headline}"
+                    "{item.sanfordSlot?.headline || 'The Smartest Breeze!'}"
                   </div>
-                )}
-                {item.featureGroup && item.featureGroup.length > 0 && (
-                  <div className="line-clamp-2 text-slate-400">
-                    <span className="font-medium text-slate-300">Highlighting: </span>
-                    {item.featureGroup.join('; ')}
+                  <div className="text-[10px] text-emerald-400/90 font-medium">
+                    Realistic in-use lifestyle scene. Strictly NO product specifications.
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+              {item.slot === 3 && (
+                <div>
+                  {item.sanfordSlot?.headline && (
+                    <div className="font-semibold text-slate-200 truncate">
+                      "{item.sanfordSlot.headline}"
+                    </div>
+                  )}
+                  {item.featureGroup && item.featureGroup.length > 0 && (
+                    <div className="line-clamp-2 text-slate-400">
+                      <span className="font-medium text-indigo-300">Specifications Part 1: </span>
+                      {item.featureGroup.join('; ')}
+                    </div>
+                  )}
+                </div>
+              )}
+              {item.slot === 4 && (
+                <div>
+                  {item.sanfordSlot?.headline && (
+                    <div className="font-semibold text-slate-200 truncate">
+                      "{item.sanfordSlot.headline}"
+                    </div>
+                  )}
+                  {item.featureGroup && item.featureGroup.length > 0 && (
+                    <div className="line-clamp-2 text-slate-400">
+                      <span className="font-medium text-purple-300">Specifications Part 2 (Non-overlapping): </span>
+                      {item.featureGroup.join('; ')}
+                    </div>
+                  )}
+                </div>
+              )}
+              {item.slot === 5 && (
+                <div>
+                  <div className="font-semibold text-slate-200 truncate">
+                    "Available Colors: {item.featureGroup && item.featureGroup.length > 0 ? item.featureGroup.join(', ') : 'Color Options'}"
+                  </div>
+                  <div className="text-[10px] text-amber-400/90 font-medium">
+                    Product lineup showing color models only. Strictly NO technical specs.
+                  </div>
+                </div>
+              )}
+              {item.slot === 6 && (
+                <div>
+                  <div className="font-semibold text-slate-200 truncate">
+                    "Dimensions & 1 Year Service Warranty"
+                  </div>
+                  {item.featureGroup && item.featureGroup.length > 0 && (
+                    <div className="line-clamp-2 text-slate-400">
+                      <span className="font-medium text-rose-300">Size & Trust Badge: </span>
+                      {item.featureGroup.join('; ')}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Card Actions Footer */}
             <div className="p-3 bg-slate-900/80 flex items-center justify-between gap-1 text-xs mt-auto">
@@ -469,7 +547,8 @@ export function ResultsGrid({
               )}
             </div>
           </div>
-        ))}
+        );
+      })}
 
         {/* 6th Card: Poster (Only if makePoster is true) */}
         {makePoster && posterCard && (

@@ -12,15 +12,15 @@ export interface StudioSettings {
 export type SanfordTheme =
   | 'hero'
   | 'lifestyle'
-  | 'technical'
-  | 'battery_display'
-  | 'flexibility'
-  | 'infographic'
+  | 'specs_part_1'
+  | 'specs_part_2'
+  | 'colors'
+  | 'size_warranty'
   | 'poster';
 
 export interface SanfordSlotSpec {
   slot: number;
-  theme: 'hero' | 'lifestyle' | 'technical' | 'battery_display' | 'flexibility' | 'infographic';
+  theme: SanfordTheme;
   title: string;
   headline?: string;
   description?: string;
@@ -29,6 +29,7 @@ export interface SanfordSlotSpec {
   weight?: string;
   whatsInTheBox?: string[];
   warranty?: string;
+  colors?: string;
 }
 
 export interface GenerationItem {

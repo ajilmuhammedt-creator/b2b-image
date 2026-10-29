@@ -613,13 +613,36 @@ export function ProductInput({
           </div>
 
           <div className="space-y-2">
-            {sanfordSlots.map((slot, index) => (
+            {sanfordSlots.map((slot, index) => {
+              let slotBadgeColor = 'text-indigo-300';
+              let ruleHint = '';
+              if (slot.slot === 1) {
+                slotBadgeColor = 'text-blue-300';
+                ruleHint = 'Pure white studio background (#FFFFFF). Strictly NO text or specifications.';
+              } else if (slot.slot === 2) {
+                slotBadgeColor = 'text-emerald-300';
+                ruleHint = 'Realistic in-use lifestyle scene. Slogan only. Strictly NO technical specs.';
+              } else if (slot.slot === 3) {
+                slotBadgeColor = 'text-indigo-300';
+                ruleHint = 'Specifications Part 1: Core functionality callouts with clean icons.';
+              } else if (slot.slot === 4) {
+                slotBadgeColor = 'text-purple-300';
+                ruleHint = 'Specifications Part 2: Battery/display/ports. Mutually exclusive from Part 1.';
+              } else if (slot.slot === 5) {
+                slotBadgeColor = 'text-amber-300';
+                ruleHint = 'Available color options and lineup only. Strictly NO technical specs.';
+              } else if (slot.slot === 6) {
+                slotBadgeColor = 'text-rose-300';
+                ruleHint = 'Product dimensions, weight callouts & official 1-Year Warranty seal only.';
+              }
+
+              return (
               <div
                 key={index}
                 className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-3 space-y-1.5"
               >
                 <div className="flex items-center justify-between text-xs font-medium">
-                  <span className="text-indigo-300 font-semibold">
+                  <span className={`${slotBadgeColor} font-semibold`}>
                     Slot {slot.slot}: {slot.title}
                   </span>
                   <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">
@@ -627,7 +650,11 @@ export function ProductInput({
                   </span>
                 </div>
 
-                {slot.headline && (
+                <p className="text-[10px] text-slate-400 italic">
+                  {ruleHint || slot.description}
+                </p>
+
+                {slot.slot !== 1 && slot.headline && (
                   <input
                     type="text"
                     value={slot.headline}
@@ -637,21 +664,24 @@ export function ProductInput({
                   />
                 )}
 
-                <textarea
-                  rows={2}
-                  value={slot.features?.join('\n') || ''}
-                  onChange={(e) =>
-                    updateSlotField(
-                      index,
-                      'features',
-                      e.target.value.split('\n').filter((f) => f.trim().length > 0)
-                    )
-                  }
-                  placeholder="Features to highlight..."
-                  className="w-full bg-transparent border-0 p-0 text-xs text-slate-300 placeholder-slate-600 focus:ring-0 resize-y font-sans leading-relaxed"
-                />
+                {slot.slot !== 1 && slot.slot !== 2 && (
+                  <textarea
+                    rows={2}
+                    value={slot.features?.join('\n') || ''}
+                    onChange={(e) =>
+                      updateSlotField(
+                        index,
+                        'features',
+                        e.target.value.split('\n').filter((f) => f.trim().length > 0)
+                      )
+                    }
+                    placeholder="Features or items to highlight..."
+                    className="w-full bg-transparent border-0 p-0 text-xs text-slate-300 placeholder-slate-600 focus:ring-0 resize-y font-sans leading-relaxed"
+                  />
+                )}
               </div>
-            ))}
+            );
+            })}
           </div>
         </div>
       )}
