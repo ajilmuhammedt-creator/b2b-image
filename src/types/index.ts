@@ -5,15 +5,39 @@ export interface StudioSettings {
   posterSize: '1024x1536' | '1536x1024';
   accentColor: string; // 'Auto' or hex string '#...'
   styleLock: boolean;
-  imagesPerRun: number; // 1 to 5
+  imagesPerRun: number; // 1 to 6
   background: 'white' | 'pale tint';
+}
+
+export type SanfordTheme =
+  | 'hero'
+  | 'lifestyle'
+  | 'technical'
+  | 'battery_display'
+  | 'flexibility'
+  | 'infographic'
+  | 'poster';
+
+export interface SanfordSlotSpec {
+  slot: number;
+  theme: 'hero' | 'lifestyle' | 'technical' | 'battery_display' | 'flexibility' | 'infographic';
+  title: string;
+  headline?: string;
+  description?: string;
+  features: string[];
+  dimensions?: string;
+  weight?: string;
+  whatsInTheBox?: string[];
+  warranty?: string;
 }
 
 export interface GenerationItem {
   id: string;
   projectId: string;
   kind: 'feature' | 'poster';
-  slot: number | null; // 1 to 5 for feature, null for poster
+  slot: number | null; // 1 to 6 for feature, null for poster
+  theme?: SanfordTheme;
+  slotTitle?: string;
   status: 'idle' | 'pending' | 'done' | 'failed';
   imageUrl?: string;
   imagePath?: string;
@@ -27,20 +51,43 @@ export interface GenerationItem {
   };
   selected?: boolean;
   featureGroup?: string[];
+  sanfordSlot?: SanfordSlotSpec;
+}
+
+export interface CatalogueParsedData {
+  productName: string;
+  modelNumber: string;
+  brand: string;
+  tagline: string;
+  fullFeatures: string[];
+  dimensions?: string;
+  weight?: string;
+  whatsInTheBox?: string[];
+  warranty?: string;
+  colors?: string;
+  cropBox?: { ymin: number; xmin: number; ymax: number; xmax: number };
+  slots: SanfordSlotSpec[];
 }
 
 export interface ProjectData {
   id: string;
   user_id: string;
   product_name: string;
+  model_number?: string;
+  tagline?: string;
   features: string[];
   colors?: string;
+  dimensions?: string;
+  weight?: string;
+  whats_in_the_box?: string[];
+  warranty?: string;
   feature_groups: string[][];
   source_image_path?: string;
   source_image_data_url?: string;
+  catalogue_preview_url?: string;
   created_at: string;
   generations?: GenerationItem[];
   settings?: StudioSettings;
   makePoster?: boolean;
+  sanford_slots?: SanfordSlotSpec[];
 }
-

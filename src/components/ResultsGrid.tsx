@@ -229,9 +229,11 @@ export function ResultsGrid({
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-4 h-4 text-indigo-300" />
                 <span>
-                  {makePoster ? 'Generate 5 Images + Poster' : 'Generate 5 Feature Images'}
+                  {makePoster
+                    ? `Generate Sanford Set (${featureCards.length} + Poster)`
+                    : `Generate Sanford Set (${featureCards.length} Images)`}
                 </span>
               </>
             )}
@@ -326,15 +328,22 @@ export function ResultsGrid({
                   className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500"
                 />
                 <span className="text-xs font-semibold text-white">
-                  Image {item.slot}
+                  {item.sanfordSlot?.title || `Slot ${item.slot}`}
                 </span>
               </div>
 
-              {item.usage && (
-                <span className="text-[10px] font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-1.5 py-0.5 rounded">
-                  {item.usage.total_tokens || 0} tok
-                </span>
-              )}
+              <div className="flex items-center space-x-1.5">
+                {item.sanfordSlot?.theme && (
+                  <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                    {item.sanfordSlot.theme}
+                  </span>
+                )}
+                {item.usage && (
+                  <span className="text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700 px-1.5 py-0.5 rounded">
+                    {item.usage.total_tokens || 0} tok
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Card Canvas / Image Viewport (1:1 aspect ratio) */}
@@ -389,10 +398,19 @@ export function ResultsGrid({
             </div>
 
             {/* Feature Group Preview */}
-            {item.featureGroup && item.featureGroup.length > 0 && (
-              <div className="px-3.5 py-2 bg-slate-950/40 border-b border-slate-800 text-[11px] text-slate-400 line-clamp-2">
-                <span className="font-medium text-slate-300">Highlighting: </span>
-                {item.featureGroup.join('; ')}
+            {(item.sanfordSlot?.headline || (item.featureGroup && item.featureGroup.length > 0)) && (
+              <div className="px-3.5 py-2 bg-slate-950/40 border-b border-slate-800 text-[11px] text-slate-400 space-y-0.5">
+                {item.sanfordSlot?.headline && (
+                  <div className="font-semibold text-slate-200 truncate">
+                    "{item.sanfordSlot.headline}"
+                  </div>
+                )}
+                {item.featureGroup && item.featureGroup.length > 0 && (
+                  <div className="line-clamp-2 text-slate-400">
+                    <span className="font-medium text-slate-300">Highlighting: </span>
+                    {item.featureGroup.join('; ')}
+                  </div>
+                )}
               </div>
             )}
 

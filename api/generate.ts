@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { supabaseAdmin } from './_lib/supabase-server';
-import { buildFeaturePrompt, buildPosterPrompt } from './_lib/prompts';
+import { buildFeaturePrompt, buildPosterPrompt, buildSanfordSlotPrompt } from './_lib/prompts';
 
 export const config = {
   maxDuration: 300,
@@ -44,6 +44,7 @@ export default async function handler(req: any, res: any) {
       sourceImagePath,
       sourceImageDataUrl,
       styleRefPath,
+      sanfordSlot,
       settings = {},
     } = body || {};
 
@@ -116,6 +117,21 @@ export default async function handler(req: any, res: any) {
       prompt = buildPosterPrompt({
         productName,
         fullFeatures,
+        colors,
+        accentColor: settings.accentColor,
+        background: settings.background,
+      });
+    } else if (sanfordSlot && sanfordSlot.theme) {
+      prompt = buildSanfordSlotPrompt({
+        productName,
+        theme: sanfordSlot.theme,
+        slotTitle: sanfordSlot.title || `Image ${slot}`,
+        headline: sanfordSlot.headline,
+        features: sanfordSlot.features && sanfordSlot.features.length > 0 ? sanfordSlot.features : featureGroup,
+        dimensions: sanfordSlot.dimensions,
+        weight: sanfordSlot.weight,
+        whatsInTheBox: sanfordSlot.whatsInTheBox,
+        warranty: sanfordSlot.warranty,
         colors,
         accentColor: settings.accentColor,
         background: settings.background,

@@ -6,8 +6,65 @@ import { ProductInput } from '../components/ProductInput';
 import { ResultsGrid } from '../components/ResultsGrid';
 import { SettingsPanel } from '../components/SettingsPanel';
 import { projectStorage } from '../lib/projectStorage';
-import type { GenerationItem, ProjectData, StudioSettings } from '../types';
+import type {
+  GenerationItem,
+  ProjectData,
+  StudioSettings,
+  SanfordSlotSpec,
+  CatalogueParsedData,
+} from '../types';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
+
+const DEFAULT_SANFORD_SLOTS: SanfordSlotSpec[] = [
+  {
+    slot: 1,
+    theme: 'hero',
+    title: 'Hero Studio View',
+    headline: '',
+    description: 'Isolated product on crisp seamless white studio background with soft contact shadow',
+    features: ['High-resolution front/three-quarter view', 'Pure white background', 'Realistic product materials'],
+  },
+  {
+    slot: 2,
+    theme: 'lifestyle',
+    title: 'Lifestyle & In-Use',
+    headline: 'The Smartest Breeze!',
+    description: 'Realistic setting of person holding or using product in outdoor/desk setting',
+    features: ['In-use context', 'Bold headline slogan', 'Natural lighting'],
+  },
+  {
+    slot: 3,
+    theme: 'technical',
+    title: 'Core Tech & Airflow',
+    headline: 'Instant Refrigerated Cooling & High-Velocity Airflow',
+    description: 'Spotlight on cold-plate cooling function and stepless wind speeds',
+    features: ['Cooling Function Cold Plate', '100 Level Wind Speed', 'Aerodynamic Turbine'],
+  },
+  {
+    slot: 4,
+    theme: 'battery_display',
+    title: 'Battery & Smart Display',
+    headline: '3600mAh All-Day Battery & Digital Readout',
+    description: 'Smart digital LED gear & battery indicator with Type-C fast charging',
+    features: ['Digital Display - Gear & Battery Levels', '3600mAh Rechargeable Battery', 'Type-C Charging Port'],
+  },
+  {
+    slot: 5,
+    theme: 'flexibility',
+    title: '90° Rotation & Hands-Free',
+    headline: '90° Foldable Head & Hands-Free Lanyard',
+    description: 'Multi-angle folding head, lanyard wearable mode, and loop desktop stand',
+    features: ['90° Rotation Fold (Up & Down)', 'Lanyard & Loop Holder', 'Compact Pocket Design'],
+  },
+  {
+    slot: 6,
+    theme: 'infographic',
+    title: 'Dimensions & In-The-Box',
+    headline: 'Specifications & What’s In The Box',
+    description: 'Precise dimensional callouts, package contents, and 1-year service warranty badge',
+    features: ['Dimensions: 197mm x 78mm x 57mm', 'Weight: 225g', '1 Year Service Warranty'],
+  },
+];
 
 export function Studio() {
   const { user } = useAuth();
@@ -18,15 +75,43 @@ export function Studio() {
 
   // Project state
   const [projectId, setProjectId] = useState<string>(() => crypto.randomUUID());
-  const [productName, setProductName] = useState('');
-  const [featuresText, setFeaturesText] = useState('');
-  const [colors, setColors] = useState('');
-  const [featureGroups, setFeatureGroups] = useState<string[][]>([[], [], [], [], []]);
+  const [productName, setProductName] = useState('Sanford SF6671HFN Rechargeable Cooling Hand Fan');
+  const [modelNumber, setModelNumber] = useState('SF6671HFN');
+  const [tagline, setTagline] = useState('The Smartest Breeze!');
+  const [featuresText, setFeaturesText] = useState(
+    `Rechargeable Cooling Hand Fan
+Cooling Function
+Digital Display - Gear Position and Battery Levels
+5 Level Wind Speed (0-100)
+90° Rotation Fold (up & down)
+3600mAh Rechargeable Battery
+Safety Protection
+Type-C Charging Port
+Lanyard & Loop Holder
+5 Watts Power`
+  );
+  const [colors, setColors] = useState('Graphite Black');
+  const [dimensions, setDimensions] = useState('78mm x 197mm x 57mm');
+  const [weight, setWeight] = useState('Unit 225g, Package 305g');
+  const [whatsInTheBox, setWhatsInTheBox] = useState<string[]>([
+    'Hand Fan',
+    'Type-C USB Cable',
+    'User Manual',
+    'Lanyard',
+  ]);
+  const [warranty, setWarranty] = useState('1 Year Service Warranty');
+  const [sanfordSlots, setSanfordSlots] = useState<SanfordSlotSpec[]>(DEFAULT_SANFORD_SLOTS);
+
   const [sourceImage, setSourceImage] = useState<{
     file: File | null;
     previewUrl: string;
     storagePath?: string;
   }>({ file: null, previewUrl: '' });
+
+  const [catalogueImage, setCatalogueImage] = useState<{
+    previewUrl: string;
+    fileName?: string;
+  }>({ previewUrl: '' });
 
   // Settings state
   const [settings, setSettings] = useState<StudioSettings>({
@@ -36,42 +121,83 @@ export function Studio() {
     posterSize: '1024x1536',
     accentColor: 'Auto',
     styleLock: false,
-    imagesPerRun: 5,
+    imagesPerRun: 6,
     background: 'white',
   });
 
   const [makePoster, setMakePoster] = useState(false);
-  const [isSplitting, setIsSplitting] = useState(false);
   const [isGeneratingAll, setIsGeneratingAll] = useState(false);
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Initialize 5 feature cards + 1 poster card
+  // Initialize 6 Sanford Cards + 1 Poster card
   const [generations, setGenerations] = useState<GenerationItem[]>(() => {
-    const initial: GenerationItem[] = [];
-    for (let i = 1; i <= 5; i++) {
-      initial.push({
-        id: `card-${i}`,
-        projectId: '',
-        kind: 'feature',
-        slot: i,
-        status: 'idle',
-        selected: false,
-      });
-    }
+    const initial: GenerationItem[] = DEFAULT_SANFORD_SLOTS.map((slot) => ({
+      id: `card-${slot.slot}`,
+      projectId: '',
+      kind: 'feature',
+      slot: slot.slot,
+      theme: slot.theme,
+      slotTitle: slot.title,
+      status: 'idle',
+      selected: false,
+      featureGroup: slot.features,
+      sanfordSlot: slot,
+    }));
+
     initial.push({
       id: 'card-poster',
       projectId: '',
       kind: 'poster',
       slot: null,
+      theme: 'poster',
+      slotTitle: 'E-Commerce Poster',
       status: 'idle',
       selected: false,
     });
+
     return initial;
   });
 
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
     setToastMessage({ text, type });
     setTimeout(() => setToastMessage(null), 5000);
+  };
+
+  // When Catalogue is parsed from ProductInput
+  const handleCatalogueParsed = (data: CatalogueParsedData) => {
+    if (data.slots && data.slots.length > 0) {
+      setGenerations((prev) => {
+        const posterCard = prev.find((g) => g.kind === 'poster');
+        const newSlots: GenerationItem[] = data.slots.map((slot) => {
+          const existing = prev.find((g) => g.slot === slot.slot);
+          return {
+            id: `card-${slot.slot}`,
+            projectId,
+            kind: 'feature',
+            slot: slot.slot,
+            theme: slot.theme,
+            slotTitle: slot.title,
+            status: existing?.status || 'idle',
+            imageUrl: existing?.imageUrl,
+            selected: true,
+            featureGroup: slot.features,
+            sanfordSlot: {
+              ...slot,
+              dimensions: data.dimensions,
+              weight: data.weight,
+              whatsInTheBox: data.whatsInTheBox,
+              warranty: data.warranty,
+            },
+          };
+        });
+
+        if (posterCard) {
+          newSlots.push(posterCard);
+        }
+        return newSlots;
+      });
+      showToast(`Catalogue parsed: 6 Sanford pattern slots generated for ${data.productName}`);
+    }
   };
 
   // Load project if opened from History
@@ -81,10 +207,17 @@ export function Studio() {
         if (saved) {
           setProjectId(saved.id);
           setProductName(saved.product_name);
+          if (saved.model_number) setModelNumber(saved.model_number);
+          if (saved.tagline) setTagline(saved.tagline);
           setFeaturesText(saved.features?.join('\n') || '');
           setColors(saved.colors || '');
-          if (saved.feature_groups && saved.feature_groups.length === 5) {
-            setFeatureGroups(saved.feature_groups);
+          if (saved.dimensions) setDimensions(saved.dimensions);
+          if (saved.weight) setWeight(saved.weight);
+          if (saved.whats_in_the_box) setWhatsInTheBox(saved.whats_in_the_box);
+          if (saved.warranty) setWarranty(saved.warranty);
+
+          if (saved.sanford_slots && saved.sanford_slots.length > 0) {
+            setSanfordSlots(saved.sanford_slots);
           }
           if (saved.source_image_data_url || saved.source_image_path) {
             setSourceImage({
@@ -92,6 +225,9 @@ export function Studio() {
               previewUrl: saved.source_image_data_url || '',
               storagePath: saved.source_image_path,
             });
+          }
+          if (saved.catalogue_preview_url) {
+            setCatalogueImage({ previewUrl: saved.catalogue_preview_url });
           }
           if (saved.settings) {
             setSettings(saved.settings);
@@ -118,61 +254,6 @@ export function Studio() {
     });
   };
 
-  // Split into 5 groups handler
-  const handleSplitGroups = async () => {
-    const rawFeatures = featuresText
-      .split('\n')
-      .map((f) => f.trim())
-      .filter((f) => f.length > 0);
-
-    if (rawFeatures.length === 0) {
-      showToast('Please enter at least 1 feature before splitting.', 'error');
-      return;
-    }
-
-    setIsSplitting(true);
-    try {
-      const response = await fetch('/api/split-features', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productName: productName.trim() || 'Product',
-          features: rawFeatures,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to split features');
-      }
-
-      const data = await response.json();
-      if (Array.isArray(data.groups) && data.groups.length === 5) {
-        setFeatureGroups(data.groups);
-        // Link groups to cards
-        setGenerations((prev) =>
-          prev.map((g) => {
-            if (g.kind === 'feature' && g.slot && data.groups[g.slot - 1]) {
-              return { ...g, featureGroup: data.groups[g.slot - 1] };
-            }
-            return g;
-          })
-        );
-        showToast('Features split into 5 balanced groups!');
-      } else {
-        throw new Error('Invalid format returned');
-      }
-    } catch (err: any) {
-      console.warn('API split failed, using local split:', err);
-      // Fallback local round-robin split
-      const fallback: string[][] = [[], [], [], [], []];
-      rawFeatures.forEach((f, i) => fallback[i % 5].push(f));
-      setFeatureGroups(fallback);
-      showToast('Features grouped into 5 groups');
-    } finally {
-      setIsSplitting(false);
-    }
-  };
-
   // Execute single slot generation call
   const callGenerateApi = async (
     slotOrKind: number | 'poster',
@@ -192,7 +273,8 @@ export function Studio() {
       .map((f) => f.trim())
       .filter((f) => f.length > 0);
 
-    const slotGroup = !isPoster && currentSlot ? featureGroups[currentSlot - 1] || [] : [];
+    const targetSlotSpec = !isPoster && currentSlot ? sanfordSlots.find((s) => s.slot === currentSlot) : undefined;
+    const slotGroup = targetSlotSpec?.features || fullFeatures;
 
     // Get source image base64 if available
     let sourceImageDataUrl = '';
@@ -215,13 +297,22 @@ export function Studio() {
           userId,
           kind: isPoster ? 'poster' : 'feature',
           slot: currentSlot,
-          productName: productName.trim() || 'Product',
+          productName: productName.trim() || 'Sanford Product',
           fullFeatures,
           featureGroup: slotGroup,
           colors: colors.trim(),
           sourceImagePath: sourceImage.storagePath,
           sourceImageDataUrl,
           styleRefPath,
+          sanfordSlot: targetSlotSpec
+            ? {
+                ...targetSlotSpec,
+                dimensions,
+                weight,
+                whatsInTheBox,
+                warranty,
+              }
+            : undefined,
           settings,
         }),
       });
@@ -237,6 +328,8 @@ export function Studio() {
         projectId,
         kind: isPoster ? 'poster' : 'feature',
         slot: currentSlot,
+        theme: targetSlotSpec?.theme || (isPoster ? 'poster' : 'hero'),
+        slotTitle: targetSlotSpec?.title || (isPoster ? 'Poster' : `Image ${currentSlot}`),
         status: 'done',
         imageUrl: data.imageUrl,
         imagePath: data.imagePath,
@@ -244,6 +337,7 @@ export function Studio() {
         prompt: data.prompt,
         usage: data.usage,
         featureGroup: slotGroup,
+        sanfordSlot: targetSlotSpec,
         selected: true,
       };
 
@@ -255,6 +349,8 @@ export function Studio() {
         projectId,
         kind: isPoster ? 'poster' : 'feature',
         slot: currentSlot,
+        theme: targetSlotSpec?.theme,
+        slotTitle: targetSlotSpec?.title,
         status: 'failed',
         error: err.message || 'Generation failed',
         featureGroup: slotGroup,
@@ -265,44 +361,10 @@ export function Studio() {
     }
   };
 
-  // Check 24-hour spend guard
-  const checkSpendGuard = (): boolean => {
-    const KEY = 'octopus_generations_24h_count';
-    const now = Date.now();
-    try {
-      const raw = localStorage.getItem(KEY);
-      const records: number[] = raw ? JSON.parse(raw) : [];
-      // Filter timestamps within last 24h
-      const recent = records.filter((ts) => now - ts < 24 * 60 * 60 * 1000);
-      if (recent.length >= 50) {
-        showToast('24-Hour spend guard reached: 50 generations maximum per day.', 'error');
-        return false;
-      }
-      return true;
-    } catch {
-      return true;
-    }
-  };
-
-  const recordGenerationSpend = (count: number) => {
-    const KEY = 'octopus_generations_24h_count';
-    const now = Date.now();
-    try {
-      const raw = localStorage.getItem(KEY);
-      const records: number[] = raw ? JSON.parse(raw) : [];
-      for (let i = 0; i < count; i++) {
-        records.push(now);
-      }
-      localStorage.setItem(KEY, JSON.stringify(records));
-    } catch {
-      // Ignore
-    }
-  };
-
   // Generate All Handler
   const handleGenerateAll = async () => {
     if (!sourceImage.previewUrl) {
-      showToast('Please upload a product photo first.', 'error');
+      showToast('Please upload a product catalogue or photo first.', 'error');
       return;
     }
 
@@ -311,38 +373,18 @@ export function Studio() {
       return;
     }
 
-    if (!checkSpendGuard()) {
-      return;
-    }
-
-    // Auto split if feature groups are empty
-    let currentGroups = featureGroups;
-    const hasAnyGroups = currentGroups.some((g) => g.length > 0);
-    if (!hasAnyGroups) {
-      const rawFeatures = featuresText
-        .split('\n')
-        .map((f) => f.trim())
-        .filter((f) => f.length > 0);
-      const autoGroups: string[][] = [[], [], [], [], []];
-      rawFeatures.forEach((f, i) => autoGroups[i % 5].push(f));
-      currentGroups = autoGroups;
-      setFeatureGroups(autoGroups);
-    }
-
     setIsGeneratingAll(true);
-    const totalCalls = makePoster ? 6 : 5;
-    recordGenerationSpend(totalCalls);
+    const slotsToRun = sanfordSlots.length > 0 ? sanfordSlots.length : 6;
+    const totalCalls = makePoster ? slotsToRun + 1 : slotsToRun;
 
     try {
       if (settings.styleLock) {
-        // Step 7/8 in plan: When style lock is ON, generate slot 1 first,
-        // then slots 2 to 5 with Image 1 as style reference.
-        showToast('Style lock enabled: Generating Image 1 as master reference...');
+        showToast('Style lock enabled: Generating Slot 1 (Hero) as master reference...');
         const slot1Result = await callGenerateApi(1);
 
         const remainingPromises: Promise<GenerationItem>[] = [];
-        for (let slot = 2; slot <= 5; slot++) {
-          remainingPromises.push(callGenerateApi(slot, slot1Result.imagePath));
+        for (let s = 2; s <= slotsToRun; s++) {
+          remainingPromises.push(callGenerateApi(s, slot1Result.imagePath));
         }
         if (makePoster) {
           remainingPromises.push(callGenerateApi('poster', slot1Result.imagePath));
@@ -350,11 +392,10 @@ export function Studio() {
 
         await Promise.allSettled(remainingPromises);
       } else {
-        // Standard run: Fire all 5 (or 6) in parallel!
-        showToast(`Generating ${totalCalls} images in parallel...`);
+        showToast(`Generating ${totalCalls} Sanford e-commerce images in parallel...`);
         const promises: Promise<GenerationItem>[] = [];
-        for (let slot = 1; slot <= 5; slot++) {
-          promises.push(callGenerateApi(slot));
+        for (let s = 1; s <= slotsToRun; s++) {
+          promises.push(callGenerateApi(s));
         }
         if (makePoster) {
           promises.push(callGenerateApi('poster'));
@@ -363,7 +404,7 @@ export function Studio() {
         await Promise.allSettled(promises);
       }
 
-      showToast('Image generation batch completed!');
+      showToast('Sanford pattern generation batch completed!');
 
       // Save project state to projectStorage
       setTimeout(async () => {
@@ -380,14 +421,22 @@ export function Studio() {
           id: projectId,
           user_id: userId,
           product_name: productName,
+          model_number: modelNumber,
+          tagline,
           features: featuresText.split('\n').filter((f) => f.trim().length > 0),
           colors,
-          feature_groups: currentGroups,
+          dimensions,
+          weight,
+          whats_in_the_box: whatsInTheBox,
+          warranty,
+          feature_groups: sanfordSlots.map((s) => s.features),
           source_image_path: sourceImage.storagePath,
           source_image_data_url: previewDataUrl,
+          catalogue_preview_url: catalogueImage.previewUrl,
           created_at: new Date().toISOString(),
           settings,
           makePoster,
+          sanford_slots: sanfordSlots,
           generations,
         };
         await projectStorage.saveProject(projectPayload);
@@ -406,10 +455,8 @@ export function Studio() {
       showToast('Product photo required', 'error');
       return;
     }
-    if (!checkSpendGuard()) return;
 
-    recordGenerationSpend(1);
-    showToast(`Regenerating ${slotOrKind === 'poster' ? 'Poster' : `Image ${slotOrKind}`}...`);
+    showToast(`Regenerating ${slotOrKind === 'poster' ? 'Poster' : `Slot ${slotOrKind}`}...`);
 
     let styleRef: string | undefined = undefined;
     if (settings.styleLock && slotOrKind !== 1) {
@@ -449,30 +496,43 @@ export function Studio() {
       )}
 
       {/* Main Studio 3-Column Layout */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="flex-1 max-w-[1680px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Column 1 (Left): Product Input (width: 3.5 / 12) */}
-          <div className="lg:col-span-3 xl:col-span-3">
+          {/* Column 1 (Left): Catalogue & Product Input (width: 4 / 12) */}
+          <div className="lg:col-span-4 xl:col-span-4">
             <ProductInput
               userId={userId}
               projectId={projectId}
               productName={productName}
               setProductName={setProductName}
+              modelNumber={modelNumber}
+              setModelNumber={setModelNumber}
+              tagline={tagline}
+              setTagline={setTagline}
               featuresText={featuresText}
               setFeaturesText={setFeaturesText}
               colors={colors}
               setColors={setColors}
-              featureGroups={featureGroups}
-              setFeatureGroups={setFeatureGroups}
+              dimensions={dimensions}
+              setDimensions={setDimensions}
+              weight={weight}
+              setWeight={setWeight}
+              whatsInTheBox={whatsInTheBox}
+              setWhatsInTheBox={setWhatsInTheBox}
+              warranty={warranty}
+              setWarranty={setWarranty}
+              sanfordSlots={sanfordSlots}
+              setSanfordSlots={setSanfordSlots}
               sourceImage={sourceImage}
               setSourceImage={setSourceImage}
-              onSplitGroups={handleSplitGroups}
-              isSplitting={isSplitting}
+              catalogueImage={catalogueImage}
+              setCatalogueImage={setCatalogueImage}
+              onCatalogueParsed={handleCatalogueParsed}
             />
           </div>
 
-          {/* Column 2 (Center): Results Grid (width: 6.5 / 12) */}
-          <div className="lg:col-span-6 xl:col-span-6">
+          {/* Column 2 (Center): Sanford Results Grid (width: 5.5 / 12) */}
+          <div className="lg:col-span-5 xl:col-span-5">
             <ResultsGrid
               productName={productName}
               generations={generations}

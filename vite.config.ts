@@ -46,6 +46,9 @@ function apiDevPlugin() {
           if (urlPath === '/api/split-features') {
             const { default: handler } = await server.ssrLoadModule('/api/split-features.ts');
             return await handler(req, res);
+          } else if (urlPath === '/api/parse-catalogue') {
+            const { default: handler } = await server.ssrLoadModule('/api/parse-catalogue.ts');
+            return await handler(req, res);
           } else if (urlPath === '/api/generate') {
             const { default: handler } = await server.ssrLoadModule('/api/generate.ts');
             return await handler(req, res);
