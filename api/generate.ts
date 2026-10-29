@@ -122,6 +122,7 @@ export default async function handler(req: any, res: any) {
         background: settings.background,
       });
     } else if (sanfordSlot && sanfordSlot.theme) {
+      const isSizeWarranty = sanfordSlot.theme === 'size_warranty' || sanfordSlot.slot === 6;
       prompt = buildSanfordSlotPrompt({
         productName,
         theme: sanfordSlot.theme,
@@ -129,8 +130,8 @@ export default async function handler(req: any, res: any) {
         headline: sanfordSlot.headline,
         features: sanfordSlot.features && sanfordSlot.features.length > 0 ? sanfordSlot.features : featureGroup,
         dimensions: sanfordSlot.dimensions,
-        weight: sanfordSlot.weight,
-        whatsInTheBox: sanfordSlot.whatsInTheBox,
+        weight: isSizeWarranty ? undefined : sanfordSlot.weight,
+        whatsInTheBox: isSizeWarranty ? undefined : sanfordSlot.whatsInTheBox,
         warranty: sanfordSlot.warranty,
         colors,
         accentColor: settings.accentColor,

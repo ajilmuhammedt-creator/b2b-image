@@ -480,14 +480,11 @@ export function ResultsGrid({
               {item.slot === 6 && (
                 <div>
                   <div className="font-semibold text-slate-200 truncate">
-                    "Dimensions & 1 Year Service Warranty"
+                    "Unit Dimension & 1 Year Service Warranty"
                   </div>
-                  {item.featureGroup && item.featureGroup.length > 0 && (
-                    <div className="line-clamp-2 text-slate-400">
-                      <span className="font-medium text-rose-300">Size & Trust Badge: </span>
-                      {item.featureGroup.join('; ')}
-                    </div>
-                  )}
+                  <div className="text-[10px] text-rose-400/90 font-medium">
+                    Sanford Style: Pale warm tint, "Unit Dimension", red/navy warranty ribbon & crimson red dimension arrows (&lt;---&gt;). No weight or box items.
+                  </div>
                 </div>
               )}
             </div>

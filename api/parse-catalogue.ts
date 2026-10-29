@@ -75,10 +75,10 @@ Extract the following in strictly structured JSON:
       * Description: Product lineup / swatches showing all available color models.
       * STRICT: Show ONLY available color models. STRICTLY NO technical specifications.
       * features: [List of available color options]
-    - Slot 6: theme "size_warranty", title "Product Size & Warranty Only"
-      * Description: Dimensional measurements (height, width, depth, weight) and official Warranty badge (e.g. "1 Year Service Warranty").
-      * STRICT: Show ONLY product size, dimensions, weight, and warranty badge. STRICTLY NO other product specifications.
-      * features: [Dimension string, Weight string, Warranty string]
+    - Slot 6: theme "size_warranty", title "Unit Dimension & Warranty Only"
+      * Description: Exact BuySanford style ("Unit Dimension" header in top left, dual-ribbon red/navy blue "1 YEAR SERVICE WARRANTY" badge in top right, crimson red dimension arrows for height, width, and depth, pale warm peach/pink pastel background).
+      * STRICT: Show ONLY unit dimensions and official warranty ribbon. STRICTLY NO product weight, NO "what's in the box", NO cables/accessories, NO other specs.
+      * features: [Dimension string, Warranty string]
 
 Output MUST be valid JSON matching this schema:
 {
@@ -157,7 +157,6 @@ Output MUST be valid JSON matching this schema:
 
     const sizeWarrantyFeatures: string[] = [];
     if (resultJson.dimensions) sizeWarrantyFeatures.push(`Dimensions: ${resultJson.dimensions}`);
-    if (resultJson.weight) sizeWarrantyFeatures.push(`Weight: ${resultJson.weight}`);
     if (resultJson.warranty) sizeWarrantyFeatures.push(resultJson.warranty);
     if (sizeWarrantyFeatures.length === 0) sizeWarrantyFeatures.push('1 Year Service Warranty');
 
@@ -205,9 +204,9 @@ Output MUST be valid JSON matching this schema:
       {
         slot: 6,
         theme: 'size_warranty',
-        title: 'Product Size & Warranty Only',
-        headline: 'Dimensions & Warranty',
-        description: 'Dimensional measurement diagram (height, width, depth, weight) and official 1-Year Warranty badge. Strictly NO other specs.',
+        title: 'Unit Dimension & Warranty Only',
+        headline: 'Unit Dimension',
+        description: 'Exact BuySanford style: Pale warm pastel background, "Unit Dimension" header in top left, red/navy 1-Year Warranty ribbon badge in top right, crimson red double-ended arrows (<--->) for height/width/depth. Strictly NO weight, NO box contents.',
         features: sizeWarrantyFeatures,
       },
     ];

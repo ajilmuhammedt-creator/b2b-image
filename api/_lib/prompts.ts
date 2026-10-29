@@ -1,3 +1,24 @@
+export function parseDimensionMeasurements(dimStr?: string): { height: string; width: string; depth: string } {
+  if (!dimStr) return { height: '197mm', width: '78mm', depth: '57mm' };
+  const matches = dimStr.match(/(\d+(?:\.\d+)?\s*(?:mm|cm|in|inch|inches)?)/gi);
+  if (matches && matches.length >= 3) {
+    const rawNums = matches.map((m) => parseFloat(m)).filter((n) => !isNaN(n));
+    if (rawNums.length >= 3) {
+      const sorted = [...rawNums].sort((a, b) => b - a);
+      const h = sorted[0]; // biggest is usually height
+      const w = sorted[1]; // middle is width
+      const d = sorted[2]; // smallest is depth
+      const unit = dimStr.toLowerCase().includes('cm') ? 'cm' : 'mm';
+      return {
+        height: `${h}${unit}`,
+        width: `${w}${unit}`,
+        depth: `${d}${unit}`,
+      };
+    }
+  }
+  return { height: '197mm', width: '78mm', depth: '57mm' };
+}
+
 export const PRODUCT_ACCURACY_BLOCK = `PRODUCT ACCURACY
 Treat the uploaded product photograph as the source of truth for the product's appearance.
 Faithfully preserve its shape, proportions, colors, materials, texture, buttons, ports, branding, labels, and visible components.
@@ -84,39 +105,39 @@ export function buildSanfordSlotPrompt(params: {
       break;
 
     case 'size_warranty':
-      specificStyle = `SLOT 6: PRODUCT SIZE & WARRANTY ONLY
-- Professional dimensional measurement diagram and warranty trust badge.
-- Display the product with clear dimensional measurement callouts: ${dimensions || '197mm height, 78mm width, 57mm base'} and weight (${weight || 'Unit 225g'}).
-- Prominently include an official "${warranty || '1 Year Service Warranty'}" shield trust badge.
-${whatsInTheBox && whatsInTheBox.length > 0 ? `- Show what's in the box: ${whatsInTheBox.join(', ')}.` : ''}
-- Crisp, legible diagrammatic layout designed for mobile and desktop product pages.
-- STRICT CONSTRAINT: STRICTLY NO other product specifications, NO speed levels, NO cooling descriptions. Show ONLY product size, dimensions, weight, and the warranty badge.`;
-      break;
+    case 'infographic': {
+      const { height, width, depth } = parseDimensionMeasurements(dimensions);
+      specificStyle = `SLOT 6: UNIT DIMENSION & WARRANTY ONLY (EXACT BUYSANFORD STYLE)
+- BACKGROUND & COMPOSITION:
+  * Soft, pale warm pastel background with a delicate peach/pink tint (#FDEFEF to #FADBD8, matching BuySanford specification artwork).
+  * Flat studio surface horizon line where the product stands upright in the center with a realistic soft floor contact shadow.
+  * Flawless centered product facing forward.
 
-    // Backward compatibility with legacy theme names
-    case 'technical':
-      specificStyle = `SLOT 3: PRODUCT SPECIFICATIONS — PART 1
-- Feature artwork highlighting the core functional specifications: ${featureListStr}.
-- Clean modern layout with concise feature callouts and minimal tech icons. ${accentLine}`;
-      break;
+- TOP-LEFT HEADER:
+  * In the top-left corner, display clean, modest-sized header text in dark charcoal/black sans-serif: "Unit Dimension".
+  * Clean, elegant typography with generous margins from the edges.
 
-    case 'battery_display':
-      specificStyle = `SLOT 4: PRODUCT SPECIFICATIONS — PART 2
-- Highlight specifications: ${featureListStr}.
-- Crisp view of digital display and battery endurance with icon badges.`;
-      break;
+- TOP-RIGHT WARRANTY BADGE (EXACT SANFORD DUAL-RIBBON BANNER):
+  * In the top-right corner, place the official Sanford folded ribbon banner badge:
+    - Top folded angled ribbon: Bright VIBRANT RED banner with bold white text "1 YEAR".
+    - Lower folded angled ribbon: Rich NAVY BLUE banner with bold white text "SERVICE WARRANTY".
+    - Clean folded ribbon 3D geometry with notched/folded banner ends.
+    - STRICT: DO NOT use a golden shield. MUST use the RED and NAVY BLUE folded ribbon banner.
 
-    case 'flexibility':
-      specificStyle = `SLOT 5: AVAILABLE COLOUR MODELS ONLY
-- Show the product in its available color options: ${colors || 'Graphite Black, Arctic White, Slate Grey'}.
-- STRICT CONSTRAINT: Show only color models and color swatches, no technical specs.`;
-      break;
+- DIMENSION ARROWS & CALLOUTS (EXACT CRIMSON RED ARROWS):
+  * Dimension arrows MUST be crisp, thin double-ended arrows in bright CRIMSON RED (<───────>) with solid red triangular arrowheads on both ends.
+  * Height callout: A vertical double-ended crimson red arrow along the right side of the product with dark legible text: "${height}".
+  * Width callout: A horizontal double-ended crimson red arrow beneath the product base with dark legible text: "${width}".
+  * Depth callout: An angled perspective double-ended crimson red arrow showing product depth/thickness with dark legible text: "${depth}".
+  * Measurement numbers must be clearly readable in clean, dark sans-serif.
 
-    case 'infographic':
-      specificStyle = `SLOT 6: PRODUCT SIZE & WARRANTY ONLY
-- Display dimensional measurement callouts (${dimensions || '197mm x 78mm x 57mm'}) and "${warranty || '1 Year Service Warranty'}" badge.
-- STRICT CONSTRAINT: Show ONLY size, weight, and warranty badge.`;
+- STRICT NEGATIVE RULES (CRITICAL):
+  * STRICTLY NO PRODUCT WEIGHT. Absolutely NO "Unit Weight", NO "Package Weight", NO "225g", NO "305g", NO weight icons, NO scales.
+  * STRICTLY NO "WHAT'S IN THE BOX". Absolutely NO box contents, NO USB cables, NO user manual drawings, NO accessories, NO inset boxes.
+  * STRICTLY NO other product specifications, performance claims, battery/wattage text, or descriptions.
+  * The image must contain ONLY: the centered product, "Unit Dimension" in top left, the red/blue ribbon "1 YEAR SERVICE WARRANTY" badge in top right, and the crimson red dimension arrows (<--->) with measurements.`;
       break;
+    }
 
     default:
       specificStyle = `SLOT FEATURE ARTWORK

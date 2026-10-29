@@ -633,7 +633,7 @@ export function ProductInput({
                 ruleHint = 'Available color options and lineup only. Strictly NO technical specs.';
               } else if (slot.slot === 6) {
                 slotBadgeColor = 'text-rose-300';
-                ruleHint = 'Product dimensions, weight callouts & official 1-Year Warranty seal only.';
+                ruleHint = 'BuySanford style: Pale warm tint, "Unit Dimension", red/navy ribbon warranty badge & crimson red dimension arrows (<--->). No weight, no box contents.';
               }
 
               return (

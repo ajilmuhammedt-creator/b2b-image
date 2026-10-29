@@ -59,10 +59,10 @@ const DEFAULT_SANFORD_SLOTS: SanfordSlotSpec[] = [
   {
     slot: 6,
     theme: 'size_warranty',
-    title: 'Product Size & Warranty Only',
-    headline: 'Dimensions & Warranty',
-    description: 'Dimensional measurement diagram (height, width, depth, weight) and official 1-Year Warranty badge. Strictly NO other specs.',
-    features: ['Dimensions: 197mm x 78mm x 57mm', 'Weight: 225g', '1 Year Service Warranty'],
+    title: 'Unit Dimension & Warranty Only',
+    headline: 'Unit Dimension',
+    description: 'Exact BuySanford style: Pale warm pastel background, "Unit Dimension" header in top left, red/navy 1-Year Warranty ribbon badge in top right, crimson red double-ended arrows (<--->) for height/width/depth. Strictly NO weight, NO box contents.',
+    features: ['Dimensions: 197mm x 78mm x 57mm', '1 Year Service Warranty'],
   },
 ];
 
@@ -184,8 +184,8 @@ Lanyard & Loop Holder
             sanfordSlot: {
               ...slot,
               dimensions: data.dimensions,
-              weight: data.weight,
-              whatsInTheBox: data.whatsInTheBox,
+              weight: slot.theme === 'size_warranty' ? undefined : data.weight,
+              whatsInTheBox: slot.theme === 'size_warranty' ? undefined : data.whatsInTheBox,
               warranty: data.warranty,
             },
           };
@@ -308,8 +308,8 @@ Lanyard & Loop Holder
             ? {
                 ...targetSlotSpec,
                 dimensions,
-                weight,
-                whatsInTheBox,
+                weight: targetSlotSpec.theme === 'size_warranty' ? undefined : weight,
+                whatsInTheBox: targetSlotSpec.theme === 'size_warranty' ? undefined : whatsInTheBox,
                 warranty,
               }
             : undefined,
