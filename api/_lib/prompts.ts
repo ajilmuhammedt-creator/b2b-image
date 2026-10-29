@@ -31,6 +31,7 @@ export function buildSanfordSlotPrompt(params: {
   theme: 'hero' | 'lifestyle' | 'specs_part_1' | 'specs_part_2' | 'colors' | 'size_warranty' | 'poster' | string;
   slotTitle: string;
   headline?: string;
+  promoBanner?: string;
   features: string[];
   dimensions?: string;
   weight?: string;
@@ -45,6 +46,7 @@ export function buildSanfordSlotPrompt(params: {
     theme,
     slotTitle,
     headline,
+    promoBanner,
     features,
     dimensions,
     weight,
@@ -81,27 +83,52 @@ export function buildSanfordSlotPrompt(params: {
       break;
 
     case 'specs_part_1':
-      specificStyle = `SLOT 3: PRODUCT SPECIFICATIONS — PART 1
-- Feature artwork highlighting the core functional specifications: ${featureListStr}.
-- Show the product with subtle, elegant visual flow effects (e.g. refreshing cool airwaves, cold-plate indicator, or turbine vortex).
-- Place 2 or 3 concise feature callouts with small minimal tech icons.
-- Clean modern layout, professional BuySanford e-commerce presentation with dark legible text. ${accentLine}`;
+      specificStyle = `SLOT 3: PRODUCT SPECIFICATIONS — PART 1 (EXACT BUYSANFORD BRAND STYLE)
+- UPPER-LEFT FEATURE HIGHLIGHTS (EXACT BRAND ICON STYLE):
+  * Feature callouts positioned in the upper-left area in a neat vertical stack for: ${featureListStr}.
+  * Each feature item MUST follow this exact visual pattern:
+    1. A solid, vibrant RED circular icon badge (#E53935) containing a clean WHITE minimalist symbol/glyph (e.g. cold-plate/frost icon, turbine/speedometer icon, power icon).
+    2. Bold, short feature description text beside the red badge in crisp, high-contrast typography.
+    3. A delicate, fine horizontal divider line separating each feature item.
+- UPPER-RIGHT CONTEXT SLOGAN:
+  * In the upper-right corner, place an elegant, clean uppercase context slogan in sans-serif: "${headline ? headline.toUpperCase() : 'SUITABLE FOR OUTDOOR & INDOOR USE'}".
+- CENTER COMPOSITION:
+  * Product is centered and upright, sharply rendered matching the reference photograph, with realistic surface lighting.
+- MANDATORY FULL-WIDTH SOLID RED BOTTOM PROMOTIONAL BANNER:
+  * Across the very bottom of the image, include a full-width solid RED strip (#E53935 / #D32F2F) spanning 100% edge-to-edge.
+  * Inside this red banner: large, bold, clean WHITE typography displaying the main product benefit: "${promoBanner || headline || 'Rechargeable Cooling Hand Fan with Cold Plate'}".
+  * On the left of the banner: an optional white circular badge with an outline product/fan symbol.`;
       break;
 
     case 'specs_part_2':
-      specificStyle = `SLOT 4: PRODUCT SPECIFICATIONS — PART 2 (NON-OVERLAPPING)
-- Highlight the remaining distinct specifications: ${featureListStr}.
-- Feature a crisp view of internal power and smart interface (e.g. digital LED display glowing with gear/battery readout, rechargeable battery, Type-C charging port).
-- High-contrast e-commerce commercial typography with icon badges.
+      specificStyle = `SLOT 4: PRODUCT SPECIFICATIONS — PART 2 (EXACT BUYSANFORD BRAND STYLE)
+- UPPER-LEFT FEATURE HIGHLIGHTS (EXACT BRAND ICON STYLE):
+  * Feature callouts positioned in the upper-left area in a neat vertical stack for: ${featureListStr}.
+  * Each feature item MUST follow this exact visual pattern:
+    1. A solid, vibrant RED circular icon badge (#E53935) containing a clean WHITE minimalist symbol/glyph (e.g. battery icon for 3600mAh, digital display screen icon for gear/battery readout, Type-C charging icon, 90° rotation fold icon).
+    2. Bold, short feature description text beside the red badge in crisp, high-contrast typography.
+    3. A delicate, fine horizontal divider line separating each feature item.
+- UPPER-RIGHT CONTEXT SLOGAN:
+  * In the upper-right corner, place an elegant, clean uppercase context slogan: "${headline ? headline.toUpperCase() : 'PORTABLE, POWERFUL, PEACEFUL, STAY COOL EVERYWHERE'}".
+- CENTER COMPOSITION:
+  * Product is centered, showing the digital LED gear/battery display glowing and the Type-C port / folding angle.
+- MANDATORY FULL-WIDTH SOLID RED BOTTOM PROMOTIONAL BANNER:
+  * Across the very bottom of the image, include a full-width solid RED strip (#E53935 / #D32F2F) spanning 100% edge-to-edge.
+  * Inside this red banner: large, bold, clean WHITE typography displaying the main benefit: "${promoBanner || headline || '3600mAh All-Day Battery & Smart Digital Display'}".
+  * On the left of the banner: an optional white circular badge with a minimalist symbol.
 - STRICT CONSTRAINT: Do NOT repeat any feature or specification from Slot 3. Only showcase the distinct features assigned to this slot.`;
       break;
 
     case 'colors':
-      specificStyle = `SLOT 5: AVAILABLE COLOUR MODELS ONLY (NO SPECIFICATIONS)
-- Show the product in its available color models / options: ${colors || 'Graphite Black, Arctic White, Slate Grey, Pastel Blue'}.
-- Present the color options cleanly: either multiple product units arranged side-by-side showing each color variant, or a hero unit with elegant circular color swatches below.
-- Headline: "Available Colors" or "${productName} Colors".
-- STRICT CONSTRAINT: STRICTLY NO technical product specifications, NO wattage, NO battery numbers, NO feature descriptions. Focus exclusively on showing the available color models and variants.`;
+      specificStyle = `SLOT 5: AVAILABLE COLOUR MODELS (EXACT BUYSANFORD BRAND STYLE)
+- SHOW AVAILABLE COLOR VARIANTS:
+  * Display the product in its available color finishes / models: ${colors || 'Arctic White, Pastel Pink, Graphite Black'}.
+  * Products arranged cleanly side-by-side or fanned out showing each available color option.
+  * Clean, bright studio background with soft natural floor contact shadow.
+- MANDATORY FULL-WIDTH SOLID RED BOTTOM PROMOTIONAL BANNER:
+  * Across the very bottom of the image, include a full-width solid RED strip (#E53935 / #D32F2F) spanning 100% edge-to-edge.
+  * Inside this red banner: large, bold, clean WHITE typography delivering the brand message: "${promoBanner || headline || 'Light Weight and Easy to Carry'}".
+- STRICT CONSTRAINT: STRICTLY NO technical product specifications, NO wattage, NO battery numbers, NO feature descriptions. Focus exclusively on showing the available color models and the bottom red promotional banner.`;
       break;
 
     case 'size_warranty':

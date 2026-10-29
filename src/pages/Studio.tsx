@@ -37,7 +37,8 @@ const DEFAULT_SANFORD_SLOTS: SanfordSlotSpec[] = [
     theme: 'specs_part_1',
     title: 'Specifications — Part 1',
     headline: 'Instant Refrigerated Cooling & High-Velocity Airflow',
-    description: 'Core functional specifications from catalogue: cooling plate, wind speeds, motor.',
+    promoBanner: 'Rechargeable Cooling Hand Fan with Cold Plate',
+    description: 'Upper-left red circular icon badges with white symbols & divider lines; full-width solid red bottom promotional banner with white typography.',
     features: ['Cooling Function Cold Plate', '5 Level Wind Speed (0-100)', '5 Watts Power'],
   },
   {
@@ -45,7 +46,8 @@ const DEFAULT_SANFORD_SLOTS: SanfordSlotSpec[] = [
     theme: 'specs_part_2',
     title: 'Specifications — Part 2 (Non-Overlapping)',
     headline: '3600mAh Battery & Smart Digital Display',
-    description: 'Power and smart display specifications. Strictly non-overlapping with Slot 3.',
+    promoBanner: '3600mAh Long-Lasting Battery Life',
+    description: 'Upper-left red circular icon badges with white symbols & divider lines; full-width solid red bottom promotional banner with white typography.',
     features: ['Digital Display - Gear & Battery Levels', '3600mAh Rechargeable Battery', 'Type-C Charging Port', '90° Rotation Fold (Up & Down)'],
   },
   {
@@ -53,7 +55,8 @@ const DEFAULT_SANFORD_SLOTS: SanfordSlotSpec[] = [
     theme: 'colors',
     title: 'Available Colour Models Only',
     headline: 'Available Colors',
-    description: 'Product lineup showing available color finishes. Strictly NO technical specifications.',
+    promoBanner: 'Light Weight and Easy to Carry',
+    description: 'Product lineup in available color finishes; full-width solid red bottom promotional banner with white typography.',
     features: ['Graphite Black', 'Arctic White', 'Slate Grey', 'Pastel Blue'],
   },
   {

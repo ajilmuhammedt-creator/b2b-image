@@ -438,7 +438,7 @@ export function ResultsGrid({
                 </div>
               )}
               {item.slot === 3 && (
-                <div>
+                <div className="space-y-1">
                   {item.sanfordSlot?.headline && (
                     <div className="font-semibold text-slate-200 truncate">
                       "{item.sanfordSlot.headline}"
@@ -446,14 +446,18 @@ export function ResultsGrid({
                   )}
                   {item.featureGroup && item.featureGroup.length > 0 && (
                     <div className="line-clamp-2 text-slate-400">
-                      <span className="font-medium text-indigo-300">Specifications Part 1: </span>
+                      <span className="font-medium text-indigo-300">Upper-Left Badges: </span>
                       {item.featureGroup.join('; ')}
                     </div>
                   )}
+                  <div className="text-[10px] text-red-400 font-medium flex items-center space-x-1">
+                    <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
+                    <span>Red Bottom Banner: "{item.sanfordSlot?.promoBanner || item.sanfordSlot?.headline || 'Rechargeable Cooling Hand Fan'}"</span>
+                  </div>
                 </div>
               )}
               {item.slot === 4 && (
-                <div>
+                <div className="space-y-1">
                   {item.sanfordSlot?.headline && (
                     <div className="font-semibold text-slate-200 truncate">
                       "{item.sanfordSlot.headline}"
@@ -461,19 +465,24 @@ export function ResultsGrid({
                   )}
                   {item.featureGroup && item.featureGroup.length > 0 && (
                     <div className="line-clamp-2 text-slate-400">
-                      <span className="font-medium text-purple-300">Specifications Part 2 (Non-overlapping): </span>
+                      <span className="font-medium text-purple-300">Upper-Left Badges (Non-overlapping): </span>
                       {item.featureGroup.join('; ')}
                     </div>
                   )}
+                  <div className="text-[10px] text-red-400 font-medium flex items-center space-x-1">
+                    <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
+                    <span>Red Bottom Banner: "{item.sanfordSlot?.promoBanner || '3600mAh Long-Lasting Battery Life'}"</span>
+                  </div>
                 </div>
               )}
               {item.slot === 5 && (
-                <div>
+                <div className="space-y-1">
                   <div className="font-semibold text-slate-200 truncate">
                     "Available Colors: {item.featureGroup && item.featureGroup.length > 0 ? item.featureGroup.join(', ') : 'Color Options'}"
                   </div>
-                  <div className="text-[10px] text-amber-400/90 font-medium">
-                    Product lineup showing color models only. Strictly NO technical specs.
+                  <div className="text-[10px] text-red-400 font-medium flex items-center space-x-1">
+                    <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
+                    <span>Red Bottom Banner: "{item.sanfordSlot?.promoBanner || 'Light Weight and Easy to Carry'}"</span>
                   </div>
                 </div>
               )}

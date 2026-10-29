@@ -249,7 +249,7 @@ export function ProductInput({
 
   const updateSlotField = (
     index: number,
-    field: 'title' | 'headline' | 'features',
+    field: 'title' | 'headline' | 'promoBanner' | 'features',
     value: any
   ) => {
     const updated = [...sanfordSlots];
@@ -624,13 +624,13 @@ export function ProductInput({
                 ruleHint = 'Realistic in-use lifestyle scene. Slogan only. Strictly NO technical specs.';
               } else if (slot.slot === 3) {
                 slotBadgeColor = 'text-indigo-300';
-                ruleHint = 'Specifications Part 1: Core functionality callouts with clean icons.';
+                ruleHint = 'Upper-left red circular icon badges & divider lines + Full-width solid red bottom promotional banner.';
               } else if (slot.slot === 4) {
                 slotBadgeColor = 'text-purple-300';
-                ruleHint = 'Specifications Part 2: Battery/display/ports. Mutually exclusive from Part 1.';
+                ruleHint = 'Upper-left red circular icon badges & divider lines + Full-width solid red bottom promotional banner.';
               } else if (slot.slot === 5) {
                 slotBadgeColor = 'text-amber-300';
-                ruleHint = 'Available color options and lineup only. Strictly NO technical specs.';
+                ruleHint = 'Available color options lineup + Full-width solid red bottom promotional banner. No technical specs.';
               } else if (slot.slot === 6) {
                 slotBadgeColor = 'text-rose-300';
                 ruleHint = 'BuySanford style: Pale warm tint, "Unit Dimension", red/navy ribbon warranty badge & crimson red dimension arrows (<--->). No weight, no box contents.';
@@ -662,6 +662,21 @@ export function ProductInput({
                     placeholder="Headline for this card..."
                     className="w-full bg-slate-900/60 border border-slate-800 px-2 py-1 rounded text-[11px] text-slate-200"
                   />
+                )}
+
+                {(slot.slot === 3 || slot.slot === 4 || slot.slot === 5) && (
+                  <div className="space-y-0.5">
+                    <label className="text-[10px] font-semibold text-red-400 flex items-center space-x-1">
+                      <span>Red Bottom Banner Text (White Typography)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={slot.promoBanner || ''}
+                      onChange={(e) => updateSlotField(index, 'promoBanner', e.target.value)}
+                      placeholder='e.g. 4" Table Fan with LED'
+                      className="w-full bg-red-950/30 border border-red-800/60 px-2 py-1 rounded text-[11px] text-white placeholder-red-300/40 focus:ring-1 focus:ring-red-500"
+                    />
+                  </div>
                 )}
 
                 {slot.slot !== 1 && slot.slot !== 2 && (

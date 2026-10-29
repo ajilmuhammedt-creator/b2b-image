@@ -128,6 +128,7 @@ export default async function handler(req: any, res: any) {
         theme: sanfordSlot.theme,
         slotTitle: sanfordSlot.title || `Image ${slot}`,
         headline: sanfordSlot.headline,
+        promoBanner: sanfordSlot.promoBanner,
         features: sanfordSlot.features && sanfordSlot.features.length > 0 ? sanfordSlot.features : featureGroup,
         dimensions: sanfordSlot.dimensions,
         weight: isSizeWarranty ? undefined : sanfordSlot.weight,

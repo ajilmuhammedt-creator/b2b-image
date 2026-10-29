@@ -66,13 +66,21 @@ Extract the following in strictly structured JSON:
       * features: []
     - Slot 3: theme "specs_part_1", title "Specifications — Part 1"
       * Description: Core specifications (e.g. cooling function, speed levels, power/motor) drawn directly from catalogue.
+      * Icon Style (Upper Left): Red circular icon badges (#E53935), white minimalist symbols, bold short feature descriptions, and fine horizontal divider lines.
+      * Bottom Banner: Full-width solid red promotional strip with large white typography.
+      * promoBanner: Primary product benefit headline (e.g. "Rechargeable Cooling Hand Fan with Cold Plate")
       * features: [First half of verified specifications from catalogue]
     - Slot 4: theme "specs_part_2", title "Specifications — Part 2 (Non-Overlapping)"
       * Description: Remaining specifications (e.g. battery capacity, digital LED display, charging port).
+      * Icon Style (Upper Left): Red circular icon badges (#E53935), white minimalist symbols, bold short feature descriptions, and fine horizontal divider lines.
+      * Bottom Banner: Full-width solid red promotional strip with large white typography.
+      * promoBanner: Power and convenience benefit headline (e.g. "3600mAh Long-Lasting Battery & Smart Display")
       * STRICT: MUST NOT repeat or duplicate any specification from Slot 3. Mutually exclusive.
       * features: [Second half of verified specifications from catalogue]
     - Slot 5: theme "colors", title "Available Colour Models Only"
       * Description: Product lineup / swatches showing all available color models.
+      * Bottom Banner: Full-width solid red promotional strip with large white typography (e.g. "Light Weight and Easy to Carry").
+      * promoBanner: Brand convenience message (e.g. "Light Weight and Easy to Carry")
       * STRICT: Show ONLY available color models. STRICTLY NO technical specifications.
       * features: [List of available color options]
     - Slot 6: theme "size_warranty", title "Unit Dimension & Warranty Only"
@@ -182,7 +190,8 @@ Output MUST be valid JSON matching this schema:
         theme: 'specs_part_1',
         title: 'Specifications — Part 1',
         headline: specsPart1[0] || 'Core Specifications',
-        description: 'First distinct group of verified product specifications from the catalogue.',
+        promoBanner: resultJson.productName || 'Rechargeable Cooling Hand Fan with Cold Plate',
+        description: 'Upper-left red circular icon badges with white symbols & divider lines; full-width solid red bottom promotional banner with white typography.',
         features: specsPart1,
       },
       {
@@ -190,7 +199,8 @@ Output MUST be valid JSON matching this schema:
         theme: 'specs_part_2',
         title: 'Specifications — Part 2 (Non-Overlapping)',
         headline: specsPart2[0] || 'Power & Display Specifications',
-        description: 'Second distinct group of verified specifications. Strictly non-overlapping with Slot 3.',
+        promoBanner: '3600mAh Long-Lasting Battery & Smart Display',
+        description: 'Upper-left red circular icon badges with white symbols & divider lines; full-width solid red bottom promotional banner with white typography.',
         features: specsPart2,
       },
       {
@@ -198,7 +208,8 @@ Output MUST be valid JSON matching this schema:
         theme: 'colors',
         title: 'Available Colour Models Only',
         headline: 'Available Colors',
-        description: 'Product lineup showing available color finishes. Strictly NO technical specifications.',
+        promoBanner: 'Light Weight and Easy to Carry',
+        description: 'Product lineup in available color finishes; full-width solid red bottom promotional banner with white typography.',
         features: colorItems.length > 0 ? colorItems : ['Standard Color Variants'],
       },
       {

@@ -23,6 +23,7 @@ export interface SanfordSlotSpec {
   theme: SanfordTheme;
   title: string;
   headline?: string;
+  promoBanner?: string;
   description?: string;
   features: string[];
   dimensions?: string;
