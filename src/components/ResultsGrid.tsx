@@ -358,6 +358,11 @@ export function ResultsGrid({
               </div>
 
               <div className="flex items-center space-x-1.5">
+                {item.slot !== 1 && (
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-red-950/40 text-red-300 border border-red-800/40" title="All text rendered in Sharp Sans font">
+                    Sharp Sans
+                  </span>
+                )}
                 <span className={`text-[10px] uppercase font-mono px-1.5 py-0.5 rounded border ${themeBadgeColor}`}>
                   {themeBadge}
                 </span>
@@ -580,11 +585,16 @@ export function ResultsGrid({
                 </span>
               </div>
 
-              {posterCard.usage && (
-                <span className="text-[10px] font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-1.5 py-0.5 rounded">
-                  {posterCard.usage.total_tokens || 0} tok
+              <div className="flex items-center space-x-1.5">
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-red-950/40 text-red-300 border border-red-800/40" title="All text rendered in Sharp Sans font">
+                  Sharp Sans
                 </span>
-              )}
+                {posterCard.usage && (
+                  <span className="text-[10px] font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-1.5 py-0.5 rounded">
+                    {posterCard.usage.total_tokens || 0} tok
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Poster Canvas Viewport */}

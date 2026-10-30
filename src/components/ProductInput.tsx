@@ -606,10 +606,15 @@ export function ProductInput({
               <Layers className="w-3.5 h-3.5 text-indigo-400" />
               <span>6 Sanford Pattern Slots</span>
             </span>
-            <span className="text-[10px] text-emerald-400 flex items-center space-x-1">
-              <CheckCircle2 className="w-3 h-3" />
-              <span>SF2722EL Pattern</span>
-            </span>
+            <div className="flex items-center space-x-2">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 font-medium">
+                Sharp Sans Font Only
+              </span>
+              <span className="text-[10px] text-emerald-400 flex items-center space-x-1">
+                <CheckCircle2 className="w-3 h-3" />
+                <span>SF2722EL Pattern</span>
+              </span>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -621,19 +626,19 @@ export function ProductInput({
                 ruleHint = 'Pure white studio background (#FFFFFF). Strictly NO text or specifications.';
               } else if (slot.slot === 2) {
                 slotBadgeColor = 'text-emerald-300';
-                ruleHint = 'Realistic in-use lifestyle scene. Slogan only. Strictly NO technical specs.';
+                ruleHint = 'Realistic in-use lifestyle scene. Slogan only in Sharp Sans Bold font. Strictly NO technical specs.';
               } else if (slot.slot === 3) {
                 slotBadgeColor = 'text-indigo-300';
-                ruleHint = 'Upper-left red circular icon badges & divider lines + Full-width solid red bottom promotional banner.';
+                ruleHint = 'Upper-left red circular icon badges & divider lines + Full-width red bottom promotional banner. Sharp Sans font only.';
               } else if (slot.slot === 4) {
                 slotBadgeColor = 'text-purple-300';
-                ruleHint = 'Upper-left red circular icon badges & divider lines + Full-width solid red bottom promotional banner.';
+                ruleHint = 'Upper-left red circular icon badges & divider lines + Full-width red bottom promotional banner. Sharp Sans font only.';
               } else if (slot.slot === 5) {
                 slotBadgeColor = 'text-amber-300';
-                ruleHint = 'Available color options lineup + Full-width solid red bottom promotional banner. No technical specs.';
+                ruleHint = 'Available color options lineup + Full-width red bottom promotional banner in Sharp Sans font. No technical specs.';
               } else if (slot.slot === 6) {
                 slotBadgeColor = 'text-rose-300';
-                ruleHint = 'BuySanford style: Pale warm tint, "Unit Dimension", red/navy ribbon warranty badge & crimson red dimension arrows (<--->). No weight, no box contents.';
+                ruleHint = 'BuySanford style: Pale warm tint, "Unit Dimension", red/navy ribbon warranty badge & crimson red dimension arrows (<--->) in Sharp Sans font. No weight, no box contents.';
               }
 
               return (

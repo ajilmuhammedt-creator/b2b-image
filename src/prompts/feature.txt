@@ -20,7 +20,7 @@ VISUAL STYLE
 Create polished e-commerce feature artwork with realistic product photography, soft studio lighting, subtle shadows, and a clean [BACKGROUND] background.
 Choose one restrained accent color that complements the actual product.
 [ACCENT LINE]
-Use dark, high-contrast text and modern, bold sans-serif typography.
+Use dark, high-contrast text strictly in the "Sharp Sans" font family (geometric, clean modern bold sans-serif typography).
 Keep the overall style consistent across the image series.
 If an additional image is supplied as a style reference, use it only for layout, typography, and color treatment; use the original product photograph for product identity.
 

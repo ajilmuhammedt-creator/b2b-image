@@ -21,7 +21,7 @@ Use a clean [BACKGROUND] background or a soft gradient of one restrained accent 
 Place one bold headline of no more than six words near the top and a one-line subheading under it.
 Add three or four short feature callouts with small, simple icons, taken only from the supplied features.
 Show colour options as labelled swatches only when colours are supplied.
-Use dark, high-contrast, modern bold sans-serif type. Keep generous margins; all text must be readable on a phone.
+Use dark, high-contrast, modern bold Sharp Sans font type. Keep generous margins; all text must be readable on a phone.
 
 COPY
 Use only the supplied information. Preserve every number, unit and specification exactly.
