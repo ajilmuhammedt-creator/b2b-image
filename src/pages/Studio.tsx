@@ -36,7 +36,7 @@ const DEFAULT_SANFORD_SLOTS: SanfordSlotSpec[] = [
     slot: 3,
     theme: 'specs_part_1',
     title: 'Specifications — Part 1',
-    headline: 'SUITABLE FOR OUTDOOR & INDOOR USE',
+    headline: '',
     promoBanner: '',
     description: 'Upper-left red circular icon badges with white symbols & divider lines; upper-right usage slogan; full-width solid red bottom promotional banner in Sharp Sans font. Zero feature duplicates.',
     features: [],
@@ -45,7 +45,7 @@ const DEFAULT_SANFORD_SLOTS: SanfordSlotSpec[] = [
     slot: 4,
     theme: 'specs_part_2',
     title: 'Specifications — Part 2 (Non-Overlapping)',
-    headline: 'PORTABLE, POWERFUL, PEACEFUL, STAY COOL EVERYWHERE',
+    headline: '',
     promoBanner: '',
     description: 'Upper-left red circular icon badges with white symbols & divider lines; upper-right usage slogan; full-width solid red bottom promotional banner in Sharp Sans font. Zero feature duplicates.',
     features: [],
@@ -54,7 +54,7 @@ const DEFAULT_SANFORD_SLOTS: SanfordSlotSpec[] = [
     slot: 5,
     theme: 'colors',
     title: 'Available Colour Models Only',
-    headline: 'Available Colors',
+    headline: '',
     promoBanner: '',
     description: 'Product lineup in available color finishes; full-width solid red bottom promotional banner with white typography.',
     features: [],
@@ -63,7 +63,7 @@ const DEFAULT_SANFORD_SLOTS: SanfordSlotSpec[] = [
     slot: 6,
     theme: 'size_warranty',
     title: 'Unit Dimension & Warranty Only',
-    headline: 'Unit Dimension',
+    headline: '',
     description: 'Exact BuySanford style: Pale warm pastel background, "Unit Dimension" header in top left, red/navy 1-Year Warranty ribbon badge in top right, crimson red double-ended arrows (<--->) for height/width/depth. Strictly NO weight, NO box contents.',
     features: [],
   },
@@ -88,6 +88,7 @@ export function Studio() {
   const [whatsInTheBox, setWhatsInTheBox] = useState<string[]>([]);
   const [warranty, setWarranty] = useState('');
   const [sanfordSlots, setSanfordSlots] = useState<SanfordSlotSpec[]>(DEFAULT_SANFORD_SLOTS);
+  const [validationAttempted, setValidationAttempted] = useState(false);
 
   const [sourceImage, setSourceImage] = useState<{
     file: File | null;
@@ -99,6 +100,17 @@ export function Studio() {
     previewUrl: string;
     fileName?: string;
   }>({ previewUrl: '' });
+
+  // Validation readiness
+  const hasPhoto = Boolean(sourceImage?.previewUrl || sourceImage?.file);
+  const hasName = Boolean(productName.trim());
+  const hasSpecs = Boolean(featuresText.trim());
+  const isReadyToGenerate = hasPhoto && hasName && hasSpecs;
+
+  const missingFields: string[] = [];
+  if (!hasPhoto) missingFields.push('product photo');
+  if (!hasName) missingFields.push('product name');
+  if (!hasSpecs) missingFields.push('at least one specification');
 
   // Settings state
   const [settings, setSettings] = useState<StudioSettings>({
@@ -284,7 +296,7 @@ export function Studio() {
           userId,
           kind: isPoster ? 'poster' : 'feature',
           slot: currentSlot,
-          productName: productName.trim() || 'Sanford Product',
+          productName: productName.trim(),
           modelNumber: modelNumber.trim(),
           brand: 'Sanford',
           fullFeatures,
@@ -352,13 +364,9 @@ export function Studio() {
 
   // Generate All Handler
   const handleGenerateAll = async () => {
-    if (!sourceImage.previewUrl) {
-      showToast('Please upload a product catalogue or photo first.', 'error');
-      return;
-    }
-
-    if (!productName.trim()) {
-      showToast('Please enter the product name.', 'error');
+    if (!isReadyToGenerate) {
+      setValidationAttempted(true);
+      showToast(`Please fill in: ${missingFields.join(', ')}`, 'error');
       return;
     }
 
@@ -440,8 +448,9 @@ export function Studio() {
 
   // Regenerate single slot
   const handleRegenerateSlot = async (slotOrKind: number | 'poster') => {
-    if (!sourceImage.previewUrl) {
-      showToast('Product photo required', 'error');
+    if (!isReadyToGenerate) {
+      setValidationAttempted(true);
+      showToast(`Please fill in: ${missingFields.join(', ')}`, 'error');
       return;
     }
 
@@ -517,6 +526,7 @@ export function Studio() {
               catalogueImage={catalogueImage}
               setCatalogueImage={setCatalogueImage}
               onCatalogueParsed={handleCatalogueParsed}
+              validationAttempted={validationAttempted}
             />
           </div>
 
@@ -532,6 +542,8 @@ export function Studio() {
               onRegenerateSlot={handleRegenerateSlot}
               toggleSelectCard={toggleSelectCard}
               settings={settings}
+              isReadyToGenerate={isReadyToGenerate}
+              missingFields={missingFields}
             />
           </div>
 

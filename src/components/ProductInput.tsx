@@ -51,6 +51,7 @@ interface ProductInputProps {
   };
   setCatalogueImage: (img: { previewUrl: string; fileName?: string }) => void;
   onCatalogueParsed: (data: CatalogueParsedData) => void;
+  validationAttempted?: boolean;
 }
 
 export function ProductInput({
@@ -81,6 +82,7 @@ export function ProductInput({
   catalogueImage,
   setCatalogueImage,
   onCatalogueParsed,
+  validationAttempted = false,
 }: ProductInputProps) {
   const [activeTab, setActiveTab] = useState<'catalogue' | 'manual'>('catalogue');
   const [isDragging, setIsDragging] = useState(false);
@@ -88,6 +90,10 @@ export function ProductInput({
   const [processingStatus, setProcessingStatus] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSlotsOpen, setIsSlotsOpen] = useState(false);
+
+  const isNameInvalid = validationAttempted && !productName.trim();
+  const isSpecsInvalid = validationAttempted && !featuresText.trim();
+  const isPhotoInvalid = validationAttempted && !sourceImage.previewUrl;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const manualPhotoRef = useRef<HTMLInputElement>(null);
@@ -444,7 +450,11 @@ export function ProductInput({
           ) : (
             <div
               onClick={() => manualPhotoRef.current?.click()}
-              className="border border-dashed border-white/[0.1] hover:border-white/[0.2] rounded-xl p-3.5 text-center cursor-pointer bg-white/[0.015]"
+              className={`border border-dashed rounded-xl p-3.5 text-center cursor-pointer bg-white/[0.015] transition ${
+                isPhotoInvalid
+                  ? 'border-red-500/80 bg-red-500/5'
+                  : 'border-white/[0.1] hover:border-white/[0.2]'
+              }`}
             >
               <input
                 ref={manualPhotoRef}
@@ -471,7 +481,11 @@ export function ProductInput({
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
               placeholder="Enter product title or upload catalogue"
-              className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className={`w-full px-2.5 py-1.5 bg-white/[0.02] border rounded-lg text-xs text-slate-100 focus:outline-none focus:ring-1 ${
+                isNameInvalid
+                  ? 'border-red-500 focus:ring-red-500 ring-1 ring-red-500/30'
+                  : 'border-white/[0.08] focus:ring-indigo-500'
+              }`}
             />
           </div>
 
@@ -512,7 +526,11 @@ export function ProductInput({
             value={featuresText}
             onChange={(e) => setFeaturesText(e.target.value)}
             placeholder="Paste or auto-extract specifications (one per line)..."
-            className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-100 font-mono leading-relaxed resize-y focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className={`w-full px-2.5 py-1.5 bg-white/[0.02] border rounded-lg text-xs text-slate-100 font-mono leading-relaxed resize-y focus:outline-none focus:ring-1 ${
+              isSpecsInvalid
+                ? 'border-red-500 focus:ring-red-500 ring-1 ring-red-500/30'
+                : 'border-white/[0.08] focus:ring-indigo-500'
+            }`}
           />
         </div>
 
@@ -604,23 +622,33 @@ export function ProductInput({
                           type="text"
                           value={slot.headline || ''}
                           onChange={(e) => updateSlotField(index, 'headline', e.target.value)}
-                          placeholder="Headline text..."
-                          className="w-full bg-white/[0.02] border border-white/[0.08] px-2 py-1 rounded text-[11px] text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          placeholder={
+                            slot.slot === 2
+                              ? 'e.g. Refreshing Airflow In Every Spin!'
+                              : slot.slot === 3
+                              ? 'e.g. SUITABLE FOR OUTDOOR & INDOOR USE'
+                              : slot.slot === 4
+                              ? 'e.g. PORTABLE, POWERFUL, STAY COOL EVERYWHERE'
+                              : slot.slot === 5
+                              ? 'e.g. Available Colors'
+                              : 'e.g. Unit Dimension'
+                          }
+                          className="w-full bg-white/[0.02] border border-white/[0.08] px-2 py-1 rounded text-[11px] text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                         />
                       </div>
                     )}
 
                     {(slot.slot === 3 || slot.slot === 4 || slot.slot === 5) && (
                       <div className="space-y-0.5">
-                        <label className="text-[10px] font-medium text-red-400 flex items-center space-x-1">
-                          <span>Red Bottom Banner Text</span>
+                        <label className="text-[10px] font-medium text-slate-400">
+                          Bottom Banner Text
                         </label>
                         <input
                           type="text"
                           value={slot.promoBanner || ''}
                           onChange={(e) => updateSlotField(index, 'promoBanner', e.target.value)}
-                          placeholder='e.g. 4" Table Fan with LED'
-                          className="w-full bg-red-950/20 border border-red-500/30 px-2 py-1 rounded text-[11px] text-white placeholder-red-300/40 focus:ring-1 focus:ring-red-500"
+                          placeholder="e.g. Rechargeable Cooling Hand Fan with Cold Plate"
+                          className="w-full bg-white/[0.02] border border-white/[0.08] px-2 py-1 rounded text-[11px] text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                         />
                       </div>
                     )}
@@ -636,8 +664,8 @@ export function ProductInput({
                             e.target.value.split('\n').filter((f) => f.trim().length > 0)
                           )
                         }
-                        placeholder="Features or items to highlight..."
-                        className="w-full bg-transparent border border-white/[0.04] p-1.5 rounded text-[11px] text-slate-300 placeholder-slate-600 focus:ring-1 focus:ring-indigo-500/50 resize-y font-mono leading-relaxed"
+                        placeholder="e.g. Feature callouts (one per line)..."
+                        className="w-full bg-white/[0.02] border border-white/[0.08] p-1.5 rounded text-[11px] text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-y font-mono leading-relaxed"
                       />
                     )}
                   </div>

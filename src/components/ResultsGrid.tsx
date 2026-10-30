@@ -27,6 +27,8 @@ interface ResultsGridProps {
   onRegenerateSlot: (slotOrKind: number | 'poster') => Promise<void>;
   toggleSelectCard: (id: string) => void;
   settings: StudioSettings;
+  isReadyToGenerate?: boolean;
+  missingFields?: string[];
 }
 
 export function ResultsGrid({
@@ -38,6 +40,8 @@ export function ResultsGrid({
   onGenerateAll,
   onRegenerateSlot,
   toggleSelectCard,
+  isReadyToGenerate = true,
+  missingFields = [],
 }: ResultsGridProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [viewingPrompt, setViewingPrompt] = useState<{ title: string; prompt: string } | null>(null);
@@ -219,7 +223,7 @@ export function ResultsGrid({
           <button
             type="button"
             onClick={onGenerateAll}
-            disabled={isGeneratingAll}
+            disabled={isGeneratingAll || !isReadyToGenerate}
             className="py-2 px-4.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-xs tracking-wide rounded-xl shadow-md shadow-red-900/20 transition-all flex items-center space-x-2 active:scale-[0.98]"
           >
             {isGeneratingAll ? (
@@ -238,6 +242,13 @@ export function ResultsGrid({
               </>
             )}
           </button>
+
+          {!isReadyToGenerate && (
+            <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300">
+              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
+              <span>Missing: {missingFields.join(', ')}</span>
+            </div>
+          )}
 
           {/* Also Make A Poster Checkbox */}
           <label className="flex items-center space-x-1.5 bg-white/[0.02] hover:bg-white/[0.04] px-2.5 py-1.5 rounded-xl border border-white/[0.06] cursor-pointer transition">

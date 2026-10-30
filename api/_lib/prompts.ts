@@ -35,7 +35,7 @@ export const SHARP_SANS_TYPOGRAPHY_BLOCK = `MANDATORY TYPOGRAPHY & FONT MANDATE 
 
 export const NO_BRAND_OR_MODEL_RULE = `STRICT RULE - NO BRAND NAME & NO MODEL NUMBER TEXT:
 - ABSOLUTELY DO NOT WRITE THE BRAND NAME (e.g. "Sanford" or any brand name) AS GRAPHICAL TEXT ON THE IMAGE.
-- ABSOLUTELY DO NOT WRITE THE MODEL NUMBER (e.g. "SF6671HFN" or any model code/number) ON THE IMAGE.
+- ABSOLUTELY DO NOT WRITE THE MODEL NUMBER OR ANY MODEL CODE/NUMBER ON THE IMAGE.
 - STRICTLY FORBIDDEN: Do not create any brand name header, model number badge, model tag box, or "[SF...]" callout.
 - The only branding allowed is whatever factory logo is already physically molded onto the source product in the reference photo.
 - All text added to the image (callouts, headlines, banners, labels) must describe functional features and benefits ONLY.`;
@@ -148,27 +148,20 @@ export function buildSanfordSlotPrompt(params: {
       break;
 
     case 'lifestyle': {
-      // Split into 2-3 lines for the top-right red corner card
-      const rawTagline = cleanHeadline || 'Refreshing Airflow In Every Spin!';
-      const words = rawTagline.split(' ').filter(Boolean);
-      let badgeTextLines: string;
-      if (words.length <= 3) {
-        badgeTextLines = words.join('\n');
-      } else if (words.length <= 6) {
-        const mid = Math.ceil(words.length / 2);
-        badgeTextLines = `${words.slice(0, mid).join(' ')}\n${words.slice(mid).join(' ')}`;
-      } else {
-        badgeTextLines = `${words.slice(0, 3).join(' ')}\n${words.slice(3, 6).join(' ')}\n${words.slice(6).join(' ')}`;
-      }
+      let redBadgeSection = '';
+      if (cleanHeadline) {
+        const words = cleanHeadline.split(' ').filter(Boolean);
+        let badgeTextLines: string;
+        if (words.length <= 3) {
+          badgeTextLines = words.join('\n');
+        } else if (words.length <= 6) {
+          const mid = Math.ceil(words.length / 2);
+          badgeTextLines = `${words.slice(0, mid).join(' ')}\n${words.slice(mid).join(' ')}`;
+        } else {
+          badgeTextLines = `${words.slice(0, 3).join(' ')}\n${words.slice(3, 6).join(' ')}\n${words.slice(6).join(' ')}`;
+        }
 
-      specificStyle = `SLOT 2: LIFESTYLE & IN-USE SCENE (EXACT BUYSANFORD TEMPLATE - ZERO FLOATING TEXT)
-- SCENE & COMPOSITION (EXACT BUYSANFORD WEBSITE TEMPLATE):
-  * Realistic, clean indoor setting (e.g. bright modern workspace, desk with laptop, notebook, pen).
-  * A relaxed, smiling person (e.g. young woman with or without glasses) comfortably sitting at the desk, studying or working, enjoying the refreshing cooling breeze.
-  * The product fan is placed upright on the desk in front of or beside the person, facing towards them.
-  * Crisp ambient daylight, natural shadows, sharp focus on the product matching the reference photograph.
-
-- MANDATORY TOP-RIGHT SOLID RED CORNER BADGE (EXACT BUYSANFORD BRAND TEMPLATE):
+        redBadgeSection = `- MANDATORY TOP-RIGHT SOLID RED CORNER BADGE (EXACT BUYSANFORD BRAND TEMPLATE):
   * Positioned directly in the TOP-RIGHT corner of the image canvas, flush against the top edge and right edge (top: 0, right: 0).
   * Shape: Solid vibrant RED rectangular card (#E53935 / #D32F2F).
   * The bottom-left corner of this red card is gracefully rounded (border-bottom-left-radius: 32px / rounded-bl-3xl). The top and right edges hug the image boundary.
@@ -178,28 +171,56 @@ export function buildSanfordSlotPrompt(params: {
 
 - STRICT ZERO FLOATING TEXT MANDATE:
   * ABSOLUTELY NO floating dark, black, or grey text anywhere across the image.
-  * NO text floating above the fan, NO text in the center, NO text over the person or desk.
-  * The ONLY text permitted on this entire image is the white Sharp Sans text INSIDE the top-right solid red corner card.
+  * NO text floating above the product, NO text in the center, NO text over the person or desk.
+  * The ONLY text permitted on this entire image is the white Sharp Sans text INSIDE the top-right solid red corner card.`;
+      } else {
+        redBadgeSection = `- STRICT ZERO FLOATING TEXT MANDATE:
+  * ABSOLUTELY NO floating dark, black, or grey text anywhere across the image.
+  * Flawless commercial lifestyle photograph. Strictly NO text unless explicitly specified.`;
+      }
+
+      const modelLine = modelNumber
+        ? `  * Do NOT write "${modelNumber}" or any model code anywhere on the picture.`
+        : `  * Do NOT write any model code or model number anywhere on the picture.`;
+
+      specificStyle = `SLOT 2: LIFESTYLE & IN-USE SCENE (EXACT BUYSANFORD TEMPLATE - ZERO FLOATING TEXT)
+- SCENE & COMPOSITION (EXACT BUYSANFORD WEBSITE TEMPLATE):
+  * Realistic, clean indoor setting (e.g. bright modern workspace, desk with laptop, notebook, pen).
+  * A relaxed, smiling person (e.g. young woman with or without glasses) comfortably sitting at the desk, studying or working, enjoying the refreshing cooling breeze.
+  * The product fan is placed upright on the desk in front of or beside the person, facing towards them.
+  * Crisp ambient daylight, natural shadows, sharp focus on the product matching the reference photograph.
+
+${redBadgeSection}
 
 - STRICT NEGATIVE CONSTRAINT (CRITICAL - DO NOT VIOLATE):
   * STRICTLY NO technical product specifications, NO feature lists, NO numbers/specs text, NO battery/power specs, NO wattage.
   * ABSOLUTELY NO BRAND NAME AND NO MODEL NUMBER TEXT ON THE IMAGE.
   * Do NOT write "Sanford" or any brand name anywhere on the picture.
-  * Do NOT write "${modelNumber || 'SF6671HFN'}" or any model code anywhere on the picture.`;
+${modelLine}`;
       break;
     }
 
     case 'specs_part_1': {
-      // Deduplication guard: ensure headline is NOT a technical feature
-      let resolvedHeadline = cleanHeadline;
-      if (!resolvedHeadline || isDuplicateOrTechnicalSpec(resolvedHeadline, cleanedFeatures)) {
-        resolvedHeadline = 'SUITABLE FOR OUTDOOR & INDOOR USE';
-      }
+      const hasHeadline = cleanHeadline && !isDuplicateOrTechnicalSpec(cleanHeadline, cleanedFeatures);
+      const headlineSection = hasHeadline
+        ? `- UPPER-RIGHT USAGE CONTEXT SLOGAN (SHARP SANS FONT):
+  * In the upper-right corner, place ONLY the uppercase context slogan in clean, dark "Sharp Sans Medium" font:
+    "${cleanHeadline.toUpperCase()}"
+  * This is an overarching usage slogan ONLY.
+  * ABSOLUTELY DO NOT put any technical feature, battery spec, or charging text here.`
+        : '';
 
-      let resolvedPromoBanner = cleanPromoBanner;
-      if (!resolvedPromoBanner || isDuplicateOrTechnicalSpec(resolvedPromoBanner, cleanedFeatures)) {
-        resolvedPromoBanner = cleanProductTitle || 'Rechargeable Cooling Hand Fan with Cold Plate';
-      }
+      const hasPromoBanner = cleanPromoBanner && !isDuplicateOrTechnicalSpec(cleanPromoBanner, cleanedFeatures);
+      const bannerSection = hasPromoBanner
+        ? `- MANDATORY FULL-WIDTH SOLID RED BOTTOM PROMOTIONAL BANNER:
+  * Across the very bottom of the image, include a full-width solid RED strip (#E53935 / #D32F2F) spanning 100% edge-to-edge.
+  * Inside this red banner: large, bold, clean WHITE typography strictly in "Sharp Sans Bold" font displaying the main product benefit: "${cleanPromoBanner}".
+  * On the left of the banner: an optional white circular badge with an outline product/fan symbol.`
+        : '';
+
+      const modelLine = modelNumber
+        ? `  * Do NOT write "${modelNumber}" or any model code/number anywhere on the picture.`
+        : `  * Do NOT write any model code or number anywhere on the picture.`;
 
       specificStyle = `SLOT 3: PRODUCT SPECIFICATIONS — PART 1 (EXACT BUYSANFORD BRAND STYLE)
 - UPPER-LEFT FEATURE HIGHLIGHTS (EXACT BRAND ICON & SHARP SANS FONT STYLE):
@@ -208,48 +229,46 @@ export function buildSanfordSlotPrompt(params: {
     1. A solid, vibrant RED circular icon badge (#E53935) containing a clean WHITE minimalist symbol/glyph (e.g. cold-plate/frost icon, turbine/speedometer icon, power icon).
     2. Bold, short feature description text beside the red badge strictly in "Sharp Sans Bold" or "Sharp Sans Medium" font.
     3. A delicate, fine horizontal divider line separating each feature item.
-
-- UPPER-RIGHT USAGE CONTEXT SLOGAN (SHARP SANS FONT):
-  * In the upper-right corner, place ONLY the uppercase context slogan in clean, dark "Sharp Sans Medium" font:
-    "${resolvedHeadline.toUpperCase()}"
-  * This is an overarching usage slogan ONLY (e.g. "SUITABLE FOR OUTDOOR CAMPING" or "SUITABLE FOR OUTDOOR & INDOOR USE").
-  * ABSOLUTELY DO NOT put any technical feature, battery spec, or charging text here.
-
+${headlineSection ? '\n' + headlineSection + '\n' : ''}
 - CENTER COMPOSITION:
   * Product is centered and upright, sharply rendered matching the reference photograph, with realistic surface lighting.
-
-- MANDATORY FULL-WIDTH SOLID RED BOTTOM PROMOTIONAL BANNER:
-  * Across the very bottom of the image, include a full-width solid RED strip (#E53935 / #D32F2F) spanning 100% edge-to-edge.
-  * Inside this red banner: large, bold, clean WHITE typography strictly in "Sharp Sans Bold" font displaying the main product benefit: "${resolvedPromoBanner}".
-  * On the left of the banner: an optional white circular badge with an outline product/fan symbol.
-
+${bannerSection ? '\n' + bannerSection + '\n' : ''}
 - STRICT ANTI-DUPLICATION RULE (CRITICAL - NO FEATURE MUST APPEAR TWICE):
   * EVERY FEATURE AND SPECIFICATION MUST APPEAR ONCE AND ONLY ONCE ON THE ENTIRE IMAGE.
   * Technical specifications (${cleanedFeatures.join(', ')}) belong EXCLUSIVELY in the upper-left red circular badge stack.
-  * DO NOT repeat or duplicate "${cleanedFeatures[0] || 'any feature'}" or any other specification in the upper-right corner, in the bottom banner, or anywhere else on the image.
-  * The upper-right text must be ONLY the usage slogan "${resolvedHeadline.toUpperCase()}".
+  * DO NOT repeat or duplicate "${cleanedFeatures[0] || 'any feature'}" or any other specification in the upper-right corner, in the bottom banner, or anywhere else on the image.${hasHeadline ? `\n  * The upper-right text must be ONLY the usage slogan "${cleanHeadline.toUpperCase()}".` : ''}
 
 - STRICT NEGATIVE CONSTRAINT (CRITICAL - DO NOT VIOLATE):
   * ABSOLUTELY NO BRAND NAME AND NO MODEL NUMBER TEXT ON THE IMAGE.
   * Do NOT write "Sanford" or any brand name anywhere on the picture.
-  * Do NOT write "${modelNumber || 'SF6671HFN'}" or any model code/number anywhere on the picture.
+${modelLine}
   * Do NOT draw any model tag, logo box, brand header, or "[SF...]" badge.
-  * The text on the image must consist strictly of functional benefit callouts, the upper-right usage slogan, and the bottom promotional banner message.
+  * The text on the image must consist strictly of functional benefit callouts${hasHeadline ? ', the upper-right usage slogan' : ''}${hasPromoBanner ? ', and the bottom promotional banner message' : ''}.
 - STRICT FONT REQUIREMENT: All text and lettering on this image MUST be in the "Sharp Sans" font family only.`;
       break;
     }
 
     case 'specs_part_2': {
-      // Deduplication guard: ensure headline is NOT a technical feature
-      let resolvedHeadline = cleanHeadline;
-      if (!resolvedHeadline || isDuplicateOrTechnicalSpec(resolvedHeadline, cleanedFeatures)) {
-        resolvedHeadline = 'PORTABLE, POWERFUL, PEACEFUL, STAY COOL EVERYWHERE';
-      }
+      const hasHeadline = cleanHeadline && !isDuplicateOrTechnicalSpec(cleanHeadline, cleanedFeatures);
+      const headlineSection = hasHeadline
+        ? `- UPPER-RIGHT USAGE CONTEXT SLOGAN (SHARP SANS FONT):
+  * In the upper-right corner, place ONLY the uppercase context slogan in clean, dark "Sharp Sans Medium" font:
+    "${cleanHeadline.toUpperCase()}"
+  * This is an overarching usage slogan ONLY.
+  * ABSOLUTELY DO NOT put any technical feature, battery spec, or charging text here.`
+        : '';
 
-      let resolvedPromoBanner = cleanPromoBanner;
-      if (!resolvedPromoBanner || isDuplicateOrTechnicalSpec(resolvedPromoBanner, cleanedFeatures)) {
-        resolvedPromoBanner = 'Light Weight and Easy to Carry';
-      }
+      const hasPromoBanner = cleanPromoBanner && !isDuplicateOrTechnicalSpec(cleanPromoBanner, cleanedFeatures);
+      const bannerSection = hasPromoBanner
+        ? `- MANDATORY FULL-WIDTH SOLID RED BOTTOM PROMOTIONAL BANNER:
+  * Across the very bottom of the image, include a full-width solid RED strip (#E53935 / #D32F2F) spanning 100% edge-to-edge.
+  * Inside this red banner: large, bold, clean WHITE typography strictly in "Sharp Sans Bold" font displaying the main benefit: "${cleanPromoBanner}".
+  * On the left of the banner: an optional white circular badge with a minimalist symbol.`
+        : '';
+
+      const modelLine = modelNumber
+        ? `  * Do NOT write "${modelNumber}" or any model code/number anywhere on the picture.`
+        : `  * Do NOT write any model code or number anywhere on the picture.`;
 
       specificStyle = `SLOT 4: PRODUCT SPECIFICATIONS — PART 2 (EXACT BUYSANFORD BRAND STYLE)
 - UPPER-LEFT FEATURE HIGHLIGHTS (EXACT BRAND ICON & SHARP SANS FONT STYLE):
@@ -258,51 +277,45 @@ export function buildSanfordSlotPrompt(params: {
     1. A solid, vibrant RED circular icon badge (#E53935) containing a clean WHITE minimalist symbol/glyph (e.g. battery icon for 3600mAh, digital display screen icon for gear/battery readout, Type-C charging icon, 90° rotation fold icon).
     2. Bold, short feature description text beside the red badge strictly in "Sharp Sans Bold" or "Sharp Sans Medium" font.
     3. A delicate, fine horizontal divider line separating each feature item.
-
-- UPPER-RIGHT USAGE CONTEXT SLOGAN (SHARP SANS FONT):
-  * In the upper-right corner, place ONLY the uppercase context slogan in clean, dark "Sharp Sans Medium" font:
-    "${resolvedHeadline.toUpperCase()}"
-  * This is an overarching usage slogan ONLY (e.g. "PORTABLE, POWERFUL, PEACEFUL, STAY COOL EVERYWHERE").
-  * ABSOLUTELY DO NOT put any technical feature, battery spec, or charging text here.
-
+${headlineSection ? '\n' + headlineSection + '\n' : ''}
 - CENTER COMPOSITION:
   * Product is centered, showing the digital LED gear/battery display glowing and the Type-C port / folding angle.
-
-- MANDATORY FULL-WIDTH SOLID RED BOTTOM PROMOTIONAL BANNER:
-  * Across the very bottom of the image, include a full-width solid RED strip (#E53935 / #D32F2F) spanning 100% edge-to-edge.
-  * Inside this red banner: large, bold, clean WHITE typography strictly in "Sharp Sans Bold" font displaying the main benefit: "${resolvedPromoBanner}".
-  * On the left of the banner: an optional white circular badge with a minimalist symbol.
-
+${bannerSection ? '\n' + bannerSection + '\n' : ''}
 - STRICT ANTI-DUPLICATION RULE (CRITICAL - NO FEATURE MUST APPEAR TWICE):
   * EVERY FEATURE AND SPECIFICATION MUST APPEAR ONCE AND ONLY ONCE ON THE ENTIRE IMAGE.
   * Technical specifications (${cleanedFeatures.join(', ')}) belong EXCLUSIVELY in the upper-left red circular badge stack.
-  * DO NOT repeat or duplicate any technical specification in the upper-right corner, in the bottom banner, or anywhere else on the image.
-  * The upper-right text must be ONLY the usage slogan "${resolvedHeadline.toUpperCase()}".
+  * DO NOT repeat or duplicate any technical specification in the upper-right corner, in the bottom banner, or anywhere else on the image.${hasHeadline ? `\n  * The upper-right text must be ONLY the usage slogan "${cleanHeadline.toUpperCase()}".` : ''}
   * STRICT: Do NOT repeat any feature or specification from Slot 3. Only showcase the distinct features assigned to this slot.
 
 - STRICT NEGATIVE CONSTRAINT (CRITICAL - DO NOT VIOLATE):
   * ABSOLUTELY NO BRAND NAME AND NO MODEL NUMBER TEXT ON THE IMAGE.
   * Do NOT write "Sanford" or any brand name anywhere on the picture.
-  * Do NOT write "${modelNumber || 'SF6671HFN'}" or any model code/number anywhere on the picture.
+${modelLine}
   * Do NOT draw any model tag, logo box, brand header, or "[SF...]" badge.
-  * The text on the image must consist strictly of functional benefit callouts, the upper-right usage slogan, and the bottom promotional banner message.
+  * The text on the image must consist strictly of functional benefit callouts${hasHeadline ? ', the upper-right usage slogan' : ''}${hasPromoBanner ? ', and the bottom promotional banner message' : ''}.
 - STRICT FONT REQUIREMENT: All text and lettering on this image MUST be in the "Sharp Sans" font family only.`;
       break;
     }
 
-    case 'colors':
+    case 'colors': {
+      const bannerSection = cleanPromoBanner
+        ? `- MANDATORY FULL-WIDTH SOLID RED BOTTOM PROMOTIONAL BANNER:
+  * Across the very bottom of the image, include a full-width solid RED strip (#E53935 / #D32F2F) spanning 100% edge-to-edge.
+  * Inside this red banner: large, bold, clean WHITE typography strictly in "Sharp Sans Bold" font delivering the brand message: "${cleanPromoBanner}".`
+        : '';
+
+      const colorList = colors ? colors : 'all available color variants';
+
       specificStyle = `SLOT 5: AVAILABLE COLOUR MODELS (EXACT BUYSANFORD BRAND STYLE)
 - SHOW AVAILABLE COLOR VARIANTS:
-  * Display the product in its available color finishes / models: ${colors || 'Arctic White, Pastel Pink, Graphite Black'}.
+  * Display the product in its available color finishes / models: ${colorList}.
   * Products arranged cleanly side-by-side or fanned out showing each available color option.
   * Clean, bright studio background with soft natural floor contact shadow.
-- MANDATORY FULL-WIDTH SOLID RED BOTTOM PROMOTIONAL BANNER:
-  * Across the very bottom of the image, include a full-width solid RED strip (#E53935 / #D32F2F) spanning 100% edge-to-edge.
-  * Inside this red banner: large, bold, clean WHITE typography strictly in "Sharp Sans Bold" font delivering the brand message: "${cleanPromoBanner || 'Light Weight and Easy to Carry'}".
-- STRICT FONT REQUIREMENT: Any color labels, swatch descriptions, or banner typography MUST strictly be in the "Sharp Sans" font.
+${bannerSection ? bannerSection + '\n' : ''}- STRICT FONT REQUIREMENT: Any color labels, swatch descriptions, or banner typography MUST strictly be in the "Sharp Sans" font.
 - STRICT CONSTRAINT: STRICTLY NO technical product specifications, NO wattage, NO battery numbers, NO feature descriptions.
 - STRICT CONSTRAINT: ABSOLUTELY NO brand name and NO model number written on the image.`;
       break;
+    }
 
     case 'size_warranty':
     case 'infographic': {
