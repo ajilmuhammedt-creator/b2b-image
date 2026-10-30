@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { renderPdfToImage, cropImageByBox } from '../lib/pdfRenderer';
+import { validateUploadFile, resizeImageToMax2048 } from '../lib/imageProcessing';
 import type { SanfordSlotSpec, CatalogueParsedData } from '../types';
 
 interface ProductInputProps {
@@ -102,26 +103,26 @@ export function ProductInput({
   const handleCatalogueUpload = async (file: File) => {
     setErrorMessage(null);
     setIsProcessing(true);
-    setProcessingStatus('Reading document...');
+    setProcessingStatus('Validating file...');
 
     try {
+      const { isPdf, isImage } = validateUploadFile(file, 'catalogue');
       let catalogueDataUrl = '';
       let extractedText = '';
 
-      if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+      if (isPdf) {
         setProcessingStatus('Rendering PDF catalogue page to high-res image...');
         const rendered = await renderPdfToImage(file);
         catalogueDataUrl = rendered.imageDataUrl;
         extractedText = rendered.extractedText;
-      } else if (file.type.startsWith('image/')) {
-        setProcessingStatus('Reading catalogue image...');
+      } else if (isImage) {
+        setProcessingStatus('Optimizing image (max 2048px)...');
+        const processedFile = await resizeImageToMax2048(file);
         catalogueDataUrl = await new Promise((resolve) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
-          reader.readAsDataURL(file);
+          reader.readAsDataURL(processedFile);
         });
-      } else {
-        throw new Error('Please upload a PDF catalogue (.pdf) or image (.png, .jpg, .webp).');
       }
 
       setCatalogueImage({
@@ -243,14 +244,43 @@ export function ProductInput({
     }
   };
 
-  const handleManualPhotoInput = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleManualPhotoInput = async (e: ChangeEvent<HTMLInputElement>) => {
+    setErrorMessage(null);
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const previewUrl = URL.createObjectURL(file);
-      setSourceImage({
-        file,
-        previewUrl,
-      });
+      const rawFile = e.target.files[0];
+      try {
+        validateUploadFile(rawFile, 'photo');
+        setIsProcessing(true);
+        setProcessingStatus('Optimizing product photo (max 2048px)...');
+
+        // Resize photo so longest side is at most 2048px (save as PNG, no upscaling)
+        const processedFile = await resizeImageToMax2048(rawFile);
+        const previewUrl = URL.createObjectURL(processedFile);
+
+        // Upload to Supabase source-images bucket
+        let storagePath = `${userId}/${projectId}/manual-product.png`;
+        try {
+          await supabase.storage.from('source-images').upload(storagePath, processedFile, {
+            upsert: true,
+            contentType: 'image/png',
+          });
+        } catch (uploadErr) {
+          console.warn('Storage upload note:', uploadErr);
+        }
+
+        setSourceImage({
+          file: processedFile,
+          previewUrl,
+          storagePath,
+        });
+      } catch (err: any) {
+        console.error('Manual photo upload error:', err);
+        setErrorMessage(err.message || 'Failed to upload image');
+      } finally {
+        setIsProcessing(false);
+        setProcessingStatus('');
+        if (e.target) e.target.value = '';
+      }
     }
   };
 
@@ -351,7 +381,7 @@ export function ProductInput({
                   {isProcessing ? processingStatus : 'Drop Catalogue PDF or Image'}
                 </p>
                 <p className="text-[10px] text-slate-400 mt-0.5">
-                  Auto-extracts verified specs, colors, and crops the hero product
+                  PNG, JPG, WebP up to 10 MB or PDF up to 20 MB
                 </p>
               </div>
             </div>
@@ -415,7 +445,7 @@ export function ProductInput({
                   <input
                     ref={manualPhotoRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/png,image/jpeg,image/webp"
                     onChange={handleManualPhotoInput}
                     className="hidden"
                   />
@@ -459,12 +489,12 @@ export function ProductInput({
               <input
                 ref={manualPhotoRef}
                 type="file"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/webp"
                 onChange={handleManualPhotoInput}
                 className="hidden"
               />
               <p className="text-xs text-slate-300 font-medium">Click to upload product photo</p>
-              <p className="text-[10px] text-slate-500">PNG or JPG on white background</p>
+              <p className="text-[10px] text-slate-500">PNG, JPG, or WebP up to 10 MB (auto-scaled to 2048px)</p>
             </div>
           )}
         </div>
