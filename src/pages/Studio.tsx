@@ -74,7 +74,7 @@ export function Studio() {
   const [searchParams] = useSearchParams();
   const urlProjectId = searchParams.get('project');
 
-  const userId = user?.id || 'demo-supplier';
+  const userId = user?.id || '';
 
   // Project state - starts completely blank until a catalogue is uploaded
   const [projectId, setProjectId] = useState<string>(() => crypto.randomUUID());

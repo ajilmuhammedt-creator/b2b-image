@@ -5,61 +5,34 @@ import { supabase } from '../lib/supabase';
 interface AuthContextType {
   session: Session | null;
   user: User | null;
-  isGuest: boolean;
   loading: boolean;
-  signInWithOtp: (email: string) => Promise<{ error: AuthError | null }>;
-  continueAsGuest: (email?: string) => void;
+  signInWithPassword: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  resetPasswordForEmail: (email: string) => Promise<{ error: AuthError | null }>;
+  updateUserPassword: (password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<{ error: AuthError | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const GUEST_STORAGE_KEY = 'octopus_guest_user';
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [isGuest, setIsGuest] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Check for stored guest session
-    const storedGuest = localStorage.getItem(GUEST_STORAGE_KEY);
-    if (storedGuest) {
-      try {
-        const parsedUser = JSON.parse(storedGuest);
-        setUser(parsedUser);
-        setIsGuest(true);
-      } catch {
-        // Ignore
-      }
-    }
-
-    // 2. Get initial Supabase session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setSession(session);
-        setUser(session.user);
-        setIsGuest(false);
-        localStorage.removeItem(GUEST_STORAGE_KEY);
-      }
+    // 1. Get initial Supabase session
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      setSession(initialSession);
+      setUser(initialSession?.user ?? null);
       setLoading(false);
     });
 
-    // 3. Listen for Supabase auth state changes
+    // 2. Listen for Supabase auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, currentSession) => {
-      if (currentSession) {
-        setSession(currentSession);
-        setUser(currentSession.user);
-        setIsGuest(false);
-        localStorage.removeItem(GUEST_STORAGE_KEY);
-      } else if (!localStorage.getItem(GUEST_STORAGE_KEY)) {
-        setSession(null);
-        setUser(null);
-        setIsGuest(false);
-      }
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
       setLoading(false);
     });
 
@@ -68,36 +41,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signInWithOtp = async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({
+  const signInWithPassword = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
       email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/studio`,
-      },
+      password,
     });
     return { error };
   };
 
-  const continueAsGuest = (email: string = 'demo-supplier@b2b-image.studio') => {
-    const mockUser: any = {
-      id: 'demo-user-' + Math.random().toString(36).substring(2, 9),
-      email,
-      user_metadata: { name: 'Demo Supplier' },
-      aud: 'authenticated',
-      created_at: new Date().toISOString(),
-    };
-    localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(mockUser));
-    setUser(mockUser);
-    setIsGuest(true);
-    setLoading(false);
+  const resetPasswordForEmail = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    return { error };
+  };
+
+  const updateUserPassword = async (password: string) => {
+    const { error } = await supabase.auth.updateUser({
+      password,
+    });
+    return { error };
   };
 
   const signOut = async () => {
-    localStorage.removeItem(GUEST_STORAGE_KEY);
+    const { error } = await supabase.auth.signOut();
     setUser(null);
     setSession(null);
-    setIsGuest(false);
-    const { error } = await supabase.auth.signOut();
     return { error };
   };
 
@@ -106,10 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         session,
         user,
-        isGuest,
         loading,
-        signInWithOtp,
-        continueAsGuest,
+        signInWithPassword,
+        resetPasswordForEmail,
+        updateUserPassword,
         signOut,
       }}
     >
