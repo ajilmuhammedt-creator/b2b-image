@@ -310,30 +310,6 @@ export function ResultsGrid({
       {/* 6 BuySanford Pattern Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {featureCards.map((item) => {
-          const theme = item.sanfordSlot?.theme || item.theme;
-          let themeBadge = 'Slot ' + item.slot;
-          let themeBadgeColor = 'bg-white/[0.04] text-slate-300 border-white/[0.06]';
-
-          if (theme === 'hero') {
-            themeBadge = 'Hero Studio';
-            themeBadgeColor = 'bg-blue-500/10 text-blue-300 border-blue-500/20';
-          } else if (theme === 'lifestyle') {
-            themeBadge = 'Lifestyle In-Use';
-            themeBadgeColor = 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20';
-          } else if (theme === 'specs_part_1') {
-            themeBadge = 'Specs Part 1';
-            themeBadgeColor = 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20';
-          } else if (theme === 'specs_part_2') {
-            themeBadge = 'Specs Part 2';
-            themeBadgeColor = 'bg-purple-500/10 text-purple-300 border-purple-500/20';
-          } else if (theme === 'colors') {
-            themeBadge = 'Colour Models';
-            themeBadgeColor = 'bg-amber-500/10 text-amber-300 border-amber-500/20';
-          } else if (theme === 'size_warranty') {
-            themeBadge = 'Size & Warranty';
-            themeBadgeColor = 'bg-rose-500/10 text-rose-300 border-rose-500/20';
-          }
-
           return (
           <div
             key={item.id}
@@ -345,26 +321,15 @@ export function ResultsGrid({
           >
             {/* Card Header */}
             <div className="px-3 py-2 bg-white/[0.02] border-b border-white/[0.06] flex items-center justify-between">
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 min-w-0 flex-1">
                 <input
                   type="checkbox"
                   checked={!!item.selected}
                   onChange={() => toggleSelectCard(item.id)}
-                  className="rounded border-white/[0.12] bg-white/[0.04] text-indigo-500 focus:ring-0 w-3.5 h-3.5"
+                  className="rounded border-white/[0.12] bg-white/[0.04] text-indigo-500 focus:ring-0 w-3.5 h-3.5 shrink-0"
                 />
-                <span className="text-xs font-semibold text-white truncate max-w-[150px]">
+                <span className="text-xs font-semibold text-white truncate">
                   {item.sanfordSlot?.title || `Slot ${item.slot}`}
-                </span>
-              </div>
-
-              <div className="flex items-center space-x-1">
-                {item.slot !== 1 && (
-                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-red-500/10 text-red-300 border border-red-500/20" title="Rendered in Sharp Sans font">
-                    Sharp Sans
-                  </span>
-                )}
-                <span className={`text-[9px] uppercase font-mono px-1.5 py-0.5 rounded border ${themeBadgeColor}`}>
-                  {themeBadge}
                 </span>
               </div>
             </div>
@@ -489,29 +454,24 @@ export function ResultsGrid({
           >
             {/* Header */}
             <div className="px-4 py-3 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between">
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 min-w-0 flex-1">
                 <input
                   type="checkbox"
                   checked={!!posterCard.selected}
                   onChange={() => toggleSelectCard(posterCard.id)}
-                  className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500"
+                  className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 shrink-0"
                 />
-                <span className="text-xs font-semibold text-white flex items-center space-x-1.5">
-                  <Layers className="w-3.5 h-3.5 text-indigo-400" />
+                <span className="text-xs font-semibold text-white flex items-center space-x-1.5 truncate">
+                  <Layers className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
                   <span>Poster (Portrait)</span>
                 </span>
               </div>
 
-              <div className="flex items-center space-x-1.5">
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-red-950/40 text-red-300 border border-red-800/40" title="All text rendered in Sharp Sans font">
-                  Sharp Sans
+              {posterCard.usage && (
+                <span className="text-[10px] font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-1.5 py-0.5 rounded shrink-0">
+                  {posterCard.usage.total_tokens || 0} tok
                 </span>
-                {posterCard.usage && (
-                  <span className="text-[10px] font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-1.5 py-0.5 rounded">
-                    {posterCard.usage.total_tokens || 0} tok
-                  </span>
-                )}
-              </div>
+              )}
             </div>
 
             {/* Poster Canvas Viewport */}
