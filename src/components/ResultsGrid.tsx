@@ -435,10 +435,10 @@ export function ResultsGrid({
               {item.slot === 2 && (
                 <div>
                   <div className="font-semibold text-slate-200 truncate">
-                    "{item.sanfordSlot?.headline || 'The Smartest Breeze!'}"
+                    "{item.sanfordSlot?.headline || 'Refreshing Airflow In Every Spin!'}"
                   </div>
                   <div className="text-[10px] text-emerald-400/90 font-medium">
-                    Realistic in-use lifestyle scene. Strictly NO product specifications.
+                    BuySanford Lifestyle Template: Top-right red corner card with white text. Zero floating text & no specs.
                   </div>
                 </div>
               )}
@@ -457,7 +457,7 @@ export function ResultsGrid({
                   )}
                   <div className="text-[10px] text-red-400 font-medium flex items-center space-x-1">
                     <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-                    <span>Red Bottom Banner: "{item.sanfordSlot?.promoBanner || item.sanfordSlot?.headline || 'Rechargeable Cooling Hand Fan'}"</span>
+                    <span>Red Bottom Banner: "{item.sanfordSlot?.promoBanner || 'Rechargeable Cooling Hand Fan with Cold Plate'}"</span>
                   </div>
                 </div>
               )}
@@ -476,7 +476,7 @@ export function ResultsGrid({
                   )}
                   <div className="text-[10px] text-red-400 font-medium flex items-center space-x-1">
                     <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-                    <span>Red Bottom Banner: "{item.sanfordSlot?.promoBanner || '3600mAh Long-Lasting Battery Life'}"</span>
+                    <span>Red Bottom Banner: "{item.sanfordSlot?.promoBanner || 'Light Weight and Easy to Carry'}"</span>
                   </div>
                 </div>
               )}
@@ -487,7 +487,7 @@ export function ResultsGrid({
                   </div>
                   <div className="text-[10px] text-red-400 font-medium flex items-center space-x-1">
                     <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-                    <span>Red Bottom Banner: "{item.sanfordSlot?.promoBanner || 'Light Weight and Easy to Carry'}"</span>
+                    <span>Red Bottom Banner: "{item.sanfordSlot?.promoBanner || 'Available in Multiple Attractive Colors'}"</span>
                   </div>
                 </div>
               )}

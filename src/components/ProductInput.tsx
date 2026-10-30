@@ -626,13 +626,13 @@ export function ProductInput({
                 ruleHint = 'Pure white studio background (#FFFFFF). Strictly NO text or specifications.';
               } else if (slot.slot === 2) {
                 slotBadgeColor = 'text-emerald-300';
-                ruleHint = 'Realistic in-use lifestyle scene. Slogan only in Sharp Sans Bold font. Strictly NO technical specs.';
+                ruleHint = 'Exact BuySanford lifestyle template: Person at desk with fan, top-right solid red corner badge with rounded corner containing white Sharp Sans text. Strictly NO floating text and NO specs.';
               } else if (slot.slot === 3) {
                 slotBadgeColor = 'text-indigo-300';
-                ruleHint = 'Upper-left red circular icon badges & divider lines + Full-width red bottom promotional banner in Sharp Sans. Strictly NO brand name and NO model number.';
+                ruleHint = 'Upper-left red circular icon badges & divider lines + Upper-right usage slogan + Full-width red bottom promotional banner in Sharp Sans. Zero duplicate features.';
               } else if (slot.slot === 4) {
                 slotBadgeColor = 'text-purple-300';
-                ruleHint = 'Upper-left red circular icon badges & divider lines + Full-width red bottom promotional banner in Sharp Sans. Strictly NO brand name and NO model number.';
+                ruleHint = 'Upper-left red circular icon badges & divider lines + Upper-right usage slogan + Full-width red bottom promotional banner in Sharp Sans. Zero duplicate features.';
               } else if (slot.slot === 5) {
                 slotBadgeColor = 'text-amber-300';
                 ruleHint = 'Available color options lineup + Full-width red bottom promotional banner in Sharp Sans font. No technical specs.';
@@ -659,14 +659,33 @@ export function ProductInput({
                   {ruleHint || slot.description}
                 </p>
 
-                {slot.slot !== 1 && slot.headline && (
-                  <input
-                    type="text"
-                    value={slot.headline}
-                    onChange={(e) => updateSlotField(index, 'headline', e.target.value)}
-                    placeholder="Headline for this card..."
-                    className="w-full bg-slate-900/60 border border-slate-800 px-2 py-1 rounded text-[11px] text-slate-200"
-                  />
+                {slot.slot !== 1 && (
+                  <div className="space-y-0.5">
+                    <label className="text-[10px] font-semibold text-slate-300">
+                      {slot.slot === 2
+                        ? 'Top-Right Red Badge Tagline (White Sharp Sans Text)'
+                        : slot.slot === 3 || slot.slot === 4
+                        ? 'Upper-Right Context Slogan (Never repeat a technical spec)'
+                        : slot.slot === 5
+                        ? 'Header Title'
+                        : 'Top-Left Header'}
+                    </label>
+                    <input
+                      type="text"
+                      value={slot.headline || ''}
+                      onChange={(e) => updateSlotField(index, 'headline', e.target.value)}
+                      placeholder={
+                        slot.slot === 2
+                          ? 'Refreshing Airflow In Every Spin!'
+                          : slot.slot === 3
+                          ? 'SUITABLE FOR OUTDOOR & INDOOR USE'
+                          : slot.slot === 4
+                          ? 'PORTABLE, POWERFUL, PEACEFUL, STAY COOL EVERYWHERE'
+                          : 'Headline for this card...'
+                      }
+                      className="w-full bg-slate-900/60 border border-slate-800 px-2 py-1 rounded text-[11px] text-slate-200"
+                    />
+                  </div>
                 )}
 
                 {(slot.slot === 3 || slot.slot === 4 || slot.slot === 5) && (

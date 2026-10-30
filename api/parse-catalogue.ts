@@ -64,21 +64,25 @@ Extract the following in strictly structured JSON:
       * STRICT: NO text, NO numbers, NO specifications, NO badges.
       * features: []
     - Slot 2: theme "lifestyle", title "Lifestyle In-Use (No Specs)"
-      * Description: Realistic everyday in-use scene (person holding/wearing product).
+      * Description: Exact BuySanford lifestyle template. In top-right corner, a solid RED badge (#E53935) with rounded bottom-left corner containing white Sharp Sans text (e.g. 'Refreshing Airflow In Every Spin!'). ZERO floating text across the image. A person naturally sitting at a desk with laptop and the product fan.
+      * headline: Short 2-4 word lifestyle tagline (e.g. "Refreshing Airflow In Every Spin!")
       * STRICT: Slogan/tagline headline only. STRICTLY NO product specifications or technical data.
       * features: []
     - Slot 3: theme "specs_part_1", title "Specifications — Part 1"
       * Description: Core specifications (e.g. cooling function, speed levels, power/motor) drawn directly from catalogue.
       * Icon Style (Upper Left): Red circular icon badges (#E53935), white minimalist symbols, bold short feature descriptions, and fine horizontal divider lines.
-      * Bottom Banner: Full-width solid red promotional strip with large white typography.
+      * Upper-Right Slogan: An uppercase lifestyle/usage context slogan (e.g. "SUITABLE FOR OUTDOOR CAMPING" or "SUITABLE FOR OUTDOOR & INDOOR USE"). NEVER repeat any technical spec here.
+      * Bottom Banner: Full-width solid red promotional strip with large white typography (e.g. "4\" Table Fan with LED" or product title).
       * promoBanner: Primary product benefit headline (e.g. "Rechargeable Cooling Hand Fan with Cold Plate")
+      * STRICT DEDUPLICATION: Do NOT repeat any feature from the left badges as the headline or in the banner.
       * features: [First half of verified specifications from catalogue]
     - Slot 4: theme "specs_part_2", title "Specifications — Part 2 (Non-Overlapping)"
       * Description: Remaining specifications (e.g. battery capacity, digital LED display, charging port).
       * Icon Style (Upper Left): Red circular icon badges (#E53935), white minimalist symbols, bold short feature descriptions, and fine horizontal divider lines.
-      * Bottom Banner: Full-width solid red promotional strip with large white typography.
-      * promoBanner: Power and convenience benefit headline (e.g. "3600mAh Long-Lasting Battery & Smart Display")
-      * STRICT: MUST NOT repeat or duplicate any specification from Slot 3. Mutually exclusive.
+      * Upper-Right Slogan: An uppercase lifestyle/usage context slogan (e.g. "PORTABLE, POWERFUL, PEACEFUL, STAY COOL EVERYWHERE"). NEVER repeat any technical spec here.
+      * Bottom Banner: Full-width solid red promotional strip with large white typography (e.g. "Light Weight and Easy to Carry").
+      * promoBanner: Power and convenience benefit headline (e.g. "Light Weight and Easy to Carry")
+      * STRICT DEDUPLICATION: MUST NOT repeat or duplicate any specification from Slot 3. Mutually exclusive. Do NOT repeat any feature from the left badges as the headline or banner.
       * features: [Second half of verified specifications from catalogue]
     - Slot 5: theme "colors", title "Available Colour Models Only"
       * Description: Product lineup / swatches showing all available color models.
@@ -200,26 +204,26 @@ Output MUST be valid JSON matching this schema:
         slot: 2,
         theme: 'lifestyle',
         title: 'Lifestyle In-Use (No Specs)',
-        headline: cleanBrandModel(resultJson.tagline) || 'The Smartest Breeze!',
-        description: 'Realistic everyday scene of person holding/using product. Strictly NO product specifications, NO brand name, and NO model number.',
+        headline: cleanBrandModel(resultJson.tagline) || 'Refreshing Airflow In Every Spin!',
+        description: 'Exact BuySanford lifestyle template: Person at desk with fan, top-right solid red corner badge with rounded corner containing white Sharp Sans text. Strictly NO floating text and NO specs.',
         features: [],
       },
       {
         slot: 3,
         theme: 'specs_part_1',
         title: 'Specifications — Part 1',
-        headline: specsPart1[0] || 'Core Specifications',
+        headline: 'SUITABLE FOR OUTDOOR & INDOOR USE',
         promoBanner: slot3Promo,
-        description: 'Upper-left red circular icon badges with white symbols & divider lines; full-width solid red bottom promotional banner with white typography. Strictly NO brand name and NO model number.',
+        description: 'Upper-left red circular icon badges with white symbols & divider lines; upper-right usage slogan; full-width solid red bottom promotional banner. Zero duplication of features.',
         features: specsPart1,
       },
       {
         slot: 4,
         theme: 'specs_part_2',
         title: 'Specifications — Part 2 (Non-Overlapping)',
-        headline: specsPart2[0] || 'Power & Display Specifications',
-        promoBanner: '3600mAh Long-Lasting Battery & Smart Display',
-        description: 'Upper-left red circular icon badges with white symbols & divider lines; full-width solid red bottom promotional banner with white typography. Strictly NO brand name and NO model number.',
+        headline: 'PORTABLE, POWERFUL, PEACEFUL, STAY COOL EVERYWHERE',
+        promoBanner: 'Light Weight and Easy to Carry',
+        description: 'Upper-left red circular icon badges with white symbols & divider lines; upper-right usage slogan; full-width solid red bottom promotional banner. Zero duplication of features.',
         features: specsPart2,
       },
       {
@@ -227,7 +231,7 @@ Output MUST be valid JSON matching this schema:
         theme: 'colors',
         title: 'Available Colour Models Only',
         headline: 'Available Colors',
-        promoBanner: 'Light Weight and Easy to Carry',
+        promoBanner: 'Available in Multiple Attractive Colors',
         description: 'Product lineup in available color finishes; full-width solid red bottom promotional banner with white typography. Strictly NO brand name and NO model number.',
         features: colorItems.length > 0 ? colorItems : ['Standard Color Variants'],
       },
