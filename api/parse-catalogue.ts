@@ -158,18 +158,34 @@ Output MUST be valid JSON matching this schema:
     // Post-process to strictly enforce BuySanford 6-image rule compliance
     const fullFeatures: string[] = Array.isArray(resultJson.fullFeatures) ? resultJson.fullFeatures : [];
 
+    const cleanBrandModel = (t?: string): string => {
+      if (!t) return '';
+      return t
+        .replace(/\bSanford\b/gi, '')
+        .replace(/\b[A-Z]{2,4}\d{4,}[A-Z0-9]*\b/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    };
+
+    // Filter out brand names or model codes from bullet points so they never appear on images
+    const sanitizedFeatures = fullFeatures
+      .map((f) => cleanBrandModel(f))
+      .filter((f) => f.length > 2);
+
     // Strictly partition specifications 50/50 between Slot 3 and Slot 4 (Zero overlap!)
-    const half = Math.ceil(fullFeatures.length / 2);
-    const specsPart1 = fullFeatures.slice(0, half);
-    const specsPart2 = fullFeatures.slice(half);
+    const half = Math.ceil(sanitizedFeatures.length / 2);
+    const specsPart1 = sanitizedFeatures.slice(0, half);
+    const specsPart2 = sanitizedFeatures.slice(half);
 
     const colorsStr = resultJson.colors || 'Graphite Black, Arctic White, Slate Grey';
-    const colorItems = colorsStr.split(/[,;/]+/).map((s: string) => s.trim()).filter(Boolean);
+    const colorItems = colorsStr.split(/[,;/]+/).map((s: string) => cleanBrandModel(s)).filter(Boolean);
 
     const sizeWarrantyFeatures: string[] = [];
     if (resultJson.dimensions) sizeWarrantyFeatures.push(`Dimensions: ${resultJson.dimensions}`);
     if (resultJson.warranty) sizeWarrantyFeatures.push(resultJson.warranty);
     if (sizeWarrantyFeatures.length === 0) sizeWarrantyFeatures.push('1 Year Service Warranty');
+
+    const slot3Promo = cleanBrandModel(resultJson.productName) || 'Rechargeable Cooling Hand Fan with Cold Plate';
 
     const strictSlots = [
       {
@@ -184,8 +200,8 @@ Output MUST be valid JSON matching this schema:
         slot: 2,
         theme: 'lifestyle',
         title: 'Lifestyle In-Use (No Specs)',
-        headline: resultJson.tagline || 'The Smartest Breeze!',
-        description: 'Realistic everyday scene of person holding/using product. Strictly NO product specifications or technical data.',
+        headline: cleanBrandModel(resultJson.tagline) || 'The Smartest Breeze!',
+        description: 'Realistic everyday scene of person holding/using product. Strictly NO product specifications, NO brand name, and NO model number.',
         features: [],
       },
       {
@@ -193,8 +209,8 @@ Output MUST be valid JSON matching this schema:
         theme: 'specs_part_1',
         title: 'Specifications — Part 1',
         headline: specsPart1[0] || 'Core Specifications',
-        promoBanner: resultJson.productName || 'Rechargeable Cooling Hand Fan with Cold Plate',
-        description: 'Upper-left red circular icon badges with white symbols & divider lines; full-width solid red bottom promotional banner with white typography.',
+        promoBanner: slot3Promo,
+        description: 'Upper-left red circular icon badges with white symbols & divider lines; full-width solid red bottom promotional banner with white typography. Strictly NO brand name and NO model number.',
         features: specsPart1,
       },
       {
@@ -203,7 +219,7 @@ Output MUST be valid JSON matching this schema:
         title: 'Specifications — Part 2 (Non-Overlapping)',
         headline: specsPart2[0] || 'Power & Display Specifications',
         promoBanner: '3600mAh Long-Lasting Battery & Smart Display',
-        description: 'Upper-left red circular icon badges with white symbols & divider lines; full-width solid red bottom promotional banner with white typography.',
+        description: 'Upper-left red circular icon badges with white symbols & divider lines; full-width solid red bottom promotional banner with white typography. Strictly NO brand name and NO model number.',
         features: specsPart2,
       },
       {
@@ -212,7 +228,7 @@ Output MUST be valid JSON matching this schema:
         title: 'Available Colour Models Only',
         headline: 'Available Colors',
         promoBanner: 'Light Weight and Easy to Carry',
-        description: 'Product lineup in available color finishes; full-width solid red bottom promotional banner with white typography.',
+        description: 'Product lineup in available color finishes; full-width solid red bottom promotional banner with white typography. Strictly NO brand name and NO model number.',
         features: colorItems.length > 0 ? colorItems : ['Standard Color Variants'],
       },
       {
@@ -220,7 +236,7 @@ Output MUST be valid JSON matching this schema:
         theme: 'size_warranty',
         title: 'Unit Dimension & Warranty Only',
         headline: 'Unit Dimension',
-        description: 'Exact BuySanford style: Pale warm pastel background, "Unit Dimension" header in top left, red/navy 1-Year Warranty ribbon badge in top right, crimson red double-ended arrows (<--->) for height/width/depth. Strictly NO weight, NO box contents.',
+        description: 'Exact BuySanford style: Pale warm pastel background, "Unit Dimension" header in top left, red/navy 1-Year Warranty ribbon badge in top right, crimson red double-ended arrows (<--->) for height/width/depth. Strictly NO weight, NO box contents, NO brand name, and NO model number.',
         features: sizeWarrantyFeatures,
       },
     ];

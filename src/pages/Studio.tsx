@@ -301,6 +301,8 @@ Lanyard & Loop Holder
           kind: isPoster ? 'poster' : 'feature',
           slot: currentSlot,
           productName: productName.trim() || 'Sanford Product',
+          modelNumber: modelNumber.trim(),
+          brand: 'Sanford',
           fullFeatures,
           featureGroup: slotGroup,
           colors: colors.trim(),

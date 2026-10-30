@@ -38,6 +38,8 @@ export default async function handler(req: any, res: any) {
       kind = 'feature',
       slot = 1,
       productName = 'Product',
+      modelNumber = '',
+      brand = 'Sanford',
       fullFeatures = [],
       featureGroup = [],
       colors = '',
@@ -125,6 +127,8 @@ export default async function handler(req: any, res: any) {
       const isSizeWarranty = sanfordSlot.theme === 'size_warranty' || sanfordSlot.slot === 6;
       prompt = buildSanfordSlotPrompt({
         productName,
+        brand,
+        modelNumber,
         theme: sanfordSlot.theme,
         slotTitle: sanfordSlot.title || `Image ${slot}`,
         headline: sanfordSlot.headline,

@@ -629,10 +629,10 @@ export function ProductInput({
                 ruleHint = 'Realistic in-use lifestyle scene. Slogan only in Sharp Sans Bold font. Strictly NO technical specs.';
               } else if (slot.slot === 3) {
                 slotBadgeColor = 'text-indigo-300';
-                ruleHint = 'Upper-left red circular icon badges & divider lines + Full-width red bottom promotional banner. Sharp Sans font only.';
+                ruleHint = 'Upper-left red circular icon badges & divider lines + Full-width red bottom promotional banner in Sharp Sans. Strictly NO brand name and NO model number.';
               } else if (slot.slot === 4) {
                 slotBadgeColor = 'text-purple-300';
-                ruleHint = 'Upper-left red circular icon badges & divider lines + Full-width red bottom promotional banner. Sharp Sans font only.';
+                ruleHint = 'Upper-left red circular icon badges & divider lines + Full-width red bottom promotional banner in Sharp Sans. Strictly NO brand name and NO model number.';
               } else if (slot.slot === 5) {
                 slotBadgeColor = 'text-amber-300';
                 ruleHint = 'Available color options lineup + Full-width red bottom promotional banner in Sharp Sans font. No technical specs.';
