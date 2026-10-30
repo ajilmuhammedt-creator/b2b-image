@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import { supabaseAdmin } from './_lib/supabase-server';
+import { requireUser } from './_lib/requireUser';
 
 interface RequestBody {
   productName?: string;
@@ -20,6 +21,9 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
+  const user = await requireUser(req, res);
+  if (!user) return;
+
   try {
     // Read body if string
     let body: RequestBody = req.body;
@@ -35,17 +39,6 @@ export default async function handler(req: any, res: any) {
 
     if (!Array.isArray(features) || features.length === 0) {
       return res.status(400).json({ error: 'features must be a non-empty array' });
-    }
-
-    // Optional auth verification
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.replace('Bearer ', '');
-      try {
-        await supabaseAdmin.auth.getUser(token);
-      } catch {
-        // Continue if in dev/demo mode
-      }
     }
 
     const openaiApiKey = process.env.OPENAI_API_KEY;

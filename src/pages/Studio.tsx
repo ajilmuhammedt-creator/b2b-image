@@ -6,6 +6,7 @@ import { ProductInput } from '../components/ProductInput';
 import { ResultsGrid } from '../components/ResultsGrid';
 import { SettingsPanel } from '../components/SettingsPanel';
 import { projectStorage } from '../lib/projectStorage';
+import { fetchApi } from '../lib/apiClient';
 import type {
   GenerationItem,
   ProjectData,
@@ -288,12 +289,11 @@ export function Studio() {
     }
 
     try {
-      const res = await fetch('/api/generate', {
+      const res = await fetchApi('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           projectId,
-          userId,
           kind: isPoster ? 'poster' : 'feature',
           slot: currentSlot,
           productName: productName.trim(),

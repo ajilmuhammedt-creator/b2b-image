@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { requireUser } from './_lib/requireUser';
 
 export const config = {
   maxDuration: 300,
@@ -16,6 +17,9 @@ export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
+
+  const user = await requireUser(req, res);
+  if (!user) return;
 
   try {
     let body = req.body;

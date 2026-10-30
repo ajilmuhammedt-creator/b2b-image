@@ -15,6 +15,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { renderPdfToImage, cropImageByBox } from '../lib/pdfRenderer';
 import { validateUploadFile, resizeImageToMax2048 } from '../lib/imageProcessing';
+import { fetchApi } from '../lib/apiClient';
 import type { SanfordSlotSpec, CatalogueParsedData } from '../types';
 
 interface ProductInputProps {
@@ -132,7 +133,7 @@ export function ProductInput({
 
       // Call /api/parse-catalogue
       setProcessingStatus('Analyzing specifications & generating Sanford 6-slot pattern...');
-      const parseRes = await fetch('/api/parse-catalogue', {
+      const parseRes = await fetchApi('/api/parse-catalogue', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

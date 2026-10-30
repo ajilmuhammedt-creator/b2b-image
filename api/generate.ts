@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { supabaseAdmin } from './_lib/supabase-server';
+import { requireUser } from './_lib/requireUser';
 import { buildFeaturePrompt, buildPosterPrompt, buildSanfordSlotPrompt } from './_lib/prompts';
 
 export const config = {
@@ -20,6 +21,11 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
+  // 1. Authenticate user
+  const user = await requireUser(req, res);
+  if (!user) return;
+  const userId = user.id;
+
   const generationId = crypto.randomUUID();
 
   try {
@@ -34,7 +40,6 @@ export default async function handler(req: any, res: any) {
 
     const {
       projectId = crypto.randomUUID(),
-      userId: reqUserId,
       kind = 'feature',
       slot = 1,
       productName = 'Product',
@@ -50,19 +55,39 @@ export default async function handler(req: any, res: any) {
       settings = {},
     } = body || {};
 
-    // Determine user ID from auth or request or fallback
-    let userId = reqUserId || 'anonymous-user';
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.replace('Bearer ', '');
+    // 2. Project ownership verification: project's user_id must match verified user id
+    if (projectId) {
       try {
-        const { data: authUser } = await supabaseAdmin.auth.getUser(token);
-        if (authUser?.user?.id) {
-          userId = authUser.user.id;
+        const { data: project } = await supabaseAdmin
+          .from('projects')
+          .select('user_id')
+          .eq('id', projectId)
+          .maybeSingle();
+
+        if (project && project.user_id && project.user_id !== userId) {
+          return res.status(403).json({ error: 'Forbidden: You do not have permission for this project.' });
         }
-      } catch (authErr) {
-        // Fall back to provided userId
+      } catch (projErr) {
+        // Table might not exist or be queried yet
       }
+    }
+
+    // 3. Daily generation limit: max 100 generations per 24 hours
+    try {
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count: dailyCount, error: countErr } = await supabaseAdmin
+        .from('generations')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .gte('created_at', twentyFourHoursAgo);
+
+      if (!countErr && dailyCount !== null && dailyCount >= 100) {
+        return res.status(429).json({
+          error: 'Daily generation limit reached: Maximum 100 image generations allowed per 24 hours.',
+        });
+      }
+    } catch (limitErr) {
+      // Allow generation if limit count fails
     }
 
     const openaiApiKey = process.env.OPENAI_API_KEY;
