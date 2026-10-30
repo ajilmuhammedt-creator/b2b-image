@@ -430,7 +430,7 @@ export function ResultsGrid({
               {item.slot === 2 && (
                 <div>
                   <div className="font-semibold text-slate-200 truncate text-[11px]">
-                    "{item.sanfordSlot?.headline || 'Refreshing Airflow In Every Spin!'}"
+                    {item.sanfordSlot?.headline ? `"${item.sanfordSlot.headline}"` : 'Lifestyle In-Use'}
                   </div>
                   <div className="text-[10px] text-emerald-400/90 font-medium">
                     Top-right red card with Sharp Sans text. No floating text.
@@ -439,51 +439,59 @@ export function ResultsGrid({
               )}
               {item.slot === 3 && (
                 <div className="space-y-0.5">
-                  {item.sanfordSlot?.headline && (
-                    <div className="font-semibold text-slate-200 truncate text-[11px]">
-                      "{item.sanfordSlot.headline}"
-                    </div>
-                  )}
+                  <div className="font-semibold text-slate-200 truncate text-[11px]">
+                    {item.sanfordSlot?.headline ? `"${item.sanfordSlot.headline}"` : 'Specifications Part 1'}
+                  </div>
                   {item.featureGroup && item.featureGroup.length > 0 && (
                     <div className="truncate text-slate-400 text-[10px]">
                       <span className="font-medium text-indigo-300">Left Badges: </span>
                       {item.featureGroup.join('; ')}
                     </div>
                   )}
-                  <div className="text-[10px] text-red-400 font-medium flex items-center space-x-1">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
-                    <span className="truncate">Banner: "{item.sanfordSlot?.promoBanner || 'Rechargeable Cooling Hand Fan with Cold Plate'}"</span>
-                  </div>
+                  {item.sanfordSlot?.promoBanner && (
+                    <div className="text-[10px] text-red-400 font-medium flex items-center space-x-1">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
+                      <span className="truncate">Banner: "{item.sanfordSlot.promoBanner}"</span>
+                    </div>
+                  )}
                 </div>
               )}
               {item.slot === 4 && (
                 <div className="space-y-0.5">
-                  {item.sanfordSlot?.headline && (
-                    <div className="font-semibold text-slate-200 truncate text-[11px]">
-                      "{item.sanfordSlot.headline}"
-                    </div>
-                  )}
+                  <div className="font-semibold text-slate-200 truncate text-[11px]">
+                    {item.sanfordSlot?.headline ? `"${item.sanfordSlot.headline}"` : 'Specifications Part 2'}
+                  </div>
                   {item.featureGroup && item.featureGroup.length > 0 && (
                     <div className="truncate text-slate-400 text-[10px]">
                       <span className="font-medium text-purple-300">Left Badges: </span>
                       {item.featureGroup.join('; ')}
                     </div>
                   )}
-                  <div className="text-[10px] text-red-400 font-medium flex items-center space-x-1">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
-                    <span className="truncate">Banner: "{item.sanfordSlot?.promoBanner || 'Light Weight and Easy to Carry'}"</span>
-                  </div>
+                  {item.sanfordSlot?.promoBanner && (
+                    <div className="text-[10px] text-red-400 font-medium flex items-center space-x-1">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
+                      <span className="truncate">Banner: "{item.sanfordSlot.promoBanner}"</span>
+                    </div>
+                  )}
                 </div>
               )}
               {item.slot === 5 && (
                 <div className="space-y-0.5">
                   <div className="font-semibold text-slate-200 truncate text-[11px]">
-                    "Available Colors: {item.featureGroup && item.featureGroup.length > 0 ? item.featureGroup.join(', ') : 'Options'}"
+                    Available Colour Models
                   </div>
-                  <div className="text-[10px] text-red-400 font-medium flex items-center space-x-1">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
-                    <span className="truncate">Banner: "{item.sanfordSlot?.promoBanner || 'Available in Multiple Attractive Colors'}"</span>
-                  </div>
+                  {item.featureGroup && item.featureGroup.length > 0 && (
+                    <div className="truncate text-slate-400 text-[10px]">
+                      <span className="font-medium text-amber-300">Colors: </span>
+                      {item.featureGroup.join(', ')}
+                    </div>
+                  )}
+                  {item.sanfordSlot?.promoBanner && (
+                    <div className="text-[10px] text-red-400 font-medium flex items-center space-x-1">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
+                      <span className="truncate">Banner: "{item.sanfordSlot.promoBanner}"</span>
+                    </div>
+                  )}
                 </div>
               )}
               {item.slot === 6 && (

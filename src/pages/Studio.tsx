@@ -28,7 +28,7 @@ const DEFAULT_SANFORD_SLOTS: SanfordSlotSpec[] = [
     slot: 2,
     theme: 'lifestyle',
     title: 'Lifestyle In-Use (No Specs)',
-    headline: 'Refreshing Airflow In Every Spin!',
+    headline: '',
     description: 'Exact BuySanford lifestyle template: Person at desk with fan, top-right solid red corner badge with rounded corner containing white Sharp Sans text. Strictly NO floating text and NO specs.',
     features: [],
   },
@@ -37,27 +37,27 @@ const DEFAULT_SANFORD_SLOTS: SanfordSlotSpec[] = [
     theme: 'specs_part_1',
     title: 'Specifications — Part 1',
     headline: 'SUITABLE FOR OUTDOOR & INDOOR USE',
-    promoBanner: 'Rechargeable Cooling Hand Fan with Cold Plate',
+    promoBanner: '',
     description: 'Upper-left red circular icon badges with white symbols & divider lines; upper-right usage slogan; full-width solid red bottom promotional banner in Sharp Sans font. Zero feature duplicates.',
-    features: ['Cooling Function Cold Plate', '5 Level Wind Speed (0-100)', '5 Watts Power'],
+    features: [],
   },
   {
     slot: 4,
     theme: 'specs_part_2',
     title: 'Specifications — Part 2 (Non-Overlapping)',
     headline: 'PORTABLE, POWERFUL, PEACEFUL, STAY COOL EVERYWHERE',
-    promoBanner: 'Light Weight and Easy to Carry',
+    promoBanner: '',
     description: 'Upper-left red circular icon badges with white symbols & divider lines; upper-right usage slogan; full-width solid red bottom promotional banner in Sharp Sans font. Zero feature duplicates.',
-    features: ['Digital Display - Gear & Battery Levels', '3600mAh Rechargeable Battery', 'Type-C Charging Port', '90° Rotation Fold (Up & Down)'],
+    features: [],
   },
   {
     slot: 5,
     theme: 'colors',
     title: 'Available Colour Models Only',
     headline: 'Available Colors',
-    promoBanner: 'Available in Multiple Attractive Colors',
+    promoBanner: '',
     description: 'Product lineup in available color finishes; full-width solid red bottom promotional banner with white typography.',
-    features: ['Graphite Black', 'Arctic White', 'Slate Grey', 'Pastel Blue'],
+    features: [],
   },
   {
     slot: 6,
@@ -65,7 +65,7 @@ const DEFAULT_SANFORD_SLOTS: SanfordSlotSpec[] = [
     title: 'Unit Dimension & Warranty Only',
     headline: 'Unit Dimension',
     description: 'Exact BuySanford style: Pale warm pastel background, "Unit Dimension" header in top left, red/navy 1-Year Warranty ribbon badge in top right, crimson red double-ended arrows (<--->) for height/width/depth. Strictly NO weight, NO box contents.',
-    features: ['Dimensions: 197mm x 78mm x 57mm', '1 Year Service Warranty'],
+    features: [],
   },
 ];
 
@@ -76,33 +76,17 @@ export function Studio() {
 
   const userId = user?.id || 'demo-supplier';
 
-  // Project state
+  // Project state - starts completely blank until a catalogue is uploaded
   const [projectId, setProjectId] = useState<string>(() => crypto.randomUUID());
-  const [productName, setProductName] = useState('Sanford SF6671HFN Rechargeable Cooling Hand Fan');
-  const [modelNumber, setModelNumber] = useState('SF6671HFN');
-  const [tagline, setTagline] = useState('The Smartest Breeze!');
-  const [featuresText, setFeaturesText] = useState(
-    `Rechargeable Cooling Hand Fan
-Cooling Function
-Digital Display - Gear Position and Battery Levels
-5 Level Wind Speed (0-100)
-90° Rotation Fold (up & down)
-3600mAh Rechargeable Battery
-Safety Protection
-Type-C Charging Port
-Lanyard & Loop Holder
-5 Watts Power`
-  );
-  const [colors, setColors] = useState('Graphite Black');
-  const [dimensions, setDimensions] = useState('78mm x 197mm x 57mm');
-  const [weight, setWeight] = useState('Unit 225g, Package 305g');
-  const [whatsInTheBox, setWhatsInTheBox] = useState<string[]>([
-    'Hand Fan',
-    'Type-C USB Cable',
-    'User Manual',
-    'Lanyard',
-  ]);
-  const [warranty, setWarranty] = useState('1 Year Service Warranty');
+  const [productName, setProductName] = useState('');
+  const [modelNumber, setModelNumber] = useState('');
+  const [tagline, setTagline] = useState('');
+  const [featuresText, setFeaturesText] = useState('');
+  const [colors, setColors] = useState('');
+  const [dimensions, setDimensions] = useState('');
+  const [weight, setWeight] = useState('');
+  const [whatsInTheBox, setWhatsInTheBox] = useState<string[]>([]);
+  const [warranty, setWarranty] = useState('');
   const [sanfordSlots, setSanfordSlots] = useState<SanfordSlotSpec[]>(DEFAULT_SANFORD_SLOTS);
 
   const [sourceImage, setSourceImage] = useState<{

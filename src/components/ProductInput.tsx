@@ -66,11 +66,11 @@ export function ProductInput({
   setFeaturesText,
   colors,
   setColors,
-  dimensions,
+  dimensions: _dimensions,
   setDimensions,
-  weight,
+  weight: _weight,
   setWeight,
-  whatsInTheBox,
+  whatsInTheBox: _whatsInTheBox,
   setWhatsInTheBox,
   warranty,
   setWarranty,
@@ -470,7 +470,7 @@ export function ProductInput({
               type="text"
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
-              placeholder="e.g. Sanford Cooling Fan"
+              placeholder="Enter product title or upload catalogue"
               className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
@@ -481,7 +481,7 @@ export function ProductInput({
               type="text"
               value={modelNumber}
               onChange={(e) => setModelNumber(e.target.value)}
-              placeholder="SF6671HFN"
+              placeholder="e.g. SF6671HFN"
               className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-100 font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
@@ -508,78 +508,37 @@ export function ProductInput({
             <span className="text-[10px] text-slate-500">One per line</span>
           </div>
           <textarea
-            rows={3}
+            rows={4}
             value={featuresText}
             onChange={(e) => setFeaturesText(e.target.value)}
-            placeholder="Cooling Function&#10;Digital Display&#10;3600mAh Battery"
+            placeholder="Paste or auto-extract specifications (one per line)..."
             className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-100 font-mono leading-relaxed resize-y focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
         </div>
 
-        {/* Dimensions & Warranty */}
+        {/* Warranty & Color Options */}
         <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="space-y-1">
-            <label className="block text-[11px] font-medium text-slate-400">Dimensions</label>
-            <input
-              type="text"
-              value={dimensions}
-              onChange={(e) => setDimensions(e.target.value)}
-              placeholder="78mm x 197mm x 57mm"
-              className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-200"
-            />
-          </div>
           <div className="space-y-1">
             <label className="block text-[11px] font-medium text-slate-400">Warranty</label>
             <input
               type="text"
               value={warranty}
               onChange={(e) => setWarranty(e.target.value)}
-              placeholder="1 Year Service Warranty"
-              className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-200"
+              placeholder="e.g. 1 Year Service Warranty"
+              className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
-        </div>
 
-        {/* Weight & In The Box */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="space-y-1">
-            <label className="block text-[11px] font-medium text-slate-400">Weight</label>
+            <label className="block text-[11px] font-medium text-slate-400">Color Options</label>
             <input
               type="text"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-              placeholder="Unit 225g, Pkg 305g"
-              className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-200"
+              value={colors}
+              onChange={(e) => setColors(e.target.value)}
+              placeholder="e.g. Graphite Black, Arctic White"
+              className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
-          <div className="space-y-1">
-            <label className="block text-[11px] font-medium text-slate-400">In The Box</label>
-            <input
-              type="text"
-              value={whatsInTheBox.join(', ')}
-              onChange={(e) =>
-                setWhatsInTheBox(
-                  e.target.value
-                    .split(',')
-                    .map((s) => s.trim())
-                    .filter(Boolean)
-                )
-              }
-              placeholder="Hand Fan, Cable, Manual"
-              className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-200"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <label className="block text-[11px] font-medium text-slate-400">Color Options</label>
-          <input
-            type="text"
-            value={colors}
-            onChange={(e) => setColors(e.target.value)}
-            placeholder="e.g. Graphite Black, Arctic White"
-            className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-200"
-          />
         </div>
       </div>
 
