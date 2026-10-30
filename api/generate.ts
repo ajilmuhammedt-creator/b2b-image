@@ -105,6 +105,15 @@ export default async function handler(req: any, res: any) {
       // Allow generation if limit count fails
     }
 
+    // 4. Slot 5 (Available Colour Models) verification: only generate if product has multiple colors
+    const colorItems = String(colors || '').split(/[,;/]+/).map((s) => s.trim()).filter(Boolean);
+    if ((slot === 5 || sanfordSlot?.theme === 'colors') && colorItems.length <= 1) {
+      return res.status(400).json({
+        id: generationId,
+        error: 'Slot 5 (Available Colour Models) cannot be generated because this product has only one colour or no colour options.',
+      });
+    }
+
     const openaiApiKey = process.env.OPENAI_API_KEY;
     if (!openaiApiKey) {
       return res.status(500).json({ error: 'OPENAI_API_KEY is not configured on the server.' });

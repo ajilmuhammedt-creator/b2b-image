@@ -90,6 +90,7 @@ Extract the following in strictly structured JSON:
       * features: [Second half of verified specifications from catalogue]
     - Slot 5: theme "colors", title "Available Colour Models Only"
       * Description: Product lineup / swatches showing all available color models.
+      * Note: If the catalogue does NOT specify multiple color options (i.e. product has only 1 color or no color options mentioned), leave "colors" empty or single color. Do NOT hallucinate fake colors.
       * Bottom Banner: Full-width solid red promotional strip with large white typography (e.g. "Light Weight and Easy to Carry").
       * promoBanner: Brand convenience message (e.g. "Light Weight and Easy to Carry")
       * STRICT: Show ONLY available color models. STRICTLY NO technical specifications.
@@ -185,8 +186,9 @@ Output MUST be valid JSON matching this schema:
     const specsPart1 = sanitizedFeatures.slice(0, half);
     const specsPart2 = sanitizedFeatures.slice(half);
 
-    const colorsStr = resultJson.colors || 'Graphite Black, Arctic White, Slate Grey';
-    const colorItems = colorsStr.split(/[,;/]+/).map((s: string) => cleanBrandModel(s)).filter(Boolean);
+    const colorsStr = resultJson.colors ? String(resultJson.colors).trim() : '';
+    const colorItems = colorsStr ? colorsStr.split(/[,;/]+/).map((s: string) => cleanBrandModel(s)).filter(Boolean) : [];
+    const hasMultipleColors = colorItems.length > 1;
 
     const sizeWarrantyFeatures: string[] = [];
     if (resultJson.dimensions) sizeWarrantyFeatures.push(`Dimensions: ${resultJson.dimensions}`);
@@ -234,10 +236,12 @@ Output MUST be valid JSON matching this schema:
         slot: 5,
         theme: 'colors',
         title: 'Available Colour Models Only',
-        headline: 'Available Colors',
-        promoBanner: 'Available in Multiple Attractive Colors',
-        description: 'Product lineup in available color finishes; full-width solid red bottom promotional banner with white typography. Strictly NO brand name and NO model number.',
-        features: colorItems.length > 0 ? colorItems : ['Standard Color Variants'],
+        headline: hasMultipleColors ? 'Available Colors' : '',
+        promoBanner: hasMultipleColors ? 'Available in Multiple Attractive Colors' : '',
+        description: hasMultipleColors
+          ? 'Product lineup in available color finishes; full-width solid red bottom promotional banner with white typography. Strictly NO brand name and NO model number.'
+          : 'Single color product — Slot 5 is skipped because there are no multiple colour options.',
+        features: colorItems,
       },
       {
         slot: 6,
@@ -249,6 +253,8 @@ Output MUST be valid JSON matching this schema:
       },
     ];
 
+    resultJson.colors = colorsStr;
+    resultJson.hasMultipleColors = hasMultipleColors;
     resultJson.slots = strictSlots;
 
     return res.status(200).json(resultJson);

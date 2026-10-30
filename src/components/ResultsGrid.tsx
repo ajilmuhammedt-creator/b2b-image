@@ -29,6 +29,7 @@ interface ResultsGridProps {
   settings: StudioSettings;
   isReadyToGenerate?: boolean;
   missingFields?: string[];
+  hasMultipleColors?: boolean;
 }
 
 export function ResultsGrid({
@@ -42,6 +43,7 @@ export function ResultsGrid({
   toggleSelectCard,
   isReadyToGenerate = true,
   missingFields = [],
+  hasMultipleColors = false,
 }: ResultsGridProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [viewingPrompt, setViewingPrompt] = useState<{ title: string; prompt: string } | null>(null);
@@ -229,15 +231,15 @@ export function ResultsGrid({
             {isGeneratingAll ? (
               <>
                 <div className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full" />
-                <span>Generating {completedCount}/{generations.length}...</span>
+                <span>Generating {completedCount}/{hasMultipleColors ? 6 : 5}...</span>
               </>
             ) : (
               <>
                 <Sparkles className="w-3.5 h-3.5 text-white/90" />
                 <span>
                   {makePoster
-                    ? `Generate Set (${featureCards.length} + Poster)`
-                    : `Generate 6-Image Set`}
+                    ? `Generate Set (${hasMultipleColors ? 6 : 5} + Poster)`
+                    : `Generate ${hasMultipleColors ? 6 : 5}-Image Set`}
                 </span>
               </>
             )}
@@ -321,11 +323,15 @@ export function ResultsGrid({
       {/* 6 BuySanford Pattern Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {featureCards.map((item) => {
+          const isSlot5Skipped = item.slot === 5 && !hasMultipleColors;
+
           return (
           <div
             key={item.id}
             className={`bg-[#0E1118]/80 border rounded-2xl overflow-hidden shadow-xl flex flex-col transition-all duration-200 ${
-              item.selected
+              isSlot5Skipped
+                ? 'border-white/[0.04] opacity-80'
+                : item.selected
                 ? 'border-indigo-500/80 ring-1 ring-indigo-500/50'
                 : 'border-white/[0.06] hover:border-white/[0.12]'
             }`}
@@ -335,19 +341,37 @@ export function ResultsGrid({
               <div className="flex items-center space-x-2 min-w-0 flex-1">
                 <input
                   type="checkbox"
-                  checked={!!item.selected}
-                  onChange={() => toggleSelectCard(item.id)}
-                  className="rounded border-white/[0.12] bg-white/[0.04] text-indigo-500 focus:ring-0 w-3.5 h-3.5 shrink-0"
+                  checked={!isSlot5Skipped && !!item.selected}
+                  disabled={isSlot5Skipped}
+                  onChange={() => !isSlot5Skipped && toggleSelectCard(item.id)}
+                  className="rounded border-white/[0.12] bg-white/[0.04] text-indigo-500 focus:ring-0 w-3.5 h-3.5 shrink-0 disabled:opacity-30"
                 />
                 <span className="text-xs font-semibold text-white truncate">
                   {item.sanfordSlot?.title || `Slot ${item.slot}`}
                 </span>
+                {isSlot5Skipped && (
+                  <span className="text-[9px] font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded shrink-0">
+                    Single colour (Skipped)
+                  </span>
+                )}
               </div>
             </div>
 
             {/* Card Canvas / Image Viewport (1:1 aspect ratio) */}
             <div className="aspect-square bg-black/40 relative flex items-center justify-center overflow-hidden border-b border-white/[0.06]">
-              {item.status === 'pending' ? (
+              {isSlot5Skipped && !item.imageUrl ? (
+                <div className="flex flex-col items-center justify-center space-y-2 p-6 text-center text-slate-500">
+                  <div className="w-10 h-10 rounded-full bg-white/[0.02] border border-white/[0.06] flex items-center justify-center text-slate-500">
+                    <Layers className="w-5 h-5 stroke-[1.5]" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-semibold text-slate-300">Single Colour Product</p>
+                    <p className="text-[10px] text-slate-500 max-w-[200px] leading-relaxed">
+                      Slot 5 is skipped because there are no multiple colour options.
+                    </p>
+                  </div>
+                </div>
+              ) : item.status === 'pending' ? (
                 <div className="flex flex-col items-center justify-center space-y-2 p-6 text-center">
                   <div className="animate-spin h-7 w-7 border-2 border-indigo-400 border-t-transparent rounded-full" />
                   <p className="text-xs font-medium text-slate-300">
@@ -411,13 +435,13 @@ export function ResultsGrid({
 
               <button
                 type="button"
-                onClick={() => onRegenerateSlot(item.slot || 1)}
-                disabled={item.status === 'pending' || isGeneratingAll}
+                onClick={() => !isSlot5Skipped && onRegenerateSlot(item.slot || 1)}
+                disabled={item.status === 'pending' || isGeneratingAll || isSlot5Skipped}
                 className="py-1 px-2.5 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 text-slate-200 rounded-lg border border-white/[0.06] transition flex items-center space-x-1"
-                title="Regenerate this card"
+                title={isSlot5Skipped ? 'Slot 5 is skipped for single colour products' : 'Regenerate this card'}
               >
                 <RotateCw className="w-3 h-3" />
-                <span className="text-[11px]">Regenerate</span>
+                <span className="text-[11px]">{isSlot5Skipped ? 'Skipped' : 'Regenerate'}</span>
               </button>
 
               <button

@@ -91,6 +91,10 @@ export function Studio() {
   const [sanfordSlots, setSanfordSlots] = useState<SanfordSlotSpec[]>(DEFAULT_SANFORD_SLOTS);
   const [validationAttempted, setValidationAttempted] = useState(false);
 
+  // Colour options detection: Slot 5 is only applicable if product has multiple colour options
+  const colorList = colors.split(/[,;/]+/).map((c) => c.trim()).filter(Boolean);
+  const hasMultipleColors = colorList.length > 1;
+
   const [sourceImage, setSourceImage] = useState<{
     file: File | null;
     previewUrl: string;
@@ -162,6 +166,22 @@ export function Studio() {
     setToastMessage({ text, type });
     setTimeout(() => setToastMessage(null), 5000);
   };
+
+  // Sync Slot 5 status when color options change: automatically skip Slot 5 if <= 1 color
+  useEffect(() => {
+    setGenerations((prev) =>
+      prev.map((g) => {
+        if (g.slot === 5) {
+          if (!hasMultipleColors && (g.status === 'idle' || g.status === 'skipped')) {
+            return { ...g, status: 'skipped', selected: false };
+          } else if (hasMultipleColors && g.status === 'skipped') {
+            return { ...g, status: 'idle', selected: true };
+          }
+        }
+        return g;
+      })
+    );
+  }, [hasMultipleColors]);
 
   // When Catalogue is parsed from ProductInput
   const handleCatalogueParsed = (data: CatalogueParsedData) => {
@@ -371,8 +391,13 @@ export function Studio() {
     }
 
     setIsGeneratingAll(true);
-    const slotsToRun = sanfordSlots.length > 0 ? sanfordSlots.length : 6;
-    const totalCalls = makePoster ? slotsToRun + 1 : slotsToRun;
+    // Determine which slots to run: Slot 5 is strictly skipped if product has only 1 color or no color options
+    const slotsToRun = [1, 2, 3, 4, 6];
+    if (hasMultipleColors) {
+      slotsToRun.push(5);
+      slotsToRun.sort((a, b) => a - b);
+    }
+    const totalCalls = makePoster ? slotsToRun.length + 1 : slotsToRun.length;
 
     try {
       if (settings.styleLock) {
@@ -380,7 +405,8 @@ export function Studio() {
         const slot1Result = await callGenerateApi(1);
 
         const remainingPromises: Promise<GenerationItem>[] = [];
-        for (let s = 2; s <= slotsToRun; s++) {
+        for (const s of slotsToRun) {
+          if (s === 1) continue;
           remainingPromises.push(callGenerateApi(s, slot1Result.imagePath));
         }
         if (makePoster) {
@@ -389,9 +415,13 @@ export function Studio() {
 
         await Promise.allSettled(remainingPromises);
       } else {
-        showToast(`Generating ${totalCalls} Sanford e-commerce images in parallel...`);
+        showToast(
+          `Generating ${totalCalls} Sanford e-commerce images in parallel${
+            !hasMultipleColors ? ' (Slot 5 skipped: single colour product)' : ''
+          }...`
+        );
         const promises: Promise<GenerationItem>[] = [];
-        for (let s = 1; s <= slotsToRun; s++) {
+        for (const s of slotsToRun) {
           promises.push(callGenerateApi(s));
         }
         if (makePoster) {
@@ -401,7 +431,11 @@ export function Studio() {
         await Promise.allSettled(promises);
       }
 
-      showToast('Sanford pattern generation batch completed!');
+      showToast(
+        `Sanford pattern generation batch completed! (${slotsToRun.length} images${
+          !hasMultipleColors ? ', Slot 5 skipped' : ''
+        })`
+      );
 
       // Save project state to projectStorage
       setTimeout(async () => {
@@ -455,6 +489,14 @@ export function Studio() {
     if (!isReadyToGenerate) {
       setValidationAttempted(true);
       showToast(`Please fill in: ${missingFields.join(', ')}`, 'error');
+      return;
+    }
+
+    if (slotOrKind === 5 && !hasMultipleColors) {
+      showToast(
+        'Slot 5 (Available Colour Models) cannot be generated because this product has only one colour or no colour options.',
+        'error'
+      );
       return;
     }
 
@@ -536,6 +578,7 @@ export function Studio() {
               setCatalogueImage={setCatalogueImage}
               onCatalogueParsed={handleCatalogueParsed}
               validationAttempted={validationAttempted}
+              hasMultipleColors={hasMultipleColors}
             />
           </div>
 
@@ -553,6 +596,7 @@ export function Studio() {
               settings={settings}
               isReadyToGenerate={isReadyToGenerate}
               missingFields={missingFields}
+              hasMultipleColors={hasMultipleColors}
             />
           </div>
 

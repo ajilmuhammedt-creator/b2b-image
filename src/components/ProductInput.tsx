@@ -54,6 +54,7 @@ interface ProductInputProps {
   setCatalogueImage: (img: { previewUrl: string; fileName?: string }) => void;
   onCatalogueParsed: (data: CatalogueParsedData) => void;
   validationAttempted?: boolean;
+  hasMultipleColors?: boolean;
 }
 
 export function ProductInput({
@@ -85,6 +86,7 @@ export function ProductInput({
   setCatalogueImage,
   onCatalogueParsed,
   validationAttempted = false,
+  hasMultipleColors = false,
 }: ProductInputProps) {
   const [activeTab, setActiveTab] = useState<'catalogue' | 'manual'>('catalogue');
   const [isDragging, setIsDragging] = useState(false);
@@ -579,12 +581,17 @@ export function ProductInput({
           </div>
 
           <div className="space-y-1">
-            <label className="block text-[11px] font-medium text-slate-400">Color Options</label>
+            <div className="flex items-center justify-between">
+              <label className="block text-[11px] font-medium text-slate-400">Color Options</label>
+              <span className="text-[9px] text-slate-500">
+                {hasMultipleColors ? 'Multiple colors' : 'Single colour (Slot 5 skipped)'}
+              </span>
+            </div>
             <input
               type="text"
               value={colors}
               onChange={(e) => setColors(e.target.value)}
-              placeholder="e.g. Graphite Black, Arctic White"
+              placeholder="e.g. Graphite Black, Arctic White (leave 1 color if no variants)"
               className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
@@ -602,7 +609,7 @@ export function ProductInput({
             <div className="flex items-center space-x-2">
               <Layers className="w-3.5 h-3.5 text-indigo-400" />
               <span className="text-xs font-semibold text-white">
-                Slot Customization (6 Images)
+                Slot Customization ({hasMultipleColors ? '6' : '5'} Images)
               </span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 font-medium">
                 Sharp Sans Font
@@ -616,6 +623,8 @@ export function ProductInput({
           {isSlotsOpen && (
             <div className="space-y-2 pt-2.5 mt-1">
               {sanfordSlots.map((slot, index) => {
+                const isSlot5Skipped = slot.slot === 5 && !hasMultipleColors;
+
                 let slotBadgeColor = 'text-indigo-300';
                 if (slot.slot === 1) slotBadgeColor = 'text-blue-300';
                 else if (slot.slot === 2) slotBadgeColor = 'text-emerald-300';
@@ -627,16 +636,30 @@ export function ProductInput({
                 return (
                   <div
                     key={index}
-                    className="bg-black/30 border border-white/[0.06] rounded-xl p-2.5 space-y-1.5"
+                    className={`bg-black/30 border rounded-xl p-2.5 space-y-1.5 ${
+                      isSlot5Skipped ? 'border-amber-500/20 opacity-75' : 'border-white/[0.06]'
+                    }`}
                   >
                     <div className="flex items-center justify-between text-xs font-medium">
                       <span className={`${slotBadgeColor} font-semibold text-[11px]`}>
                         Slot {slot.slot}: {slot.title}
                       </span>
-                      <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-white/[0.04] text-slate-400 border border-white/[0.06]">
-                        {slot.theme}
-                      </span>
+                      {isSlot5Skipped ? (
+                        <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                          Skipped (Single colour)
+                        </span>
+                      ) : (
+                        <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-white/[0.04] text-slate-400 border border-white/[0.06]">
+                          {slot.theme}
+                        </span>
+                      )}
                     </div>
+
+                    {isSlot5Skipped && (
+                      <p className="text-[10px] text-amber-400/80 bg-amber-500/5 border border-amber-500/10 rounded px-2 py-1">
+                        Product only has 1 colour or no colour options. Slot 5 will be skipped during generation.
+                      </p>
+                    )}
 
                     {slot.slot !== 1 && (
                       <div className="space-y-0.5">

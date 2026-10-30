@@ -40,7 +40,7 @@ export interface GenerationItem {
   slot: number | null; // 1 to 6 for feature, null for poster
   theme?: SanfordTheme;
   slotTitle?: string;
-  status: 'idle' | 'pending' | 'done' | 'failed';
+  status: 'idle' | 'pending' | 'done' | 'failed' | 'skipped';
   imageUrl?: string;
   imagePath?: string;
   b64_json?: string;
@@ -54,6 +54,7 @@ export interface GenerationItem {
   selected?: boolean;
   featureGroup?: string[];
   sanfordSlot?: SanfordSlotSpec;
+  disabled?: boolean;
 }
 
 export interface CatalogueParsedData {
@@ -67,6 +68,7 @@ export interface CatalogueParsedData {
   whatsInTheBox?: string[];
   warranty?: string;
   colors?: string;
+  hasMultipleColors?: boolean;
   cropBox?: { ymin: number; xmin: number; ymax: number; xmax: number };
   slots: SanfordSlotSpec[];
 }
