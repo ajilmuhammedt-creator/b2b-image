@@ -211,59 +211,59 @@ export function ResultsGrid({
   const completedCount = generations.filter((g) => g.status === 'done').length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Top Toolbar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="bg-[#0E1118]/80 border border-white/[0.06] rounded-2xl p-3 shadow-xl flex flex-wrap items-center justify-between gap-2.5 backdrop-blur-xl">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Generate Button */}
           <button
             type="button"
             onClick={onGenerateAll}
             disabled={isGeneratingAll}
-            className="py-2.5 px-5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center space-x-2"
+            className="py-2 px-4.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-xs tracking-wide rounded-xl shadow-md shadow-red-900/20 transition-all flex items-center space-x-2 active:scale-[0.98]"
           >
             {isGeneratingAll ? (
               <>
-                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                <div className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full" />
                 <span>Generating {completedCount}/{generations.length}...</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 text-indigo-300" />
+                <Sparkles className="w-3.5 h-3.5 text-white/90" />
                 <span>
                   {makePoster
-                    ? `Generate Sanford Set (${featureCards.length} + Poster)`
-                    : `Generate Sanford Set (${featureCards.length} Images)`}
+                    ? `Generate Set (${featureCards.length} + Poster)`
+                    : `Generate 6-Image Set`}
                 </span>
               </>
             )}
           </button>
 
           {/* Also Make A Poster Checkbox */}
-          <label className="flex items-center space-x-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+          <label className="flex items-center space-x-1.5 bg-white/[0.02] hover:bg-white/[0.04] px-2.5 py-1.5 rounded-xl border border-white/[0.06] cursor-pointer transition">
             <input
               type="checkbox"
               checked={makePoster}
               onChange={(e) => setMakePoster(e.target.checked)}
-              className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500"
+              className="rounded border-white/[0.12] bg-white/[0.04] text-red-600 focus:ring-0 w-3.5 h-3.5"
             />
-            <span className="text-xs font-medium text-slate-200">
-              Also make a poster
+            <span className="text-[11px] font-medium text-slate-300">
+              Poster
             </span>
           </label>
         </div>
 
         {/* Batch Actions */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
           {/* Download Selected */}
           <button
             type="button"
             onClick={() => handleDownloadZip(true)}
             disabled={selectedCount === 0 || isZipping}
-            className="py-2 px-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200 rounded-xl text-xs font-medium border border-slate-700 transition flex items-center space-x-1.5"
+            className="py-1.5 px-2.5 bg-white/[0.03] hover:bg-white/[0.06] disabled:opacity-30 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-medium border border-white/[0.06] transition flex items-center space-x-1"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Download Selected ({selectedCount})</span>
+            <span>Selected ({selectedCount})</span>
           </button>
 
           {/* Download All (ZIP) */}
@@ -271,10 +271,10 @@ export function ResultsGrid({
             type="button"
             onClick={() => handleDownloadZip(false)}
             disabled={completedCount === 0 || isZipping}
-            className="py-2 px-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200 rounded-xl text-xs font-medium border border-slate-700 transition flex items-center space-x-1.5"
+            className="py-1.5 px-2.5 bg-white/[0.03] hover:bg-white/[0.06] disabled:opacity-30 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-medium border border-white/[0.06] transition flex items-center space-x-1"
           >
             <FileArchive className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Download All (ZIP)</span>
+            <span>ZIP All</span>
           </button>
 
           {/* Save to Phone (Share sheet) */}
@@ -283,11 +283,11 @@ export function ResultsGrid({
               type="button"
               onClick={handleShareToPhone}
               disabled={completedCount === 0}
-              className="py-2 px-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200 rounded-xl text-xs font-medium border border-slate-700 transition flex items-center space-x-1.5"
+              className="py-1.5 px-2.5 bg-white/[0.03] hover:bg-white/[0.06] disabled:opacity-30 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-medium border border-white/[0.06] transition flex items-center space-x-1"
               title="Save to Phone Photos"
             >
               <Share2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="hidden sm:inline">Save to Phone</span>
+              <span className="hidden sm:inline">Phone</span>
             </button>
           )}
 
@@ -297,106 +297,101 @@ export function ResultsGrid({
               type="button"
               onClick={handleSaveToFolder}
               disabled={completedCount === 0}
-              className="py-2 px-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200 rounded-xl text-xs font-medium border border-slate-700 transition flex items-center space-x-1.5"
+              className="py-1.5 px-2.5 bg-white/[0.03] hover:bg-white/[0.06] disabled:opacity-30 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-medium border border-white/[0.06] transition flex items-center space-x-1"
               title="Save directly to a folder"
             >
               <FolderDown className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline">Save to Folder</span>
+              <span className="hidden sm:inline">Folder</span>
             </button>
           )}
         </div>
       </div>
 
       {/* 6 BuySanford Pattern Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {featureCards.map((item) => {
           const theme = item.sanfordSlot?.theme || item.theme;
           let themeBadge = 'Slot ' + item.slot;
-          let themeBadgeColor = 'bg-slate-800 text-slate-300 border-slate-700';
+          let themeBadgeColor = 'bg-white/[0.04] text-slate-300 border-white/[0.06]';
 
           if (theme === 'hero') {
-            themeBadge = 'White Studio Hero • No Text';
+            themeBadge = 'Hero Studio';
             themeBadgeColor = 'bg-blue-500/10 text-blue-300 border-blue-500/20';
           } else if (theme === 'lifestyle') {
-            themeBadge = 'Lifestyle In-Use • No Specs';
+            themeBadge = 'Lifestyle In-Use';
             themeBadgeColor = 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20';
           } else if (theme === 'specs_part_1') {
-            themeBadge = 'Specifications Part 1';
+            themeBadge = 'Specs Part 1';
             themeBadgeColor = 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20';
           } else if (theme === 'specs_part_2') {
-            themeBadge = 'Specifications Part 2';
+            themeBadge = 'Specs Part 2';
             themeBadgeColor = 'bg-purple-500/10 text-purple-300 border-purple-500/20';
           } else if (theme === 'colors') {
-            themeBadge = 'Available Colors Only';
+            themeBadge = 'Colour Models';
             themeBadgeColor = 'bg-amber-500/10 text-amber-300 border-amber-500/20';
           } else if (theme === 'size_warranty') {
-            themeBadge = 'Size & Warranty Only';
+            themeBadge = 'Size & Warranty';
             themeBadgeColor = 'bg-rose-500/10 text-rose-300 border-rose-500/20';
           }
 
           return (
           <div
             key={item.id}
-            className={`bg-slate-900 border rounded-2xl overflow-hidden shadow-xl flex flex-col transition-all duration-200 ${
+            className={`bg-[#0E1118]/80 border rounded-2xl overflow-hidden shadow-xl flex flex-col transition-all duration-200 ${
               item.selected
                 ? 'border-indigo-500/80 ring-1 ring-indigo-500/50'
-                : 'border-slate-800 hover:border-slate-700'
+                : 'border-white/[0.06] hover:border-white/[0.12]'
             }`}
           >
             {/* Card Header */}
-            <div className="px-4 py-3 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between">
+            <div className="px-3 py-2 bg-white/[0.02] border-b border-white/[0.06] flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
                   checked={!!item.selected}
                   onChange={() => toggleSelectCard(item.id)}
-                  className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500"
+                  className="rounded border-white/[0.12] bg-white/[0.04] text-indigo-500 focus:ring-0 w-3.5 h-3.5"
                 />
-                <span className="text-xs font-semibold text-white">
+                <span className="text-xs font-semibold text-white truncate max-w-[150px]">
                   {item.sanfordSlot?.title || `Slot ${item.slot}`}
                 </span>
               </div>
 
-              <div className="flex items-center space-x-1.5">
+              <div className="flex items-center space-x-1">
                 {item.slot !== 1 && (
-                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-red-950/40 text-red-300 border border-red-800/40" title="All text rendered in Sharp Sans font">
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-red-500/10 text-red-300 border border-red-500/20" title="Rendered in Sharp Sans font">
                     Sharp Sans
                   </span>
                 )}
-                <span className={`text-[10px] uppercase font-mono px-1.5 py-0.5 rounded border ${themeBadgeColor}`}>
+                <span className={`text-[9px] uppercase font-mono px-1.5 py-0.5 rounded border ${themeBadgeColor}`}>
                   {themeBadge}
                 </span>
-                {item.usage && (
-                  <span className="text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700 px-1.5 py-0.5 rounded">
-                    {item.usage.total_tokens || 0} tok
-                  </span>
-                )}
               </div>
             </div>
 
             {/* Card Canvas / Image Viewport (1:1 aspect ratio) */}
-            <div className="aspect-square bg-slate-950 relative flex items-center justify-center overflow-hidden border-b border-slate-800">
+            <div className="aspect-square bg-black/40 relative flex items-center justify-center overflow-hidden border-b border-white/[0.06]">
               {item.status === 'pending' ? (
-                <div className="flex flex-col items-center justify-center space-y-3 p-6 text-center">
-                  <div className="animate-spin h-9 w-9 border-3 border-indigo-500 border-t-transparent rounded-full" />
+                <div className="flex flex-col items-center justify-center space-y-2 p-6 text-center">
+                  <div className="animate-spin h-7 w-7 border-2 border-indigo-400 border-t-transparent rounded-full" />
                   <p className="text-xs font-medium text-slate-300">
                     Generating Slot {item.slot}...
                   </p>
-                  <p className="text-[11px] text-slate-500">
-                    Grounded in original photo
+                  <p className="text-[10px] text-slate-500">
+                    Applying Sharp Sans & BuySanford template
                   </p>
                 </div>
               ) : item.status === 'failed' ? (
-                <div className="flex flex-col items-center justify-center space-y-2 p-6 text-center">
-                  <AlertCircle className="w-8 h-8 text-red-400" />
-                  <p className="text-xs font-medium text-red-300">Generation Failed</p>
-                  <p className="text-[11px] text-slate-400 max-w-xs">{item.error}</p>
+                <div className="flex flex-col items-center justify-center space-y-1.5 p-4 text-center">
+                  <AlertCircle className="w-6 h-6 text-rose-400" />
+                  <p className="text-xs font-medium text-rose-300">Generation Failed</p>
+                  <p className="text-[10px] text-slate-400 max-w-xs">{item.error}</p>
                   <button
                     type="button"
                     onClick={() => onRegenerateSlot(item.slot || 1)}
-                    className="mt-2 text-xs text-indigo-400 hover:text-indigo-300 underline"
+                    className="mt-1 text-xs text-indigo-400 hover:text-indigo-300 underline"
                   >
-                    Retry slot
+                    Retry
                   </button>
                 </div>
               ) : item.imageUrl ? (
@@ -410,7 +405,7 @@ export function ResultsGrid({
                     <button
                       type="button"
                       onClick={() => setZoomImage(item.imageUrl!)}
-                      className="p-2 bg-slate-900/90 text-white rounded-lg hover:bg-slate-900 border border-slate-700 shadow"
+                      className="p-2 bg-black/80 text-white rounded-lg hover:bg-black border border-white/[0.1] shadow transition"
                       title="Enlarge"
                     >
                       <Eye className="w-4 h-4" />
@@ -418,126 +413,126 @@ export function ResultsGrid({
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center space-y-2 p-6 text-center text-slate-600">
-                  <ImageIcon className="w-8 h-8" />
-                  <span className="text-xs">Waiting to generate</span>
+                <div className="flex flex-col items-center justify-center space-y-1.5 p-6 text-center text-slate-600">
+                  <ImageIcon className="w-7 h-7 stroke-[1.5]" />
+                  <span className="text-[11px] font-medium text-slate-500">Ready to generate</span>
                 </div>
               )}
             </div>
 
             {/* Feature Group Preview */}
-            <div className="px-3.5 py-2 bg-slate-950/40 border-b border-slate-800 text-[11px] text-slate-400 space-y-0.5">
+            <div className="px-3 py-2 bg-white/[0.015] border-b border-white/[0.06] text-[11px] text-slate-400 space-y-0.5">
               {item.slot === 1 && (
-                <div className="text-[11px] text-blue-300/90 font-medium">
-                  Studio hero centered on pure white (#FFFFFF). Strictly NO text or specs.
+                <div className="text-[10px] text-blue-300/90 font-medium">
+                  Pure seamless white background. Strictly no text.
                 </div>
               )}
               {item.slot === 2 && (
                 <div>
-                  <div className="font-semibold text-slate-200 truncate">
+                  <div className="font-semibold text-slate-200 truncate text-[11px]">
                     "{item.sanfordSlot?.headline || 'Refreshing Airflow In Every Spin!'}"
                   </div>
                   <div className="text-[10px] text-emerald-400/90 font-medium">
-                    BuySanford Lifestyle Template: Top-right red corner card with white text. Zero floating text & no specs.
+                    Top-right red card with Sharp Sans text. No floating text.
                   </div>
                 </div>
               )}
               {item.slot === 3 && (
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {item.sanfordSlot?.headline && (
-                    <div className="font-semibold text-slate-200 truncate">
+                    <div className="font-semibold text-slate-200 truncate text-[11px]">
                       "{item.sanfordSlot.headline}"
                     </div>
                   )}
                   {item.featureGroup && item.featureGroup.length > 0 && (
-                    <div className="line-clamp-2 text-slate-400">
-                      <span className="font-medium text-indigo-300">Upper-Left Badges: </span>
+                    <div className="truncate text-slate-400 text-[10px]">
+                      <span className="font-medium text-indigo-300">Left Badges: </span>
                       {item.featureGroup.join('; ')}
                     </div>
                   )}
                   <div className="text-[10px] text-red-400 font-medium flex items-center space-x-1">
-                    <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-                    <span>Red Bottom Banner: "{item.sanfordSlot?.promoBanner || 'Rechargeable Cooling Hand Fan with Cold Plate'}"</span>
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
+                    <span className="truncate">Banner: "{item.sanfordSlot?.promoBanner || 'Rechargeable Cooling Hand Fan with Cold Plate'}"</span>
                   </div>
                 </div>
               )}
               {item.slot === 4 && (
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {item.sanfordSlot?.headline && (
-                    <div className="font-semibold text-slate-200 truncate">
+                    <div className="font-semibold text-slate-200 truncate text-[11px]">
                       "{item.sanfordSlot.headline}"
                     </div>
                   )}
                   {item.featureGroup && item.featureGroup.length > 0 && (
-                    <div className="line-clamp-2 text-slate-400">
-                      <span className="font-medium text-purple-300">Upper-Left Badges (Non-overlapping): </span>
+                    <div className="truncate text-slate-400 text-[10px]">
+                      <span className="font-medium text-purple-300">Left Badges: </span>
                       {item.featureGroup.join('; ')}
                     </div>
                   )}
                   <div className="text-[10px] text-red-400 font-medium flex items-center space-x-1">
-                    <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-                    <span>Red Bottom Banner: "{item.sanfordSlot?.promoBanner || 'Light Weight and Easy to Carry'}"</span>
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
+                    <span className="truncate">Banner: "{item.sanfordSlot?.promoBanner || 'Light Weight and Easy to Carry'}"</span>
                   </div>
                 </div>
               )}
               {item.slot === 5 && (
-                <div className="space-y-1">
-                  <div className="font-semibold text-slate-200 truncate">
-                    "Available Colors: {item.featureGroup && item.featureGroup.length > 0 ? item.featureGroup.join(', ') : 'Color Options'}"
+                <div className="space-y-0.5">
+                  <div className="font-semibold text-slate-200 truncate text-[11px]">
+                    "Available Colors: {item.featureGroup && item.featureGroup.length > 0 ? item.featureGroup.join(', ') : 'Options'}"
                   </div>
                   <div className="text-[10px] text-red-400 font-medium flex items-center space-x-1">
-                    <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-                    <span>Red Bottom Banner: "{item.sanfordSlot?.promoBanner || 'Available in Multiple Attractive Colors'}"</span>
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
+                    <span className="truncate">Banner: "{item.sanfordSlot?.promoBanner || 'Available in Multiple Attractive Colors'}"</span>
                   </div>
                 </div>
               )}
               {item.slot === 6 && (
                 <div>
-                  <div className="font-semibold text-slate-200 truncate">
+                  <div className="font-semibold text-slate-200 truncate text-[11px]">
                     "Unit Dimension & 1 Year Service Warranty"
                   </div>
                   <div className="text-[10px] text-rose-400/90 font-medium">
-                    Sanford Style: Pale warm tint, "Unit Dimension", red/navy warranty ribbon & crimson red dimension arrows (&lt;---&gt;). No weight or box items.
+                    Sanford Style: Pale warm background, ribbon warranty & crimson arrows.
                   </div>
                 </div>
               )}
             </div>
 
             {/* Card Actions Footer */}
-            <div className="p-3 bg-slate-900/80 flex items-center justify-between gap-1 text-xs mt-auto">
+            <div className="p-2 bg-black/40 flex items-center justify-between gap-1 text-xs mt-auto">
               <button
                 type="button"
                 onClick={() => handleDownloadSingle(item)}
                 disabled={item.status !== 'done'}
-                className="py-1.5 px-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200 rounded-lg border border-slate-700 transition flex items-center space-x-1"
+                className="py-1 px-2.5 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed text-slate-200 rounded-lg border border-white/[0.06] transition flex items-center space-x-1"
                 title="Download this PNG"
               >
-                <Download className="w-3.5 h-3.5" />
-                <span>PNG</span>
+                <Download className="w-3 h-3" />
+                <span className="text-[11px]">PNG</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => onRegenerateSlot(item.slot || 1)}
                 disabled={item.status === 'pending' || isGeneratingAll}
-                className="py-1.5 px-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 rounded-lg border border-slate-700 transition flex items-center space-x-1"
-                title="Regenerate only this card"
+                className="py-1 px-2.5 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 text-slate-200 rounded-lg border border-white/[0.06] transition flex items-center space-x-1"
+                title="Regenerate this card"
               >
-                <RotateCw className="w-3.5 h-3.5" />
-                <span>Regenerate</span>
+                <RotateCw className="w-3 h-3" />
+                <span className="text-[11px]">Regenerate</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleCopyPrompt(item.id, item.prompt)}
                 disabled={!item.prompt}
-                className="py-1.5 px-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-400 hover:text-white rounded-lg border border-slate-700 transition"
+                className="py-1 px-2 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 text-slate-400 hover:text-white rounded-lg border border-white/[0.06] transition"
                 title="Copy prompt"
               >
                 {copiedId === item.id ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <Check className="w-3 h-3 text-emerald-400" />
                 ) : (
-                  <Copy className="w-3.5 h-3.5" />
+                  <Copy className="w-3 h-3" />
                 )}
               </button>
 
@@ -550,10 +545,10 @@ export function ResultsGrid({
                       prompt: item.prompt || '',
                     })
                   }
-                  className="py-1.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg border border-slate-700 transition"
+                  className="py-1 px-2 bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-white rounded-lg border border-white/[0.06] transition"
                   title="View full prompt"
                 >
-                  <Eye className="w-3.5 h-3.5" />
+                  <Eye className="w-3 h-3" />
                 </button>
               )}
             </div>
@@ -649,40 +644,40 @@ export function ResultsGrid({
             </div>
 
             {/* Poster Actions Footer */}
-            <div className="p-3 bg-slate-900/80 flex items-center justify-between gap-1 text-xs mt-auto">
+            <div className="p-2 bg-black/40 flex items-center justify-between gap-1 text-xs mt-auto">
               <button
                 type="button"
                 onClick={() => handleDownloadSingle(posterCard)}
                 disabled={posterCard.status !== 'done'}
-                className="py-1.5 px-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200 rounded-lg border border-slate-700 transition flex items-center space-x-1"
+                className="py-1 px-2.5 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed text-slate-200 rounded-lg border border-white/[0.06] transition flex items-center space-x-1"
                 title="Download Poster PNG"
               >
-                <Download className="w-3.5 h-3.5" />
-                <span>PNG</span>
+                <Download className="w-3 h-3" />
+                <span className="text-[11px]">PNG</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => onRegenerateSlot('poster')}
                 disabled={posterCard.status === 'pending' || isGeneratingAll}
-                className="py-1.5 px-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 rounded-lg border border-slate-700 transition flex items-center space-x-1"
+                className="py-1 px-2.5 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 text-slate-200 rounded-lg border border-white/[0.06] transition flex items-center space-x-1"
                 title="Regenerate poster"
               >
-                <RotateCw className="w-3.5 h-3.5" />
-                <span>Regenerate</span>
+                <RotateCw className="w-3 h-3" />
+                <span className="text-[11px]">Regenerate</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleCopyPrompt(posterCard.id, posterCard.prompt)}
                 disabled={!posterCard.prompt}
-                className="py-1.5 px-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-400 hover:text-white rounded-lg border border-slate-700 transition"
+                className="py-1 px-2 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 text-slate-400 hover:text-white rounded-lg border border-white/[0.06] transition"
                 title="Copy prompt"
               >
                 {copiedId === posterCard.id ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <Check className="w-3 h-3 text-emerald-400" />
                 ) : (
-                  <Copy className="w-3.5 h-3.5" />
+                  <Copy className="w-3 h-3" />
                 )}
               </button>
 
@@ -695,10 +690,10 @@ export function ResultsGrid({
                       prompt: posterCard.prompt || '',
                     })
                   }
-                  className="py-1.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg border border-slate-700 transition"
+                  className="py-1 px-2 bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-white rounded-lg border border-white/[0.06] transition"
                   title="View full prompt"
                 >
-                  <Eye className="w-3.5 h-3.5" />
+                  <Eye className="w-3 h-3" />
                 </button>
               )}
             </div>
@@ -708,29 +703,29 @@ export function ResultsGrid({
 
       {/* Modal: View Full Prompt */}
       {viewingPrompt && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[80vh] flex flex-col shadow-2xl">
-            <div className="px-5 py-3 border-b border-slate-800 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-white">{viewingPrompt.title}</h3>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0E1118] border border-white/[0.08] rounded-2xl max-w-2xl w-full max-h-[80vh] flex flex-col shadow-2xl">
+            <div className="px-5 py-3 border-b border-white/[0.06] flex items-center justify-between">
+              <h3 className="text-xs font-semibold text-white">{viewingPrompt.title}</h3>
               <button
                 type="button"
                 onClick={() => setViewingPrompt(null)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-white transition"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="p-5 overflow-y-auto font-mono text-xs text-slate-300 leading-relaxed whitespace-pre-wrap bg-slate-950/60 m-3 rounded-xl border border-slate-800">
+            <div className="p-4 overflow-y-auto font-mono text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap bg-black/40 m-3 rounded-xl border border-white/[0.04]">
               {viewingPrompt.prompt}
             </div>
-            <div className="px-5 py-3 border-t border-slate-800 flex justify-end">
+            <div className="px-5 py-3 border-t border-white/[0.06] flex justify-end">
               <button
                 type="button"
                 onClick={() => {
                   navigator.clipboard.writeText(viewingPrompt.prompt);
                   setViewingPrompt(null);
                 }}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium rounded-lg"
+                className="px-3.5 py-1.5 bg-white text-black hover:bg-slate-200 text-xs font-semibold rounded-lg transition"
               >
                 Copy & Close
               </button>
@@ -742,22 +737,22 @@ export function ResultsGrid({
       {/* Modal: Enlarge Image */}
       {zoomImage && (
         <div
-          className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 cursor-pointer"
+          className="fixed inset-0 bg-black/90 backdrop-blur-lg z-50 flex items-center justify-center p-4 cursor-pointer"
           onClick={() => setZoomImage(null)}
         >
           <div className="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
             <button
               type="button"
               onClick={() => setZoomImage(null)}
-              className="absolute -top-10 right-0 text-white/70 hover:text-white text-sm flex items-center space-x-1"
+              className="absolute -top-10 right-0 text-white/70 hover:text-white text-xs flex items-center space-x-1"
             >
               <span>Close</span>
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
             <img
               src={zoomImage}
               alt="Enlarged"
-              className="max-h-[85vh] max-w-full object-contain rounded-xl shadow-2xl border border-slate-800"
+              className="max-h-[85vh] max-w-full object-contain rounded-xl shadow-2xl border border-white/[0.1]"
             />
           </div>
         </div>

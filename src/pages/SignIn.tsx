@@ -62,24 +62,24 @@ export function SignIn() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 px-4 py-12 relative overflow-hidden">
-      {/* Background radial glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#090B10] px-4 py-12 relative overflow-hidden">
+      {/* Background subtle radial glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="w-full max-w-md space-y-8 bg-slate-900/90 p-8 rounded-2xl border border-slate-800 shadow-2xl backdrop-blur-xl relative z-10">
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center mb-1">
+      <div className="w-full max-w-md space-y-7 bg-[#0E1118]/80 p-8 rounded-2xl border border-white/[0.08] shadow-2xl backdrop-blur-xl relative z-10">
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center mb-2">
             <img
               src="/sanford-ai-logo.png"
               alt="Sanford AI"
-              className="h-12 w-auto object-contain mix-blend-screen"
+              className="h-10 w-auto object-contain mix-blend-screen"
             />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">
+          <h1 className="text-xl font-bold tracking-tight text-white">
             B2B Product Image Studio
           </h1>
-          <p className="text-sm text-slate-400">
-            Generate grounded BuySanford e-commerce product images from catalogue documents
+          <p className="text-xs text-slate-400">
+            Automated BuySanford e-commerce imagery from supplier catalogue sheets
           </p>
         </div>
 

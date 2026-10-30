@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { History as HistoryIcon, LayoutGrid, LogOut, User } from 'lucide-react';
+import { History as HistoryIcon, LayoutGrid, LogOut } from 'lucide-react';
 
 export function Navbar() {
   const { user, signOut } = useAuth();
@@ -11,54 +11,54 @@ export function Navbar() {
   };
 
   return (
-    <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center space-x-6">
-          <Link to="/studio" className="flex items-center group">
+    <header className="border-b border-white/[0.06] bg-[#090B10]/80 backdrop-blur-xl sticky top-0 z-40 transition-colors">
+      <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 h-15 flex items-center justify-between">
+        <div className="flex items-center space-x-8">
+          <Link to="/studio" className="flex items-center group py-1">
             <img
               src="/sanford-ai-logo.png"
               alt="Sanford AI"
-              className="h-9 w-auto object-contain mix-blend-screen group-hover:opacity-90 transition-opacity"
+              className="h-8 w-auto object-contain mix-blend-screen transition-opacity duration-200 group-hover:opacity-95"
             />
           </Link>
 
           <nav className="flex items-center space-x-1">
             <Link
               to="/studio"
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center space-x-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 ${
                 location.pathname === '/studio'
-                  ? 'bg-slate-800 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  ? 'bg-white/[0.08] text-white border border-white/[0.08] shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]'
               }`}
             >
-              <LayoutGrid className="w-4 h-4" />
+              <LayoutGrid className="w-3.5 h-3.5" />
               <span>Studio</span>
             </Link>
 
             <Link
               to="/history"
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center space-x-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 ${
                 location.pathname === '/history'
-                  ? 'bg-slate-800 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  ? 'bg-white/[0.08] text-white border border-white/[0.08] shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]'
               }`}
             >
-              <HistoryIcon className="w-4 h-4" />
+              <HistoryIcon className="w-3.5 h-3.5" />
               <span>History</span>
             </Link>
           </nav>
         </div>
 
         <div className="flex items-center space-x-3">
-          <div className="hidden md:flex items-center space-x-2 text-xs text-slate-400 bg-slate-950/60 px-3 py-1.5 rounded-full border border-slate-800">
-            <User className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="max-w-[180px] truncate">{user?.email || 'Supplier'}</span>
+          <div className="hidden sm:flex items-center space-x-2 text-xs text-slate-400 bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.06]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="max-w-[180px] truncate text-slate-300 font-mono text-[11px]">{user?.email || 'Supplier'}</span>
           </div>
 
           <button
             onClick={handleSignOut}
             title="Sign out"
-            className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition"
+            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-white/[0.04] rounded-lg transition"
           >
             <LogOut className="w-4 h-4" />
           </button>

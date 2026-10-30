@@ -363,6 +363,9 @@ ${SHARP_SANS_TYPOGRAPHY_BLOCK}
 
 ${specificStyle}
 
+CRITICAL FONT MANDATE (SHARP SANS ONLY):
+Every single word, letter, number, unit, callout headline, promotional banner, and measurement rendered anywhere on this image MUST STRICTLY USE THE "Sharp Sans" FONT FAMILY ONLY. Absolutely NO other font is permitted.
+
 OUTPUT
 Generate exactly ONE complete 1:1 square image.
 No outer borders, no watermark, no production notes.`;
@@ -411,6 +414,9 @@ COPY
 Write clear, concise English based only on the selected feature group.
 Preserve every supplied number, unit, and technical specification accurately.
 
+CRITICAL FONT MANDATE (SHARP SANS ONLY):
+Every piece of text, headline, specification, number, and label on this image MUST be rendered strictly in the "Sharp Sans" font family. Do not use any other font.
+
 OUTPUT
 Generate exactly ONE complete 1:1 square image.
 This is one individual feature image, not a collage, contact sheet, or three-panel design.
@@ -452,6 +458,9 @@ Typography Mandate: Use dark, high-contrast text strictly in the "Sharp Sans" fo
 COPY
 Use only the supplied information. Preserve every number, unit and specification exactly.
 Do not add prices, discounts, logos, certifications or claims that were not supplied.
+
+CRITICAL FONT MANDATE (SHARP SANS ONLY):
+Every piece of text, headline, subheading, and feature callout on this poster MUST be rendered strictly in the "Sharp Sans" font family. Do not use any other font.
 
 OUTPUT
 Generate exactly ONE complete portrait poster. Not a collage.

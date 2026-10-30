@@ -7,10 +7,10 @@ import {
   AlertCircle,
   FileUp,
   SlidersHorizontal,
-  CheckCircle2,
-  ExternalLink,
   Crop,
   Layers,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { renderPdfToImage, cropImageByBox } from '../lib/pdfRenderer';
@@ -87,6 +87,7 @@ export function ProductInput({
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStatus, setProcessingStatus] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSlotsOpen, setIsSlotsOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const manualPhotoRef = useRef<HTMLInputElement>(null);
@@ -260,56 +261,43 @@ export function ProductInput({
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-6 shadow-xl">
-      {/* Header with Sanford reference link pill */}
-      <div className="space-y-2 pb-3 border-b border-slate-800">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
-              <FileUp className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-base font-semibold text-white">Catalogue & Specs</h2>
-              <p className="text-xs text-slate-400">Sanford Pattern Generation</p>
-            </div>
+    <div className="bg-[#0E1118]/80 border border-white/[0.06] rounded-2xl p-4.5 space-y-4 shadow-xl backdrop-blur-xl">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+        <div className="flex items-center space-x-2">
+          <div className="w-6 h-6 rounded-md bg-white/[0.04] text-slate-300 flex items-center justify-center">
+            <FileUp className="w-3.5 h-3.5" />
           </div>
-
-          <button
-            type="button"
-            onClick={loadSanfordSample}
-            disabled={isProcessing}
-            className="text-xs font-medium text-indigo-300 bg-indigo-600/20 hover:bg-indigo-600/30 px-2.5 py-1.5 rounded-lg border border-indigo-500/30 transition flex items-center space-x-1"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Load Sanford Fan Sample</span>
-          </button>
+          <div>
+            <h2 className="text-xs font-semibold text-white">Catalogue & Specs</h2>
+            <p className="text-[10px] text-slate-400">BuySanford Pattern Pipeline</p>
+          </div>
         </div>
 
-        {/* Reference Store Link */}
-        <a
-          href="https://www.buysanford.com/products/sanford-camping-emergency-lantern-sf2722el"
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center space-x-1.5 text-[11px] text-indigo-400 hover:text-indigo-300 transition"
+        <button
+          type="button"
+          onClick={loadSanfordSample}
+          disabled={isProcessing}
+          className="text-[11px] font-medium text-slate-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-2.5 py-1 rounded-lg border border-white/[0.08] transition flex items-center space-x-1"
         >
-          <span>Pattern Reference: BuySanford (SF2722EL Pattern)</span>
-          <ExternalLink className="w-3 h-3" />
-        </a>
+          <Sparkles className="w-3 h-3 text-indigo-400" />
+          <span>Load Sample</span>
+        </button>
       </div>
 
       {/* Mode Selector Tabs */}
-      <div className="grid grid-cols-2 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+      <div className="grid grid-cols-2 gap-1 bg-white/[0.02] p-1 rounded-xl border border-white/[0.06]">
         <button
           type="button"
           onClick={() => setActiveTab('catalogue')}
           className={`py-1.5 text-xs font-medium rounded-lg transition flex items-center justify-center space-x-1.5 ${
             activeTab === 'catalogue'
-              ? 'bg-indigo-600 text-white shadow-sm'
+              ? 'bg-white/[0.08] text-white border border-white/[0.08] shadow-sm'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
           <FileText className="w-3.5 h-3.5" />
-          <span>Upload Catalogue (PDF/Img)</span>
+          <span>Catalogue Document</span>
         </button>
 
         <button
@@ -317,7 +305,7 @@ export function ProductInput({
           onClick={() => setActiveTab('manual')}
           className={`py-1.5 text-xs font-medium rounded-lg transition flex items-center justify-center space-x-1.5 ${
             activeTab === 'manual'
-              ? 'bg-indigo-600 text-white shadow-sm'
+              ? 'bg-white/[0.08] text-white border border-white/[0.08] shadow-sm'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -329,19 +317,15 @@ export function ProductInput({
       {/* Catalogue Upload Area */}
       {activeTab === 'catalogue' && (
         <div className="space-y-3">
-          <label className="block text-xs font-medium text-slate-300 uppercase tracking-wider">
-            Product Catalogue Sheet <span className="text-indigo-400">*</span>
-          </label>
-
           <div
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition ${
+            className={`border border-dashed rounded-xl p-4.5 text-center cursor-pointer transition ${
               isDragging
-                ? 'border-indigo-500 bg-indigo-500/10'
-                : 'border-slate-800 hover:border-slate-700 bg-slate-950/60 hover:bg-slate-950'
+                ? 'border-indigo-400 bg-indigo-500/10'
+                : 'border-white/[0.12] hover:border-indigo-400/50 bg-white/[0.015] hover:bg-white/[0.03]'
             }`}
           >
             <input
@@ -352,16 +336,16 @@ export function ProductInput({
               className="hidden"
             />
 
-            <div className="flex flex-col items-center justify-center space-y-2">
-              <div className="w-10 h-10 rounded-full bg-slate-800/80 flex items-center justify-center text-indigo-400">
-                <UploadCloud className="w-5 h-5" />
+            <div className="flex flex-col items-center justify-center space-y-1.5">
+              <div className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center text-slate-300">
+                <UploadCloud className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-slate-200">
-                  {isProcessing ? processingStatus : 'Drop Product Catalogue (PDF or Image)'}
+                <p className="text-xs font-medium text-slate-200">
+                  {isProcessing ? processingStatus : 'Drop Catalogue PDF or Image'}
                 </p>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  PDF, PNG, JPG, or WebP. Auto-extracts features & crops product photo.
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  Auto-extracts verified specs, colors, and crops the hero product
                 </p>
               </div>
             </div>
@@ -369,28 +353,28 @@ export function ProductInput({
 
           {/* Processing progress badge */}
           {isProcessing && (
-            <div className="flex items-center space-x-2 bg-indigo-950/50 border border-indigo-800/60 p-3 rounded-xl text-xs text-indigo-300 animate-pulse">
+            <div className="flex items-center space-x-2 bg-indigo-500/10 border border-indigo-500/20 p-2.5 rounded-xl text-xs text-indigo-300 animate-pulse">
               <div className="animate-spin h-3.5 w-3.5 border-2 border-indigo-400 border-t-transparent rounded-full" />
               <span>{processingStatus}</span>
             </div>
           )}
 
           {errorMessage && (
-            <div className="flex items-center space-x-2 text-xs text-red-400 bg-red-950/40 p-2.5 rounded-lg border border-red-800/50">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <div className="flex items-center space-x-2 text-xs text-rose-400 bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/20">
+              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           {/* Visual Previews: Catalogue Sheet + Cropped Product */}
           {catalogueImage.previewUrl && (
-            <div className="grid grid-cols-2 gap-3 pt-2">
+            <div className="grid grid-cols-2 gap-2.5 pt-1">
               <div className="space-y-1">
                 <span className="text-[10px] uppercase font-semibold text-slate-400 flex items-center space-x-1">
                   <FileText className="w-3 h-3 text-indigo-400" />
                   <span>Catalogue Sheet</span>
                 </span>
-                <div className="h-40 bg-slate-950 rounded-xl border border-slate-800 overflow-hidden flex items-center justify-center p-1">
+                <div className="h-36 bg-black/40 rounded-xl border border-white/[0.06] overflow-hidden flex items-center justify-center p-1">
                   <img
                     src={catalogueImage.previewUrl}
                     alt="Catalogue"
@@ -402,9 +386,9 @@ export function ProductInput({
               <div className="space-y-1">
                 <span className="text-[10px] uppercase font-semibold text-slate-400 flex items-center space-x-1">
                   <Crop className="w-3 h-3 text-emerald-400" />
-                  <span>Cropped Product Photo</span>
+                  <span>Isolated Product</span>
                 </span>
-                <div className="h-40 bg-slate-950 rounded-xl border border-slate-800 overflow-hidden flex items-center justify-center p-1 relative group">
+                <div className="h-36 bg-black/40 rounded-xl border border-white/[0.06] overflow-hidden flex items-center justify-center p-1 relative group">
                   {sourceImage.previewUrl ? (
                     <img
                       src={sourceImage.previewUrl}
@@ -417,7 +401,7 @@ export function ProductInput({
                   <button
                     type="button"
                     onClick={() => manualPhotoRef.current?.click()}
-                    className="absolute bottom-2 right-2 px-2 py-1 bg-slate-900/90 text-[10px] text-slate-300 hover:text-white rounded border border-slate-700 shadow"
+                    className="absolute bottom-2 right-2 px-2 py-0.5 bg-black/80 text-[10px] text-slate-300 hover:text-white rounded border border-white/[0.1] shadow"
                     title="Replace with custom photo"
                   >
                     Change
@@ -438,21 +422,21 @@ export function ProductInput({
 
       {/* Manual Photo Uploader (if on manual tab or replacing photo) */}
       {activeTab === 'manual' && (
-        <div className="space-y-2">
-          <label className="block text-xs font-medium text-slate-300 uppercase tracking-wider">
-            Isolated Product Photo <span className="text-indigo-400">*</span>
+        <div className="space-y-1.5">
+          <label className="block text-[11px] font-medium text-slate-400">
+            Isolated Product Photo
           </label>
           {sourceImage.previewUrl ? (
-            <div className="relative rounded-xl border border-slate-700 bg-slate-950 p-2 flex items-center justify-center overflow-hidden">
+            <div className="relative rounded-xl border border-white/[0.08] bg-black/30 p-2 flex items-center justify-center overflow-hidden">
               <img
                 src={sourceImage.previewUrl}
                 alt="Product"
-                className="max-h-40 object-contain rounded-lg"
+                className="max-h-36 object-contain rounded-lg"
               />
               <button
                 type="button"
                 onClick={() => setSourceImage({ file: null, previewUrl: '' })}
-                className="absolute top-2 right-2 p-1.5 bg-slate-900/90 text-slate-300 hover:text-red-400 rounded-lg border border-slate-700"
+                className="absolute top-2 right-2 p-1 bg-black/80 text-slate-400 hover:text-rose-400 rounded-lg border border-white/[0.1]"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -460,7 +444,7 @@ export function ProductInput({
           ) : (
             <div
               onClick={() => manualPhotoRef.current?.click()}
-              className="border-2 border-dashed border-slate-800 hover:border-slate-700 rounded-xl p-4 text-center cursor-pointer bg-slate-950/40"
+              className="border border-dashed border-white/[0.1] hover:border-white/[0.2] rounded-xl p-3.5 text-center cursor-pointer bg-white/[0.015]"
             >
               <input
                 ref={manualPhotoRef}
@@ -477,62 +461,62 @@ export function ProductInput({
       )}
 
       {/* Extracted / Editable Product Details */}
-      <div className="space-y-3 pt-2 border-t border-slate-800">
+      <div className="space-y-2.5 pt-2 border-t border-white/[0.06]">
         {/* Product Name & Model Code */}
         <div className="grid grid-cols-3 gap-2">
           <div className="col-span-2 space-y-1">
-            <label className="block text-xs font-medium text-slate-300">Product Name</label>
+            <label className="block text-[11px] font-medium text-slate-400">Product Name</label>
             <input
               type="text"
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
-              placeholder="e.g. Sanford SF6671HFN Cooling Fan"
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="e.g. Sanford Cooling Fan"
+              className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="block text-xs font-medium text-slate-300">Model #</label>
+            <label className="block text-[11px] font-medium text-slate-400">Model #</label>
             <input
               type="text"
               value={modelNumber}
               onChange={(e) => setModelNumber(e.target.value)}
               placeholder="SF6671HFN"
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-100 font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
         </div>
 
         {/* Tagline / Headline */}
         <div className="space-y-1">
-          <label className="block text-xs font-medium text-slate-300">Marketing Tagline</label>
+          <label className="block text-[11px] font-medium text-slate-400">Marketing Tagline</label>
           <input
             type="text"
             value={tagline}
             onChange={(e) => setTagline(e.target.value)}
-            placeholder="e.g. The Smartest Breeze!"
-            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            placeholder="e.g. Refreshing Airflow In Every Spin!"
+            className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
         </div>
 
         {/* Verified Features */}
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <label className="block text-xs font-medium text-slate-300">
-              Verified Key Specifications
+            <label className="block text-[11px] font-medium text-slate-400">
+              Verified Specifications
             </label>
             <span className="text-[10px] text-slate-500">One per line</span>
           </div>
           <textarea
-            rows={4}
+            rows={3}
             value={featuresText}
             onChange={(e) => setFeaturesText(e.target.value)}
-            placeholder="Cooling Function&#10;Digital Display - Gear Position & Battery&#10;100 Wind Speed&#10;90° Rotation Fold&#10;3600mAh Battery"
-            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 font-mono leading-relaxed resize-y focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            placeholder="Cooling Function&#10;Digital Display&#10;3600mAh Battery"
+            className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-100 font-mono leading-relaxed resize-y focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
         </div>
 
-        {/* Dimensions, Weight, In The Box & Warranty (Sanford Spec Card requirements) */}
+        {/* Dimensions & Warranty */}
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="space-y-1">
             <label className="block text-[11px] font-medium text-slate-400">Dimensions</label>
@@ -541,9 +525,23 @@ export function ProductInput({
               value={dimensions}
               onChange={(e) => setDimensions(e.target.value)}
               placeholder="78mm x 197mm x 57mm"
-              className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200"
+              className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-200"
             />
           </div>
+          <div className="space-y-1">
+            <label className="block text-[11px] font-medium text-slate-400">Warranty</label>
+            <input
+              type="text"
+              value={warranty}
+              onChange={(e) => setWarranty(e.target.value)}
+              placeholder="1 Year Service Warranty"
+              className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-200"
+            />
+          </div>
+        </div>
+
+        {/* Weight & In The Box */}
+        <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="space-y-1">
             <label className="block text-[11px] font-medium text-slate-400">Weight</label>
             <input
@@ -551,12 +549,9 @@ export function ProductInput({
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
               placeholder="Unit 225g, Pkg 305g"
-              className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200"
+              className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-200"
             />
           </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="space-y-1">
             <label className="block text-[11px] font-medium text-slate-400">In The Box</label>
             <input
@@ -570,158 +565,127 @@ export function ProductInput({
                     .filter(Boolean)
                 )
               }
-              placeholder="Hand Fan, Type-C Cable, Manual"
-              className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="block text-[11px] font-medium text-slate-400">Warranty</label>
-            <input
-              type="text"
-              value={warranty}
-              onChange={(e) => setWarranty(e.target.value)}
-              placeholder="1 Year Service Warranty"
-              className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200"
+              placeholder="Hand Fan, Cable, Manual"
+              className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-200"
             />
           </div>
         </div>
 
         <div className="space-y-1">
-          <label className="block text-[11px] font-medium text-slate-400">Color Options / Finishes</label>
+          <label className="block text-[11px] font-medium text-slate-400">Color Options</label>
           <input
             type="text"
             value={colors}
             onChange={(e) => setColors(e.target.value)}
-            placeholder="e.g. Graphite Black, Slate Grey"
-            className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200"
+            placeholder="e.g. Graphite Black, Arctic White"
+            className="w-full px-2.5 py-1.5 bg-white/[0.02] border border-white/[0.08] rounded-lg text-xs text-slate-200"
           />
         </div>
       </div>
 
-      {/* 6 Sanford Pattern Slots */}
+      {/* 6 Sanford Pattern Slots (Collapsible Accordion) */}
       {sanfordSlots && sanfordSlots.length > 0 && (
-        <div className="space-y-3 pt-3 border-t border-slate-800">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-white uppercase tracking-wider flex items-center space-x-1.5">
-              <Layers className="w-3.5 h-3.5 text-indigo-400" />
-              <span>6 Sanford Pattern Slots</span>
-            </span>
+        <div className="pt-2 border-t border-white/[0.06]">
+          <button
+            type="button"
+            onClick={() => setIsSlotsOpen(!isSlotsOpen)}
+            className="w-full flex items-center justify-between text-left py-1 select-none group"
+          >
             <div className="flex items-center space-x-2">
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 font-medium">
-                Sharp Sans Font Only
+              <Layers className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="text-xs font-semibold text-white">
+                Slot Customization (6 Images)
               </span>
-              <span className="text-[10px] text-emerald-400 flex items-center space-x-1">
-                <CheckCircle2 className="w-3 h-3" />
-                <span>SF2722EL Pattern</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 font-medium">
+                Sharp Sans Font
               </span>
             </div>
-          </div>
+            <div className="text-slate-400 group-hover:text-white transition">
+              {isSlotsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </div>
+          </button>
 
-          <div className="space-y-2">
-            {sanfordSlots.map((slot, index) => {
-              let slotBadgeColor = 'text-indigo-300';
-              let ruleHint = '';
-              if (slot.slot === 1) {
-                slotBadgeColor = 'text-blue-300';
-                ruleHint = 'Pure white studio background (#FFFFFF). Strictly NO text or specifications.';
-              } else if (slot.slot === 2) {
-                slotBadgeColor = 'text-emerald-300';
-                ruleHint = 'Exact BuySanford lifestyle template: Person at desk with fan, top-right solid red corner badge with rounded corner containing white Sharp Sans text. Strictly NO floating text and NO specs.';
-              } else if (slot.slot === 3) {
-                slotBadgeColor = 'text-indigo-300';
-                ruleHint = 'Upper-left red circular icon badges & divider lines + Upper-right usage slogan + Full-width red bottom promotional banner in Sharp Sans. Zero duplicate features.';
-              } else if (slot.slot === 4) {
-                slotBadgeColor = 'text-purple-300';
-                ruleHint = 'Upper-left red circular icon badges & divider lines + Upper-right usage slogan + Full-width red bottom promotional banner in Sharp Sans. Zero duplicate features.';
-              } else if (slot.slot === 5) {
-                slotBadgeColor = 'text-amber-300';
-                ruleHint = 'Available color options lineup + Full-width red bottom promotional banner in Sharp Sans font. No technical specs.';
-              } else if (slot.slot === 6) {
-                slotBadgeColor = 'text-rose-300';
-                ruleHint = 'BuySanford style: Pale warm tint, "Unit Dimension", red/navy ribbon warranty badge & crimson red dimension arrows (<--->) in Sharp Sans font. No weight, no box contents.';
-              }
+          {isSlotsOpen && (
+            <div className="space-y-2 pt-2.5 mt-1">
+              {sanfordSlots.map((slot, index) => {
+                let slotBadgeColor = 'text-indigo-300';
+                if (slot.slot === 1) slotBadgeColor = 'text-blue-300';
+                else if (slot.slot === 2) slotBadgeColor = 'text-emerald-300';
+                else if (slot.slot === 3) slotBadgeColor = 'text-indigo-300';
+                else if (slot.slot === 4) slotBadgeColor = 'text-purple-300';
+                else if (slot.slot === 5) slotBadgeColor = 'text-amber-300';
+                else if (slot.slot === 6) slotBadgeColor = 'text-rose-300';
 
-              return (
-              <div
-                key={index}
-                className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-3 space-y-1.5"
-              >
-                <div className="flex items-center justify-between text-xs font-medium">
-                  <span className={`${slotBadgeColor} font-semibold`}>
-                    Slot {slot.slot}: {slot.title}
-                  </span>
-                  <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">
-                    {slot.theme}
-                  </span>
-                </div>
+                return (
+                  <div
+                    key={index}
+                    className="bg-black/30 border border-white/[0.06] rounded-xl p-2.5 space-y-1.5"
+                  >
+                    <div className="flex items-center justify-between text-xs font-medium">
+                      <span className={`${slotBadgeColor} font-semibold text-[11px]`}>
+                        Slot {slot.slot}: {slot.title}
+                      </span>
+                      <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-white/[0.04] text-slate-400 border border-white/[0.06]">
+                        {slot.theme}
+                      </span>
+                    </div>
 
-                <p className="text-[10px] text-slate-400 italic">
-                  {ruleHint || slot.description}
-                </p>
+                    {slot.slot !== 1 && (
+                      <div className="space-y-0.5">
+                        <label className="text-[10px] font-medium text-slate-400">
+                          {slot.slot === 2
+                            ? 'Top-Right Red Badge Tagline (Sharp Sans Text)'
+                            : slot.slot === 3 || slot.slot === 4
+                            ? 'Upper-Right Context Slogan'
+                            : slot.slot === 5
+                            ? 'Header Title'
+                            : 'Top-Left Header'}
+                        </label>
+                        <input
+                          type="text"
+                          value={slot.headline || ''}
+                          onChange={(e) => updateSlotField(index, 'headline', e.target.value)}
+                          placeholder="Headline text..."
+                          className="w-full bg-white/[0.02] border border-white/[0.08] px-2 py-1 rounded text-[11px] text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </div>
+                    )}
 
-                {slot.slot !== 1 && (
-                  <div className="space-y-0.5">
-                    <label className="text-[10px] font-semibold text-slate-300">
-                      {slot.slot === 2
-                        ? 'Top-Right Red Badge Tagline (White Sharp Sans Text)'
-                        : slot.slot === 3 || slot.slot === 4
-                        ? 'Upper-Right Context Slogan (Never repeat a technical spec)'
-                        : slot.slot === 5
-                        ? 'Header Title'
-                        : 'Top-Left Header'}
-                    </label>
-                    <input
-                      type="text"
-                      value={slot.headline || ''}
-                      onChange={(e) => updateSlotField(index, 'headline', e.target.value)}
-                      placeholder={
-                        slot.slot === 2
-                          ? 'Refreshing Airflow In Every Spin!'
-                          : slot.slot === 3
-                          ? 'SUITABLE FOR OUTDOOR & INDOOR USE'
-                          : slot.slot === 4
-                          ? 'PORTABLE, POWERFUL, PEACEFUL, STAY COOL EVERYWHERE'
-                          : 'Headline for this card...'
-                      }
-                      className="w-full bg-slate-900/60 border border-slate-800 px-2 py-1 rounded text-[11px] text-slate-200"
-                    />
+                    {(slot.slot === 3 || slot.slot === 4 || slot.slot === 5) && (
+                      <div className="space-y-0.5">
+                        <label className="text-[10px] font-medium text-red-400 flex items-center space-x-1">
+                          <span>Red Bottom Banner Text</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={slot.promoBanner || ''}
+                          onChange={(e) => updateSlotField(index, 'promoBanner', e.target.value)}
+                          placeholder='e.g. 4" Table Fan with LED'
+                          className="w-full bg-red-950/20 border border-red-500/30 px-2 py-1 rounded text-[11px] text-white placeholder-red-300/40 focus:ring-1 focus:ring-red-500"
+                        />
+                      </div>
+                    )}
+
+                    {slot.slot !== 1 && slot.slot !== 2 && (
+                      <textarea
+                        rows={2}
+                        value={slot.features?.join('\n') || ''}
+                        onChange={(e) =>
+                          updateSlotField(
+                            index,
+                            'features',
+                            e.target.value.split('\n').filter((f) => f.trim().length > 0)
+                          )
+                        }
+                        placeholder="Features or items to highlight..."
+                        className="w-full bg-transparent border border-white/[0.04] p-1.5 rounded text-[11px] text-slate-300 placeholder-slate-600 focus:ring-1 focus:ring-indigo-500/50 resize-y font-mono leading-relaxed"
+                      />
+                    )}
                   </div>
-                )}
-
-                {(slot.slot === 3 || slot.slot === 4 || slot.slot === 5) && (
-                  <div className="space-y-0.5">
-                    <label className="text-[10px] font-semibold text-red-400 flex items-center space-x-1">
-                      <span>Red Bottom Banner Text (White Typography)</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={slot.promoBanner || ''}
-                      onChange={(e) => updateSlotField(index, 'promoBanner', e.target.value)}
-                      placeholder='e.g. 4" Table Fan with LED'
-                      className="w-full bg-red-950/30 border border-red-800/60 px-2 py-1 rounded text-[11px] text-white placeholder-red-300/40 focus:ring-1 focus:ring-red-500"
-                    />
-                  </div>
-                )}
-
-                {slot.slot !== 1 && slot.slot !== 2 && (
-                  <textarea
-                    rows={2}
-                    value={slot.features?.join('\n') || ''}
-                    onChange={(e) =>
-                      updateSlotField(
-                        index,
-                        'features',
-                        e.target.value.split('\n').filter((f) => f.trim().length > 0)
-                      )
-                    }
-                    placeholder="Features or items to highlight..."
-                    className="w-full bg-transparent border-0 p-0 text-xs text-slate-300 placeholder-slate-600 focus:ring-0 resize-y font-sans leading-relaxed"
-                  />
-                )}
-              </div>
-            );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

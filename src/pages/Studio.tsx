@@ -479,20 +479,20 @@ Lanyard & Loop Holder
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-[#090B10] text-slate-100 flex flex-col selection:bg-indigo-500/20 selection:text-indigo-200">
       <Navbar />
 
       {/* Toast Alert */}
       {toastMessage && (
         <div
-          className={`fixed top-20 right-6 z-50 py-3 px-4 rounded-xl shadow-2xl border text-xs font-medium flex items-center space-x-2 transition-all ${
+          className={`fixed top-18 right-6 z-50 py-2.5 px-4 rounded-xl shadow-2xl border text-xs font-medium flex items-center space-x-2 transition-all ${
             toastMessage.type === 'error'
-              ? 'bg-red-950/90 border-red-800 text-red-200'
-              : 'bg-indigo-950/90 border-indigo-700 text-indigo-200'
+              ? 'bg-rose-950/90 border-rose-800/80 text-rose-200'
+              : 'bg-emerald-950/90 border-emerald-800/80 text-emerald-200'
           }`}
         >
           {toastMessage.type === 'error' ? (
-            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+            <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
           ) : (
             <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
           )}
@@ -501,8 +501,8 @@ Lanyard & Loop Holder
       )}
 
       {/* Main Studio 3-Column Layout */}
-      <main className="flex-1 max-w-[1680px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <main className="flex-1 max-w-[1680px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           {/* Column 1 (Left): Catalogue & Product Input (width: 4 / 12) */}
           <div className="lg:col-span-4 xl:col-span-4">
             <ProductInput
