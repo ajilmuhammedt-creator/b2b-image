@@ -52,6 +52,9 @@ function apiDevPlugin() {
           } else if (urlPath === '/api/generate') {
             const { default: handler } = await server.ssrLoadModule('/api/generate.ts');
             return await handler(req, res);
+          } else if (urlPath === '/api/cleanup') {
+            const { default: handler } = await server.ssrLoadModule('/api/cleanup.ts');
+            return await handler(req, res);
           } else {
             res.statusCode = 404;
             return res.end(JSON.stringify({ error: 'Endpoint not found' }));

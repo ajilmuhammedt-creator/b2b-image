@@ -405,38 +405,7 @@ export function Studio() {
 
       // Save project state to projectStorage
       setTimeout(async () => {
-        let previewDataUrl = sourceImage.previewUrl;
-        if (sourceImage.file && !previewDataUrl.startsWith('data:')) {
-          try {
-            previewDataUrl = await fileToDataUrl(sourceImage.file);
-          } catch {
-            // Ignore
-          }
-        }
-
-        const projectPayload: ProjectData = {
-          id: projectId,
-          user_id: userId,
-          product_name: productName,
-          model_number: modelNumber,
-          tagline,
-          features: featuresText.split('\n').filter((f) => f.trim().length > 0),
-          colors,
-          dimensions,
-          weight,
-          whats_in_the_box: whatsInTheBox,
-          warranty,
-          feature_groups: sanfordSlots.map((s) => s.features),
-          source_image_path: sourceImage.storagePath,
-          source_image_data_url: previewDataUrl,
-          catalogue_preview_url: catalogueImage.previewUrl,
-          created_at: new Date().toISOString(),
-          settings,
-          makePoster,
-          sanford_slots: sanfordSlots,
-          generations,
-        };
-        await projectStorage.saveProject(projectPayload);
+        await saveCurrentProject();
       }, 500);
     } catch (err: any) {
       console.error('Batch generation error:', err);
@@ -444,6 +413,41 @@ export function Studio() {
     } finally {
       setIsGeneratingAll(false);
     }
+  };
+
+  const saveCurrentProject = async (overrideGenerations?: GenerationItem[]) => {
+    let previewDataUrl = sourceImage.previewUrl;
+    if (sourceImage.file && !previewDataUrl.startsWith('data:')) {
+      try {
+        previewDataUrl = await fileToDataUrl(sourceImage.file);
+      } catch {
+        // Ignore
+      }
+    }
+
+    const projectPayload: ProjectData = {
+      id: projectId,
+      user_id: userId,
+      product_name: productName,
+      model_number: modelNumber,
+      tagline,
+      features: featuresText.split('\n').filter((f) => f.trim().length > 0),
+      colors,
+      dimensions,
+      weight,
+      whats_in_the_box: whatsInTheBox,
+      warranty,
+      feature_groups: sanfordSlots.map((s) => s.features),
+      source_image_path: sourceImage.storagePath,
+      source_image_data_url: previewDataUrl,
+      catalogue_preview_url: catalogueImage.previewUrl,
+      created_at: new Date().toISOString(),
+      settings,
+      makePoster,
+      sanford_slots: sanfordSlots,
+      generations: overrideGenerations || generations,
+    };
+    await projectStorage.saveProject(projectPayload);
   };
 
   // Regenerate single slot
@@ -462,7 +466,12 @@ export function Studio() {
       styleRef = slot1?.imagePath;
     }
 
-    await callGenerateApi(slotOrKind, styleRef);
+    const res = await callGenerateApi(slotOrKind, styleRef);
+    if (res) {
+      setTimeout(() => {
+        saveCurrentProject();
+      }, 500);
+    }
   };
 
   const toggleSelectCard = (id: string) => {

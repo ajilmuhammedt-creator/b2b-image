@@ -146,3 +146,4 @@ export async function resizeImageToMax2048(
     reader.readAsDataURL(file);
   });
 }
+

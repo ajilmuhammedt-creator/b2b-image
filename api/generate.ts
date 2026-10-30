@@ -67,6 +67,21 @@ export default async function handler(req: any, res: any) {
         if (project && project.user_id && project.user_id !== userId) {
           return res.status(403).json({ error: 'Forbidden: You do not have permission for this project.' });
         }
+
+        if (!project) {
+          await supabaseAdmin.from('projects').insert({
+            id: projectId,
+            user_id: userId,
+            product_name: productName || 'Product',
+            model_number: modelNumber || '',
+            tagline: tagline || '',
+            features: fullFeatures || [],
+            colors: colors || '',
+            source_image_path: sourceImagePath || '',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+        }
       } catch (projErr) {
         // Table might not exist or be queried yet
       }
@@ -289,7 +304,7 @@ export default async function handler(req: any, res: any) {
     const dataUrl = `data:image/png;base64,${b64Json}`;
     const effectiveUrl = publicUrl || dataUrl;
 
-    // 6. Record row in generations table if available
+    // 6. Record row in generations table
     try {
       await supabaseAdmin.from('generations').insert({
         id: generationId,
@@ -297,6 +312,8 @@ export default async function handler(req: any, res: any) {
         user_id: userId,
         kind,
         slot: kind === 'poster' ? null : slot,
+        theme: sanfordSlot?.theme || (kind === 'poster' ? 'poster' : 'hero'),
+        slot_title: sanfordSlot?.title || (kind === 'poster' ? 'Poster' : `Image ${slot}`),
         model: selectedModel,
         quality: selectedQuality,
         size: selectedSize,
@@ -304,7 +321,9 @@ export default async function handler(req: any, res: any) {
         prompt,
         status: 'done',
         image_path: imagePath,
+        image_url: effectiveUrl,
         usage: result.usage || null,
+        created_at: new Date().toISOString(),
       });
     } catch (dbErr) {
       console.warn('Could not save to generations table (table might not exist yet):', dbErr);

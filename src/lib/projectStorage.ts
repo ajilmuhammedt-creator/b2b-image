@@ -1,122 +1,247 @@
 import { supabase } from './supabase';
-import type { ProjectData } from '../types';
-
-const LOCAL_STORAGE_KEY = 'octopus_image_studio_projects';
+import type { ProjectData, GenerationItem } from '../types';
 
 export const projectStorage = {
-  // Get all projects for user
+  // Get all projects for user within the last 10 days
   async getProjects(userId: string): Promise<ProjectData[]> {
-    const localProjects = this.getLocalProjects(userId);
+    if (!userId) return [];
+
+    const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
 
     try {
-      const { data, error } = await supabase
+      const { data: projectsData, error: projErr } = await supabase
         .from('projects')
         .select('*')
+        .eq('user_id', userId)
+        .gte('created_at', tenDaysAgo)
         .order('created_at', { ascending: false });
 
-      if (!error && Array.isArray(data) && data.length > 0) {
-        // Merge with local storage
-        const combined = [...data];
-        for (const lp of localProjects) {
-          if (!combined.some((p) => p.id === lp.id)) {
-            combined.push(lp);
-          }
-        }
-        return combined;
+      if (projErr) {
+        console.warn('Error fetching projects from Supabase:', projErr.message);
+        return [];
       }
-    } catch {
-      // Supabase table not created yet or RLS blocked
-    }
 
-    return localProjects;
-  },
+      if (!projectsData || projectsData.length === 0) {
+        return [];
+      }
 
-  // Get project by ID
-  async getProjectById(projectId: string, userId: string): Promise<ProjectData | null> {
-    const localProjects = this.getLocalProjects(userId);
-    const foundLocal = localProjects.find((p) => p.id === projectId);
-
-    try {
-      const { data, error } = await supabase
-        .from('projects')
+      const projectIds = projectsData.map((p) => p.id);
+      const { data: gensData, error: gensErr } = await supabase
+        .from('generations')
         .select('*')
-        .eq('id', projectId)
-        .single();
+        .in('project_id', projectIds)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: true });
 
-      if (!error && data) {
-        return {
-          ...data,
-          generations: foundLocal?.generations || [],
-        };
+      if (gensErr) {
+        console.warn('Error fetching generations for projects:', gensErr.message);
       }
-    } catch {
-      // Fallback to local
-    }
 
-    return foundLocal || null;
-  },
+      const generationsByProject = new Map<string, GenerationItem[]>();
+      (gensData || []).forEach((g: any) => {
+        let publicUrl = g.image_url;
+        if (!publicUrl && g.image_path) {
+          const { data: urlData } = supabase.storage
+            .from('generated-images')
+            .getPublicUrl(g.image_path);
+          publicUrl = urlData?.publicUrl || '';
+        }
 
-  // Save or update project
-  async saveProject(project: ProjectData): Promise<void> {
-    // 1. Save to local storage
-    this.saveLocalProject(project);
+        const genItem: GenerationItem = {
+          id: g.id,
+          projectId: g.project_id,
+          kind: g.kind || 'feature',
+          slot: g.slot,
+          theme: g.theme,
+          slotTitle: g.slot_title,
+          status: (g.status as any) || 'done',
+          imageUrl: publicUrl,
+          imagePath: g.image_path,
+          prompt: g.prompt,
+          usage: g.usage,
+          selected: true,
+        };
 
-    // 2. Try saving to Supabase projects table
-    try {
-      await supabase.from('projects').upsert({
-        id: project.id,
-        user_id: project.user_id,
-        product_name: project.product_name,
-        features: project.features,
-        colors: project.colors ? [project.colors] : [],
-        feature_groups: project.feature_groups,
-        source_image_path: project.source_image_path || '',
-        created_at: project.created_at,
+        const existing = generationsByProject.get(g.project_id) || [];
+        existing.push(genItem);
+        generationsByProject.set(g.project_id, existing);
       });
+
+      return projectsData.map((p: any) => ({
+        id: p.id,
+        user_id: p.user_id,
+        product_name: p.product_name,
+        model_number: p.model_number || '',
+        tagline: p.tagline || '',
+        features: Array.isArray(p.features) ? p.features : [],
+        colors: p.colors || '',
+        dimensions: p.dimensions || '',
+        weight: p.weight || '',
+        whats_in_the_box: Array.isArray(p.whats_in_the_box) ? p.whats_in_the_box : [],
+        warranty: p.warranty || '',
+        feature_groups: Array.isArray(p.feature_groups) ? p.feature_groups : [],
+        source_image_path: p.source_image_path || '',
+        source_image_data_url: p.source_image_data_url || '',
+        catalogue_preview_url: p.catalogue_preview_url || '',
+        sanford_slots: Array.isArray(p.sanford_slots) ? p.sanford_slots : [],
+        settings: p.settings || undefined,
+        makePoster: p.make_poster ?? false,
+        created_at: p.created_at,
+        generations: generationsByProject.get(p.id) || [],
+      }));
     } catch (err) {
-      console.warn('Could not upsert project to Supabase table:', err);
-    }
-  },
-
-  // Delete project
-  async deleteProject(projectId: string, userId: string): Promise<void> {
-    // 1. Remove from local storage
-    const localProjects = this.getLocalProjects(userId).filter((p) => p.id !== projectId);
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(localProjects));
-
-    // 2. Remove from Supabase
-    try {
-      await supabase.from('projects').delete().eq('id', projectId);
-    } catch {
-      // Ignore
-    }
-  },
-
-  // Local storage helpers
-  getLocalProjects(userId: string): ProjectData[] {
-    try {
-      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (!raw) return [];
-      const all: ProjectData[] = JSON.parse(raw);
-      return all.filter((p) => p.user_id === userId || !p.user_id || userId === 'demo-user');
-    } catch {
+      console.error('Failed to load projects from Supabase:', err);
       return [];
     }
   },
 
-  saveLocalProject(project: ProjectData): void {
+  // Get project by ID
+  async getProjectById(projectId: string, userId: string): Promise<ProjectData | null> {
+    if (!projectId || !userId) return null;
+
     try {
-      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-      let all: ProjectData[] = raw ? JSON.parse(raw) : [];
-      const idx = all.findIndex((p) => p.id === project.id);
-      if (idx >= 0) {
-        all[idx] = project;
-      } else {
-        all.unshift(project);
+      const { data: p, error: projErr } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', projectId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (projErr || !p) {
+        if (projErr) console.warn('Error fetching project by ID:', projErr.message);
+        return null;
       }
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(all));
+
+      const { data: gensData } = await supabase
+        .from('generations')
+        .select('*')
+        .eq('project_id', projectId)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: true });
+
+      const generations: GenerationItem[] = (gensData || []).map((g: any) => {
+        let publicUrl = g.image_url;
+        if (!publicUrl && g.image_path) {
+          const { data: urlData } = supabase.storage
+            .from('generated-images')
+            .getPublicUrl(g.image_path);
+          publicUrl = urlData?.publicUrl || '';
+        }
+
+        return {
+          id: g.id,
+          projectId: g.project_id,
+          kind: g.kind || 'feature',
+          slot: g.slot,
+          theme: g.theme,
+          slotTitle: g.slot_title,
+          status: (g.status as any) || 'done',
+          imageUrl: publicUrl,
+          imagePath: g.image_path,
+          prompt: g.prompt,
+          usage: g.usage,
+          selected: true,
+        };
+      });
+
+      return {
+        id: p.id,
+        user_id: p.user_id,
+        product_name: p.product_name,
+        model_number: p.model_number || '',
+        tagline: p.tagline || '',
+        features: Array.isArray(p.features) ? p.features : [],
+        colors: p.colors || '',
+        dimensions: p.dimensions || '',
+        weight: p.weight || '',
+        whats_in_the_box: Array.isArray(p.whats_in_the_box) ? p.whats_in_the_box : [],
+        warranty: p.warranty || '',
+        feature_groups: Array.isArray(p.feature_groups) ? p.feature_groups : [],
+        source_image_path: p.source_image_path || '',
+        source_image_data_url: p.source_image_data_url || '',
+        catalogue_preview_url: p.catalogue_preview_url || '',
+        sanford_slots: Array.isArray(p.sanford_slots) ? p.sanford_slots : [],
+        settings: p.settings || undefined,
+        makePoster: p.make_poster ?? false,
+        created_at: p.created_at,
+        generations,
+      };
     } catch (err) {
-      console.warn('Failed to save to localStorage:', err);
+      console.error('Failed to get project from Supabase:', err);
+      return null;
+    }
+  },
+
+  // Save or update project
+  async saveProject(project: ProjectData): Promise<void> {
+    if (!project?.id || !project?.user_id) return;
+
+    try {
+      const { error } = await supabase.from('projects').upsert({
+        id: project.id,
+        user_id: project.user_id,
+        product_name: project.product_name,
+        model_number: project.model_number || '',
+        tagline: project.tagline || '',
+        features: project.features || [],
+        colors: project.colors || '',
+        dimensions: project.dimensions || '',
+        weight: project.weight || '',
+        whats_in_the_box: project.whats_in_the_box || [],
+        warranty: project.warranty || '',
+        feature_groups: project.feature_groups || [],
+        source_image_path: project.source_image_path || '',
+        source_image_data_url: project.source_image_data_url || '',
+        catalogue_preview_url: project.catalogue_preview_url || '',
+        sanford_slots: project.sanford_slots || [],
+        settings: project.settings || {},
+        make_poster: project.makePoster ?? false,
+        created_at: project.created_at || new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      if (error) {
+        console.warn('Could not upsert project to Supabase table:', error.message);
+      }
+    } catch (err) {
+      console.warn('Failed to save project to Supabase:', err);
+    }
+  },
+
+  // Delete project, its database rows, and its stored images
+  async deleteProject(projectId: string, userId: string): Promise<void> {
+    if (!projectId || !userId) return;
+
+    try {
+      // 1. Get generation image paths to remove from storage
+      const { data: gens } = await supabase
+        .from('generations')
+        .select('image_path')
+        .eq('project_id', projectId)
+        .eq('user_id', userId);
+
+      const paths = (gens || []).map((g) => g.image_path).filter(Boolean);
+      if (paths.length > 0) {
+        await supabase.storage.from('generated-images').remove(paths);
+      }
+
+      // 2. Remove source image from storage if present
+      const { data: project } = await supabase
+        .from('projects')
+        .select('source_image_path')
+        .eq('id', projectId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (project?.source_image_path) {
+        await supabase.storage.from('source-images').remove([project.source_image_path]);
+      }
+
+      // 3. Delete database records (generations cascade or explicit)
+      await supabase.from('generations').delete().eq('project_id', projectId).eq('user_id', userId);
+      await supabase.from('projects').delete().eq('id', projectId).eq('user_id', userId);
+    } catch (err) {
+      console.error('Failed to delete project from Supabase:', err);
     }
   },
 };

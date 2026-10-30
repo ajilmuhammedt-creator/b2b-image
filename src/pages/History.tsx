@@ -4,14 +4,18 @@ import { useAuth } from '../context/AuthContext';
 import { Navbar } from '../components/Navbar';
 import { projectStorage } from '../lib/projectStorage';
 import type { ProjectData } from '../types';
+import JSZip from 'jszip';
 import {
   History as HistoryIcon,
   Calendar,
   Layers,
-  ArrowRight,
+  ExternalLink,
   Trash2,
   Sparkles,
   Image as ImageIcon,
+  Clock,
+  Download,
+  Loader2,
 } from 'lucide-react';
 
 export function History() {
@@ -19,6 +23,7 @@ export function History() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [downloadingProjectId, setDownloadingProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.id) {
@@ -31,12 +36,29 @@ export function History() {
     setLoading(true);
     try {
       const data = await projectStorage.getProjects(user.id);
-      setProjects(data);
+      // Ensure only projects within the last 10 days are displayed
+      const now = Date.now();
+      const tenDaysMs = 10 * 24 * 60 * 60 * 1000;
+      const valid = (data || []).filter((p) => {
+        const created = new Date(p.created_at).getTime();
+        return now - created <= tenDaysMs;
+      });
+      // Sort newest first
+      valid.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      setProjects(valid);
     } catch (err) {
       console.error('Error loading history:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const calculateDaysRemaining = (createdAt: string) => {
+    const createdTime = new Date(createdAt).getTime();
+    const elapsedMs = Date.now() - createdTime;
+    const elapsedDays = elapsedMs / (1000 * 60 * 60 * 24);
+    const daysLeft = Math.ceil(10 - elapsedDays);
+    return Math.max(1, Math.min(10, daysLeft));
   };
 
   const handleOpenProject = (projectId: string) => {
@@ -46,31 +68,84 @@ export function History() {
   const handleDeleteProject = async (e: React.MouseEvent, projectId: string) => {
     e.stopPropagation();
     if (!user?.id) return;
-    if (confirm('Are you sure you want to delete this project from history?')) {
+    if (confirm('Are you sure you want to permanently delete this project and its images?')) {
       await projectStorage.deleteProject(projectId, user.id);
       setProjects((prev) => prev.filter((p) => p.id !== projectId));
     }
   };
 
+  const handleDownloadAllZip = async (e: React.MouseEvent, project: ProjectData) => {
+    e.stopPropagation();
+    const completedGens = (project.generations || []).filter(
+      (g) => g.status === 'done' && g.imageUrl
+    );
+
+    if (completedGens.length === 0) {
+      alert('No generated images available to download for this project.');
+      return;
+    }
+
+    setDownloadingProjectId(project.id);
+    try {
+      const zip = new JSZip();
+      const productSlug = (project.product_name || 'project')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .slice(0, 30);
+
+      await Promise.all(
+        completedGens.map(async (gen, idx) => {
+          try {
+            const resp = await fetch(gen.imageUrl!);
+            const blob = await resp.blob();
+            const fileName =
+              gen.kind === 'poster'
+                ? `${productSlug}-poster.png`
+                : `${productSlug}-slot-${gen.slot ?? idx + 1}.png`;
+            zip.file(fileName, blob);
+          } catch (fetchErr) {
+            console.error(`Failed to download image for slot ${gen.slot}:`, fetchErr);
+          }
+        })
+      );
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const zipUrl = URL.createObjectURL(zipBlob);
+      const link = document.createElement('a');
+      link.href = zipUrl;
+      link.download = `${productSlug}-10day-archive.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(zipUrl), 1000);
+    } catch (err) {
+      console.error('Error generating project zip archive:', err);
+      alert('Failed to generate ZIP download. Please try again.');
+    } finally {
+      setDownloadingProjectId(null);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-[#090B10] text-slate-100 flex flex-col selection:bg-indigo-500/20 selection:text-indigo-200">
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between pb-6 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-slate-800 gap-4">
           <div>
-            <h1 className="text-xl font-bold text-white flex items-center space-x-2">
+            <h1 className="text-xl font-bold text-white flex items-center space-x-2.5">
               <HistoryIcon className="w-5 h-5 text-indigo-400" />
-              <span>Project History</span>
+              <span>Project History (10-Day Retention)</span>
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Past generated products and image sets. Click any project to reopen in Studio.
+              Generated assets are automatically retained for 10 days before deletion. Reopen any project to continue editing.
             </p>
           </div>
 
           <button
             onClick={() => navigate('/studio')}
-            className="py-2 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold uppercase tracking-wider flex items-center space-x-1.5 transition"
+            className="self-start sm:self-auto py-2 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold uppercase tracking-wider flex items-center space-x-1.5 transition shadow-lg shadow-indigo-600/20"
           >
             <Sparkles className="w-4 h-4" />
             <span>New Studio Run</span>
@@ -78,7 +153,7 @@ export function History() {
         </div>
 
         {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center space-y-3">
+          <div className="py-24 flex flex-col items-center justify-center space-y-3">
             <div className="animate-spin h-7 w-7 border-2 border-indigo-500 border-t-transparent rounded-full" />
             <span className="text-xs text-slate-400">Loading your project library...</span>
           </div>
@@ -88,14 +163,14 @@ export function History() {
               <ImageIcon className="w-7 h-7" />
             </div>
             <div className="space-y-1">
-              <h2 className="text-base font-semibold text-white">No projects yet</h2>
+              <h2 className="text-base font-semibold text-white">No active projects found</h2>
               <p className="text-xs text-slate-400">
-                Upload a product photo in the Studio to generate your first 5-image feature set + poster.
+                Projects created within the last 10 days appear here. Start a new run in Studio to generate product photos.
               </p>
             </div>
             <button
               onClick={() => navigate('/studio')}
-              className="mt-2 py-2 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition"
+              className="mt-2 py-2 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition shadow-md shadow-indigo-600/30"
             >
               Start First Studio Project
             </button>
@@ -104,18 +179,20 @@ export function History() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
             {projects.map((project) => {
               const completedImages =
-                project.generations?.filter((g) => g.status === 'done') || [];
+                project.generations?.filter((g) => g.status === 'done' && g.imageUrl) || [];
               const thumbnail =
                 completedImages[0]?.imageUrl || project.source_image_data_url;
+              const daysLeft = calculateDaysRemaining(project.created_at);
+              const isDownloading = downloadingProjectId === project.id;
 
               return (
                 <div
                   key={project.id}
                   onClick={() => handleOpenProject(project.id)}
-                  className="bg-slate-900 border border-slate-800 hover:border-indigo-500/70 rounded-2xl overflow-hidden cursor-pointer shadow-xl transition-all duration-200 group flex flex-col"
+                  className="bg-slate-900/90 border border-slate-800/80 hover:border-indigo-500/60 rounded-2xl overflow-hidden cursor-pointer shadow-xl transition-all duration-200 group flex flex-col relative"
                 >
                   {/* Thumbnail Banner */}
-                  <div className="h-44 bg-slate-950 relative flex items-center justify-center overflow-hidden border-b border-slate-800">
+                  <div className="h-48 bg-slate-950 relative flex items-center justify-center overflow-hidden border-b border-slate-800/80">
                     {thumbnail ? (
                       <img
                         src={thumbnail}
@@ -128,7 +205,27 @@ export function History() {
                         <span className="text-[11px]">No preview</span>
                       </div>
                     )}
-                    <div className="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-medium text-slate-300 border border-slate-800 flex items-center space-x-1">
+
+                    {/* Retention countdown badge */}
+                    <div className="absolute top-3 left-3">
+                      <span
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md border flex items-center space-x-1.5 shadow-md ${
+                          daysLeft <= 2
+                            ? 'bg-rose-950/85 text-rose-300 border-rose-800/60'
+                            : daysLeft <= 4
+                            ? 'bg-amber-950/85 text-amber-300 border-amber-800/60'
+                            : 'bg-slate-900/85 text-slate-300 border-slate-800'
+                        }`}
+                      >
+                        <Clock className="w-3 h-3" />
+                        <span>
+                          {daysLeft === 1 ? 'Deletes in 1 day' : `Deletes in ${daysLeft} days`}
+                        </span>
+                      </span>
+                    </div>
+
+                    {/* Image count pill */}
+                    <div className="absolute top-3 right-3 bg-slate-900/85 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] font-medium text-slate-300 border border-slate-800 flex items-center space-x-1 shadow-md">
                       <Layers className="w-3 h-3 text-indigo-400" />
                       <span>{completedImages.length} images</span>
                     </div>
@@ -138,38 +235,69 @@ export function History() {
                   <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                     <div className="space-y-1">
                       <h3 className="text-sm font-semibold text-white group-hover:text-indigo-400 transition-colors line-clamp-1">
-                        {project.product_name}
+                        {project.product_name || 'Untitled Product'}
                       </h3>
+                      {project.model_number && (
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">
+                          Model: {project.model_number}
+                        </p>
+                      )}
                       <p className="text-[11px] text-slate-400 line-clamp-2">
                         {project.features?.join(' • ') || 'No features list'}
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-[11px] text-slate-500">
-                      <span className="flex items-center space-x-1">
-                        <Calendar className="w-3 h-3" />
-                        <span>
-                          {new Date(project.created_at).toLocaleDateString(undefined, {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
+                    <div className="pt-3 border-t border-slate-800/80 flex flex-col space-y-2.5">
+                      <div className="flex items-center justify-between text-[11px] text-slate-500">
+                        <span className="flex items-center space-x-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          <span>
+                            {new Date(project.created_at).toLocaleDateString(undefined, {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </span>
                         </span>
-                      </span>
 
-                      <div className="flex items-center space-x-2">
                         <button
                           type="button"
                           onClick={(e) => handleDeleteProject(e, project.id)}
-                          className="p-1 text-slate-500 hover:text-red-400 transition"
+                          className="p-1 text-slate-500 hover:text-rose-400 transition"
                           title="Delete project"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
-                        <span className="text-indigo-400 font-medium flex items-center space-x-0.5">
-                          <span>Reopen</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </span>
+                      </div>
+
+                      {/* Action buttons: Open & Download all (ZIP) */}
+                      <div className="flex items-center space-x-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenProject(project.id);
+                          }}
+                          className="flex-1 py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center justify-center space-x-1.5 transition"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5 text-indigo-400" />
+                          <span>Open</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={completedImages.length === 0 || isDownloading}
+                          onClick={(e) => handleDownloadAllZip(e, project)}
+                          className="flex-1 py-1.5 px-3 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 hover:border-indigo-500/50 text-xs font-medium flex items-center justify-center space-x-1.5 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                          title="Download all generated images as ZIP"
+                        >
+                          {isDownloading ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-400" />
+                          ) : (
+                            <Download className="w-3.5 h-3.5 text-indigo-400" />
+                          )}
+                          <span>{isDownloading ? 'Archiving...' : 'Download (ZIP)'}</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -182,4 +310,3 @@ export function History() {
     </div>
   );
 }
-
