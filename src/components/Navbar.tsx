@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, History as HistoryIcon, LayoutGrid, LogOut, User } from 'lucide-react';
+import { History as HistoryIcon, LayoutGrid, LogOut, User } from 'lucide-react';
 
 export function Navbar() {
   const { user, signOut } = useAuth();
@@ -14,18 +14,15 @@ export function Navbar() {
     <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center space-x-6">
-          <Link to="/studio" className="flex items-center space-x-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-base font-bold text-white tracking-tight">
-                Octopus <span className="text-indigo-400">Image Studio</span>
-              </span>
-              <span className="hidden sm:inline-block ml-2 px-1.5 py-0.5 text-[10px] font-semibold bg-indigo-500/10 text-indigo-300 rounded border border-indigo-500/20">
-                B2B E-Commerce
-              </span>
-            </div>
+          <Link to="/studio" className="flex items-center space-x-3 group">
+            <img
+              src="/sanford-ai-logo.png"
+              alt="Sanford AI"
+              className="h-9 w-auto object-contain mix-blend-screen group-hover:opacity-90 transition-opacity"
+            />
+            <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-semibold bg-red-500/10 text-red-400 rounded-full border border-red-500/20">
+              B2B Image Studio
+            </span>
           </Link>
 
           <nav className="flex items-center space-x-1">

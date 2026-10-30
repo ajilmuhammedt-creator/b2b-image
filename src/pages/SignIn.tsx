@@ -1,7 +1,7 @@
 import { useState, type FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, Mail, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { Mail, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 
 export function SignIn() {
   const { user, loading, signInWithOtp, continueAsGuest } = useAuth();
@@ -68,14 +68,18 @@ export function SignIn() {
 
       <div className="w-full max-w-md space-y-8 bg-slate-900/90 p-8 rounded-2xl border border-slate-800 shadow-2xl backdrop-blur-xl relative z-10">
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 mb-1 shadow-inner">
-            <Sparkles className="w-7 h-7" />
+          <div className="inline-flex items-center justify-center mb-1">
+            <img
+              src="/sanford-ai-logo.png"
+              alt="Sanford AI"
+              className="h-12 w-auto object-contain mix-blend-screen"
+            />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">
             B2B Product Image Studio
           </h1>
           <p className="text-sm text-slate-400">
-            Generate 5 grounded e-commerce feature images + poster from a single product photo
+            Generate grounded BuySanford e-commerce product images from catalogue documents
           </p>
         </div>
 
