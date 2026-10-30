@@ -247,6 +247,7 @@ Preserve every supplied number, unit, and technical specification accurately.
 
 OUTPUT
 Generate exactly ONE complete 1:1 square image.
+This is one individual feature image, not a collage, contact sheet, or three-panel design.
 No outer frame or watermark.`;
 }
 

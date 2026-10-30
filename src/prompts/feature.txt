@@ -1,14 +1,20 @@
+REUSABLE E-COMMERCE FEATURE IMAGE PROMPT
+
+Replace the bracketed fields and attach the original product photograph with every request.
+
+--- PROMPT START ---
+
 Create ONE premium square e-commerce feature image using the attached product photograph and the supplied product information.
 
 PRODUCT INFORMATION
 Product name: [PRODUCT NAME]
 All verified key features: [FULL FEATURE LIST]
 Features to highlight in THIS image: [SELECTED FEATURE GROUP]
-Image number: [IMAGE NUMBER] of 5
+Image number: [1, 2, or 3]
 Language: English
 
 PRODUCT ACCURACY
-Treat the uploaded product photograph as the source of truth for the product's appearance.
+Treat the uploaded product photograph as the source of truth for the product’s appearance.
 Faithfully preserve its shape, proportions, colors, materials, texture, buttons, ports, branding, labels, and visible components.
 Keep the product clearly recognizable and accurately represented.
 Do not redesign it, add components, change its color, or invent accessories.
@@ -17,16 +23,15 @@ If a feature involves a component or mechanism not visible in the photograph, co
 Show alternative colors as labeled swatches only when those colors are explicitly supplied.
 
 VISUAL STYLE
-Create polished e-commerce feature artwork with realistic product photography, soft studio lighting, subtle shadows, and a clean [BACKGROUND] background.
+Create polished e-commerce feature artwork with realistic product photography, soft studio lighting, subtle shadows, and a clean white or very pale tinted background.
 Choose one restrained accent color that complements the actual product.
-[ACCENT LINE]
 Use dark, high-contrast text strictly in the "Sharp Sans" font family (geometric, clean modern bold sans-serif typography).
 Keep the overall style consistent across the image series.
 If an additional image is supplied as a style reference, use it only for layout, typography, and color treatment; use the original product photograph for product identity.
 
 LAYOUT
 Make the product prominent, with a balanced arrangement of product, headline, icons, and supporting text.
-Keep the product's defining parts visible.
+Keep the product’s defining parts visible.
 Use a short headline, one clear main benefit, and up to three concise supporting callouts.
 Use small, relevant icons or subtle visual effects only when they help explain the selected features.
 Choose a layout appropriate to the product category. Include a usage scene only when supported by the supplied information.
@@ -44,3 +49,24 @@ Generate exactly ONE complete 1:1 square image.
 This is one individual feature image, not a collage, contact sheet, or three-panel design.
 No outer frame or watermark.
 
+--- PROMPT END ---
+
+HOW TO USE
+
+1. Upload the original white-background product photograph.
+2. Enter the product name and complete verified feature list.
+3. Divide the features into three complementary groups.
+4. Make three separate image requests using the prompt above. Change the selected feature group and image number for each request.
+5. Set square dimensions and PNG output in the API settings. The prompt alone does not control the file format.
+6. Save each returned image as a separate PNG file.
+7. Optionally attach the first approved artwork as an additional style reference for the other two requests, alongside the original product photograph.
+8. Review product accuracy, specifications, and spelling before publishing. Exact product preservation can vary.
+
+EXAMPLE FEATURE GROUPS: PORTABLE FAN
+
+Image 1: 5500 RPM brushless motor, three speeds, up to 4.5 hours on low speed.
+Image 2: Removable 1800mAh battery, Type-C charging, 5-hour charge time, red and green charging indicators.
+Image 3: Built-in phone holder, compact portable design, Sky Blue / Yellow / Light Pink / Green color options.
+
+Official OpenAI image API guide:
+https://developers.openai.com/api/docs/guides/image-generation
