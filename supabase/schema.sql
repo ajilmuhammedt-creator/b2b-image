@@ -113,3 +113,44 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('source-images', 'source-images', true)
 ON CONFLICT (id) DO NOTHING;
+
+-- 4. Storage Bucket Policies
+DROP POLICY IF EXISTS "Allow public read on source-images" ON storage.objects;
+CREATE POLICY "Allow public read on source-images"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'source-images');
+
+DROP POLICY IF EXISTS "Allow authenticated upload to source-images" ON storage.objects;
+CREATE POLICY "Allow authenticated upload to source-images"
+  ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id = 'source-images' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Allow authenticated update to source-images" ON storage.objects;
+CREATE POLICY "Allow authenticated update to source-images"
+  ON storage.objects FOR UPDATE
+  USING (bucket_id = 'source-images' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Allow authenticated delete from source-images" ON storage.objects;
+CREATE POLICY "Allow authenticated delete from source-images"
+  ON storage.objects FOR DELETE
+  USING (bucket_id = 'source-images' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Allow public read on generated-images" ON storage.objects;
+CREATE POLICY "Allow public read on generated-images"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'generated-images');
+
+DROP POLICY IF EXISTS "Allow authenticated upload to generated-images" ON storage.objects;
+CREATE POLICY "Allow authenticated upload to generated-images"
+  ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id = 'generated-images' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Allow authenticated update to generated-images" ON storage.objects;
+CREATE POLICY "Allow authenticated update to generated-images"
+  ON storage.objects FOR UPDATE
+  USING (bucket_id = 'generated-images' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Allow authenticated delete from generated-images" ON storage.objects;
+CREATE POLICY "Allow authenticated delete from generated-images"
+  ON storage.objects FOR DELETE
+  USING (bucket_id = 'generated-images' AND auth.role() = 'authenticated');
