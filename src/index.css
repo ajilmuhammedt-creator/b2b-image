@@ -2,52 +2,27 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* 1. Light Mode CSS Variables specified by user */
-html.light {
-  --bg: #EEF1F6;
-  --surface: #FFFFFF;
-  --border: #E3E8EF;
-  --subtle: #F4F7FC;
-  --subtle-border: #DCE4F2;
-  --text: #0F172A;
-  --text-2: #5B6478;
-  --muted: #94A3B8;
-  --navy: #0F1B3D;
-  --navy-tint: #E8EDF7;
+:root {
+  color-scheme: dark;
+  --bg: #090B10;
+  --surface: #0E1118;
+  --border: rgba(255, 255, 255, 0.08);
   --brand: #E11D2E;
   --brand-hover: #C8102E;
-  --brand-tint: #FDECEE;
-  --brand-ink: #B4121F;
-  --success: #16A34A;
-  --success-bg: #ECFDF3;
-  --warn: #92400E;
-  --warn-bg: #FEF3C7;
-  --error: #DC2626;
-  --error-bg: #FEF2F2;
 }
 
 @layer base {
   * {
     transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-  }
-
-  /* Dark mode default base (Preserved completely untouched) */
-  html.dark * {
     border-color: rgba(255, 255, 255, 0.08);
   }
 
-  html.dark body {
+  body {
     background-color: #090B10;
     color: #F1F5F9;
   }
 
-  /* Light mode default base using required variables */
-  html.light body {
-    background-color: var(--bg);
-    color: var(--text);
-  }
-
-  /* Sleek modern minimalist scrollbar */
+  /* Sleek modern minimalist scrollbar for dark mode */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -55,102 +30,21 @@ html.light {
   ::-webkit-scrollbar-track {
     background: transparent;
   }
-  
-  html.dark ::-webkit-scrollbar-thumb {
+  ::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.12);
     border-radius: 9999px;
   }
-  html.dark ::-webkit-scrollbar-thumb:hover {
+  ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.22);
   }
 
-  html.light ::-webkit-scrollbar-thumb {
-    background: #CBD5E1;
-    border-radius: 9999px;
-  }
-  html.light ::-webkit-scrollbar-thumb:hover {
-    background: var(--muted);
-  }
-
-  /* 1. Cards and Panels in Light mode: border #E3E8EF, radius 16px, shadow 0 1px 3px rgba(15,27,61,.06) */
-  html.light .rounded-2xl {
-    border-radius: 16px !important;
-  }
-
-  html.light .bg-\[\#0E1118\],
-  html.light .bg-\[\#0E1118\]\/80,
-  html.light .bg-\[\#0E1118\]\/85,
-  html.light .bg-\[\#0E1118\]\/90 {
-    background-color: var(--surface) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 16px !important;
-    box-shadow: 0 1px 3px rgba(15, 27, 61, 0.06) !important;
-  }
-
-  html.light .bg-\[\#090B10\] {
-    background-color: var(--bg) !important;
-  }
-
-  /* 8. Focus ring in light mode: 3px rgba(15,27,61,.15) */
-  html.light *:focus-visible,
-  html.light input:focus,
-  html.light select:focus,
-  html.light textarea:focus {
-    outline: none !important;
-    border-color: #0F1B3D !important;
-    box-shadow: 0 0 0 3px rgba(15, 27, 61, 0.15) !important;
-  }
-
-  /* Inputs in light mode */
-  html.light input:not([type="checkbox"]):not([type="radio"]),
-  html.light select,
-  html.light textarea {
-    background-color: var(--surface) !important;
-    border: 1px solid var(--border) !important;
-    color: var(--text) !important;
-  }
-
-  html.light input::placeholder,
-  html.light textarea::placeholder {
-    color: var(--muted) !important;
-  }
-
-  /* 5. Disabled buttons: background #E5E7EB, text var(--muted), no pink */
-  html.light button:disabled,
-  html.light button[disabled],
-  html.light .disabled\:opacity-40:disabled,
-  html.light .disabled\:opacity-50:disabled,
-  html.light .disabled\:opacity-30:disabled {
-    background-color: #E5E7EB !important;
-    background-image: none !important;
-    color: var(--muted) !important;
-    border-color: #E5E7EB !important;
-    cursor: not-allowed !important;
-    opacity: 1 !important;
-    box-shadow: none !important;
-  }
-  html.light button:disabled *,
-  html.light button[disabled] * {
-    color: var(--muted) !important;
-  }
-
-  /* 5. Text: headings #0F172A, helper text #5B6478, placeholders #94A3B8 */
-  html.light h1,
-  html.light h2,
-  html.light h3,
-  html.light h4,
-  html.light h1.text-white,
-  html.light h2.text-white,
-  html.light h3.text-white,
-  html.light .text-slate-100 {
-    color: var(--text) !important;
-  }
-  html.light .text-slate-200,
-  html.light .text-slate-300,
-  html.light .text-slate-400 {
-    color: var(--text-2) !important;
-  }
-  html.light .text-slate-500 {
-    color: var(--muted) !important;
+  /* Focus ring */
+  *:focus-visible,
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: rgba(225, 29, 46, 0.6);
+    box-shadow: 0 0 0 2px rgba(225, 29, 46, 0.2);
   }
 }

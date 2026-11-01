@@ -1,6 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ThemeToggle } from './ThemeToggle';
 import { BrandLogo } from './BrandLogo';
 import { History as HistoryIcon, LayoutGrid, LogOut, Shield } from 'lucide-react';
 
@@ -28,7 +27,6 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center space-x-3">
-          <ThemeToggle className="text-white hover:text-white hover:bg-white/10 p-1 rounded-md transition" />
           <button
             onClick={handleSignOut}
             title="Sign out"
@@ -40,8 +38,8 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Main header: stays white with a bottom border #E3E8EF in light mode */}
-      <header className="border-b border-[#E3E8EF] dark:border-white/[0.06] bg-[#FFFFFF] dark:bg-[#090B10]/80 backdrop-blur-xl transition-colors">
+      {/* Main header: dark frosted bar */}
+      <header className="border-b border-white/[0.06] bg-[#090B10]/80 backdrop-blur-xl transition-colors">
         <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 h-15 flex items-center justify-between">
           <div className="flex items-center space-x-8">
             <Link to="/studio" className="flex items-center group py-1">

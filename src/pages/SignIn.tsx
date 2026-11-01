@@ -1,7 +1,6 @@
 import { useState, type FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ThemeToggle } from '../components/ThemeToggle';
 import { BrandLogo } from '../components/BrandLogo';
 import {
   Mail,
@@ -18,7 +17,7 @@ import {
 } from 'lucide-react';
 
 export function SignIn() {
-  const { user, profile, loading, signInWithPassword, signUpWithPassword, resetPasswordForEmail } = useAuth();
+  const { user, profile, loading, isRecoveryMode, signInWithPassword, signUpWithPassword, resetPasswordForEmail } = useAuth();
   const navigate = useNavigate();
 
   // Mode: 'signin' | 'signup' | 'forgot'
@@ -45,18 +44,25 @@ export function SignIn() {
   const [resetSubmitting, setResetSubmitting] = useState(false);
 
   useEffect(() => {
+    const hash = window.location.hash || '';
+    const search = window.location.search || '';
+    if (isRecoveryMode || hash.includes('type=recovery') || search.includes('type=recovery') || search.includes('code=')) {
+      navigate('/reset-password' + search + hash, { replace: true });
+      return;
+    }
+
     if (!loading && user) {
       if (profile?.status === 'approved') {
         navigate('/studio', { replace: true });
       }
     }
-  }, [user, profile, loading, navigate]);
+  }, [user, profile, loading, isRecoveryMode, navigate]);
 
   const handleSignIn = async (e: FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
-    const trimmedEmail = email.trim();
+    const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail || !password) {
       setErrorMessage('Please enter both your work email and password.');
       return;
@@ -67,7 +73,7 @@ export function SignIn() {
       const { error } = await signInWithPassword(trimmedEmail, password);
       if (error) {
         setErrorMessage(
-          error.message || 'Invalid login credentials. Please verify your email and password.'
+          error.message || 'Invalid login credentials. Please check your email and password, or use "Forgot password?" to reset it.'
         );
       } else {
         navigate('/studio', { replace: true });
@@ -160,16 +166,11 @@ export function SignIn() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#EEF1F6] dark:bg-[#090B10] px-4 py-12 relative overflow-hidden transition-colors">
-      {/* Theme Toggle Top Right */}
-      <div className="absolute top-5 right-5 z-20">
-        <ThemeToggle />
-      </div>
-
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#090B10] px-4 py-12 relative overflow-hidden text-slate-100">
       {/* Subtle background glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] bg-indigo-500/10 dark:bg-indigo-500/8 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] bg-red-600/5 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="w-full max-w-md bg-[#FFFFFF] dark:bg-[#0E1118]/85 p-8 rounded-[16px] border border-[#E3E8EF] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-2xl backdrop-blur-xl relative z-10 space-y-6">
+      <div className="w-full max-w-md bg-[#0E1118]/85 p-8 rounded-2xl border border-white/[0.08] shadow-2xl backdrop-blur-xl relative z-10 space-y-6">
         {/* Brand header */}
         <div className="text-center space-y-1.5">
           <div className="inline-flex items-center justify-center mb-1">

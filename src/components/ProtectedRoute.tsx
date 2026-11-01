@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ThemeToggle } from './ThemeToggle';
 import { BrandLogo } from './BrandLogo';
 import { Clock, ShieldAlert, RefreshCw, LogOut } from 'lucide-react';
 
@@ -11,8 +10,13 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
-  const { user, profile, loading, refreshProfile, signOut } = useAuth();
+  const { user, profile, loading, isRecoveryMode, refreshProfile, signOut } = useAuth();
   const [checking, setChecking] = useState(false);
+
+  // If user is currently in password recovery, send them to /reset-password
+  if (isRecoveryMode) {
+    return <Navigate to="/reset-password" replace />;
+  }
 
   if (loading || (user && !profile)) {
     return (
@@ -43,11 +47,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     };
 
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-[#090B10] px-4 py-12 relative overflow-hidden transition-colors">
-        <div className="absolute top-5 right-5 z-20">
-          <ThemeToggle />
-        </div>
-
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#090B10] px-4 py-12 relative overflow-hidden text-slate-100">
         {/* Amber glow */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -107,12 +107,8 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   // 2. Rejected Gating
   if (profile?.status === 'rejected') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-[#090B10] px-4 py-12 relative overflow-hidden transition-colors">
-        <div className="absolute top-5 right-5 z-20">
-          <ThemeToggle />
-        </div>
-
-        <div className="w-full max-w-md bg-white dark:bg-[#0E1118]/90 p-8 rounded-2xl border border-rose-300 dark:border-rose-500/20 shadow-xl dark:shadow-2xl backdrop-blur-xl relative z-10 text-center space-y-6">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#090B10] px-4 py-12 relative overflow-hidden text-slate-100">
+        <div className="w-full max-w-md bg-[#0E1118]/90 p-8 rounded-2xl border border-rose-500/20 shadow-2xl backdrop-blur-xl relative z-10 text-center space-y-6">
           <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-100 dark:bg-rose-500/15 border border-rose-300 dark:border-rose-500/30 flex items-center justify-center text-rose-600 dark:text-rose-400">
             <ShieldAlert className="w-7 h-7" />
           </div>
