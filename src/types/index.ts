@@ -110,4 +110,22 @@ export interface UserProfile {
   approved_by: string | null;
   created_at: string;
   updated_at: string;
+  creditsToday?: number;
+  creditsTotal?: number;
+  lastActive?: string | null;
+}
+
+export interface DailyCreditStat {
+  date: string;
+  label: string;
+  credits: number;
+  activeUsers: number;
+}
+
+export interface CreditStats {
+  creditsToday: number;
+  creditsLast24h: number;
+  creditsYesterday: number;
+  creditsTotal: number;
+  dailyBreakdown: DailyCreditStat[];
 }

@@ -165,3 +165,4 @@ export async function sendAccountApprovedEmail({
     details: `Approval notification dispatched for ${toEmail}. Direct login URL: ${loginUrl}`,
   };
 }
+

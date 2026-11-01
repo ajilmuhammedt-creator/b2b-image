@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { Lock, Eye, EyeOff, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
 
 export function ResetPassword() {
@@ -57,7 +58,10 @@ export function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#090B10] px-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-[#090B10] px-4 py-12 relative overflow-hidden transition-colors">
+      <div className="absolute top-5 right-5 z-20">
+        <ThemeToggle />
+      </div>
       {/* Background glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
 
