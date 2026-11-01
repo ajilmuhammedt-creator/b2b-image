@@ -1,9 +1,6 @@
 {
-  "functions": {
-    "api/**/*.ts": {
-      "maxDuration": 300
-    }
-  },
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "crons": [
     {
       "path": "/api/cleanup",
@@ -12,7 +9,11 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!api/|.*\\.[\\w]+$).*)",
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
