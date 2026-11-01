@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { GenerationItem, StudioSettings } from '../types';
 import JSZip from 'jszip';
+import { convertToWebpBlob } from '../lib/imageConversion';
+import { getSeoImageFilename, getSeoFolderName, getSeoZipFilename } from '../lib/seoNaming';
 import {
   Download,
   RotateCw,
@@ -19,6 +21,8 @@ import {
 
 interface ResultsGridProps {
   productName: string;
+  modelNumber?: string;
+  brand?: string;
   generations: GenerationItem[];
   makePoster: boolean;
   setMakePoster: (val: boolean) => void;
@@ -34,6 +38,8 @@ interface ResultsGridProps {
 
 export function ResultsGrid({
   productName,
+  modelNumber = '',
+  brand = 'Sanford',
   generations,
   makePoster,
   setMakePoster,
@@ -50,12 +56,7 @@ export function ResultsGrid({
   const [isZipping, setIsZipping] = useState(false);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
 
-  const productSlug = (productName.trim() || 'product')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-
-  // Helper to fetch blob safely
+  // Helper to fetch blob and strictly convert to WebP format
   const fetchImageBlob = async (item: GenerationItem): Promise<Blob | null> => {
     try {
       if (item.b64_json) {
@@ -65,26 +66,30 @@ export function ResultsGrid({
           byteNumbers[i] = byteCharacters.charCodeAt(i);
         }
         const byteArray = new Uint8Array(byteNumbers);
-        return new Blob([byteArray], { type: 'image/png' });
+        const rawBlob = new Blob([byteArray], { type: 'image/png' });
+        return await convertToWebpBlob(rawBlob);
       } else if (item.imageUrl) {
         const res = await fetch(item.imageUrl);
-        return await res.blob();
+        const rawBlob = await res.blob();
+        return await convertToWebpBlob(rawBlob);
       }
     } catch (e) {
-      console.warn('Could not fetch blob for download:', e);
+      console.warn('Could not fetch and convert blob for download:', e);
     }
     return null;
   };
 
-  // 1. Single card download
+  // 1. Single card download (strictly WebP with SEO Shopify filename)
   const handleDownloadSingle = async (item: GenerationItem) => {
     const blob = await fetchImageBlob(item);
     if (!blob) return;
 
-    const fileName =
-      item.kind === 'poster'
-        ? `${productSlug}-poster.png`
-        : `${productSlug}-feature-${item.slot || 1}.png`;
+    const fileName = getSeoImageFilename({
+      brand,
+      productName,
+      modelNumber,
+      item,
+    });
 
     const blobUrl = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -96,7 +101,7 @@ export function ResultsGrid({
     setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
   };
 
-  // 2. Download Selected or Download All as ZIP
+  // 2. Download Selected or Download All as ZIP (SEO folder & WebP files)
   const handleDownloadZip = async (onlySelected: boolean = false) => {
     const targets = generations.filter((g) => {
       if (g.status !== 'done') return false;
@@ -109,15 +114,22 @@ export function ResultsGrid({
     setIsZipping(true);
     try {
       const zip = new JSZip();
+      const seoFolder = getSeoFolderName({ brand, productName, modelNumber });
+      const zipFileName = getSeoZipFilename({ brand, productName, modelNumber });
 
-      for (const item of targets) {
-        const blob = await fetchImageBlob(item);
-        if (blob) {
-          const fileName =
-            item.kind === 'poster'
-              ? `${productSlug}-poster.png`
-              : `${productSlug}-feature-${item.slot || 1}.png`;
-          zip.file(fileName, blob);
+      for (let i = 0; i < targets.length; i++) {
+        const item = targets[i];
+        const webpBlob = await fetchImageBlob(item);
+        if (webpBlob) {
+          const fileName = getSeoImageFilename({
+            brand,
+            productName,
+            modelNumber,
+            item,
+            index: i + 1,
+          });
+          // Store within the SEO-named Shopify folder inside the ZIP
+          zip.file(`${seoFolder}/${fileName}`, webpBlob);
         }
       }
 
@@ -125,7 +137,7 @@ export function ResultsGrid({
       const zipUrl = URL.createObjectURL(zipBlob);
       const link = document.createElement('a');
       link.href = zipUrl;
-      link.download = `${productSlug}-images.zip`;
+      link.download = zipFileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -137,7 +149,7 @@ export function ResultsGrid({
     }
   };
 
-  // 3. Save to phone via navigator.share
+  // 3. Save to phone via navigator.share (strictly WebP)
   const canShare =
     typeof navigator !== 'undefined' &&
     !!navigator.share &&
@@ -148,14 +160,18 @@ export function ResultsGrid({
     if (targets.length === 0) return;
 
     const files: File[] = [];
-    for (const item of targets) {
-      const blob = await fetchImageBlob(item);
-      if (blob) {
-        const fileName =
-          item.kind === 'poster'
-            ? `${productSlug}-poster.png`
-            : `${productSlug}-feature-${item.slot || 1}.png`;
-        files.push(new File([blob], fileName, { type: 'image/png' }));
+    for (let i = 0; i < targets.length; i++) {
+      const item = targets[i];
+      const webpBlob = await fetchImageBlob(item);
+      if (webpBlob) {
+        const fileName = getSeoImageFilename({
+          brand,
+          productName,
+          modelNumber,
+          item,
+          index: i + 1,
+        });
+        files.push(new File([webpBlob], fileName, { type: 'image/webp' }));
       }
     }
 
@@ -163,8 +179,8 @@ export function ResultsGrid({
       try {
         await navigator.share({
           files,
-          title: `${productName} Product Images`,
-          text: `Generated e-commerce images for ${productName}`,
+          title: `${productName} Shopify WebP Images`,
+          text: `Generated e-commerce WebP images for ${productName}`,
         });
       } catch (err) {
         // User cancelled or share failed
@@ -172,7 +188,7 @@ export function ResultsGrid({
     }
   };
 
-  // 4. Save to folder (showDirectoryPicker)
+  // 4. Save to folder (showDirectoryPicker with SEO folder name)
   const canPickDirectory =
     typeof window !== 'undefined' && 'showDirectoryPicker' in window;
 
@@ -183,20 +199,27 @@ export function ResultsGrid({
 
     try {
       const dirHandle = await (window as any).showDirectoryPicker();
-      for (const item of targets) {
-        const blob = await fetchImageBlob(item);
-        if (blob) {
-          const fileName =
-            item.kind === 'poster'
-              ? `${productSlug}-poster.png`
-              : `${productSlug}-feature-${item.slot || 1}.png`;
-          const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
+      const seoFolder = getSeoFolderName({ brand, productName, modelNumber });
+      const targetDirHandle = await dirHandle.getDirectoryHandle(seoFolder, { create: true });
+
+      for (let i = 0; i < targets.length; i++) {
+        const item = targets[i];
+        const webpBlob = await fetchImageBlob(item);
+        if (webpBlob) {
+          const fileName = getSeoImageFilename({
+            brand,
+            productName,
+            modelNumber,
+            item,
+            index: i + 1,
+          });
+          const fileHandle = await targetDirHandle.getFileHandle(fileName, { create: true });
           const writable = await fileHandle.createWritable();
-          await writable.write(blob);
+          await writable.write(webpBlob);
           await writable.close();
         }
       }
-      alert('All files saved successfully to your chosen folder!');
+      alert(`All images successfully converted to WebP and saved in folder: "${seoFolder}"`);
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         console.error('Directory write error:', err);
@@ -429,10 +452,10 @@ export function ResultsGrid({
                 onClick={() => handleDownloadSingle(item)}
                 disabled={item.status !== 'done'}
                 className="py-1 px-2.5 bg-[#F4F7FC] hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed text-[#5B6478] dark:text-slate-200 rounded-lg border border-[#E3E8EF] dark:border-white/[0.06] transition flex items-center space-x-1"
-                title="Download this PNG"
+                title="Download SEO WebP image"
               >
                 <Download className="w-3 h-3" />
-                <span className="text-[11px] font-medium">PNG</span>
+                <span className="text-[11px] font-medium">WebP</span>
               </button>
 
               <div className="flex items-center space-x-1">
@@ -573,10 +596,10 @@ export function ResultsGrid({
                 onClick={() => handleDownloadSingle(posterCard)}
                 disabled={posterCard.status !== 'done'}
                 className="py-1 px-2.5 bg-[#F4F7FC] hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed text-[#5B6478] dark:text-slate-200 rounded-lg border border-[#E3E8EF] dark:border-white/[0.06] transition flex items-center space-x-1"
-                title="Download Poster PNG"
+                title="Download Poster WebP"
               >
                 <Download className="w-3 h-3" />
-                <span className="text-[11px] font-medium">PNG</span>
+                <span className="text-[11px] font-medium">WebP</span>
               </button>
 
               <div className="flex items-center space-x-1">

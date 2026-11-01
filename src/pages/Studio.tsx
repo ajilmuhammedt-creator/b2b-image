@@ -81,6 +81,7 @@ export function Studio() {
   const [projectId, setProjectId] = useState<string>(() => crypto.randomUUID());
   const [productName, setProductName] = useState('');
   const [modelNumber, setModelNumber] = useState('');
+  const [brand, setBrand] = useState('Sanford');
   const [tagline, setTagline] = useState('');
   const [featuresText, setFeaturesText] = useState('');
   const [colors, setColors] = useState('');
@@ -185,6 +186,7 @@ export function Studio() {
 
   // When Catalogue is parsed from ProductInput
   const handleCatalogueParsed = (data: CatalogueParsedData) => {
+    if (data.brand) setBrand(data.brand);
     if (data.slots && data.slots.length > 0) {
       setGenerations((prev) => {
         const posterCard = prev.find((g) => g.kind === 'poster');
@@ -586,6 +588,8 @@ export function Studio() {
           <div className="lg:col-span-5 xl:col-span-5">
             <ResultsGrid
               productName={productName}
+              modelNumber={modelNumber}
+              brand={brand}
               generations={generations}
               makePoster={makePoster}
               setMakePoster={setMakePoster}

@@ -5,6 +5,8 @@ import { Navbar } from '../components/Navbar';
 import { projectStorage } from '../lib/projectStorage';
 import type { ProjectData } from '../types';
 import JSZip from 'jszip';
+import { convertToWebpBlob } from '../lib/imageConversion';
+import { getSeoImageFilename, getSeoFolderName, getSeoZipFilename } from '../lib/seoNaming';
 import {
   History as HistoryIcon,
   Calendar,
@@ -88,24 +90,38 @@ export function History() {
     setDownloadingProjectId(project.id);
     try {
       const zip = new JSZip();
-      const productSlug = (project.product_name || 'project')
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, '-')
-        .replace(/-+/g, '-')
-        .slice(0, 30);
+      const seoFolder = getSeoFolderName({
+        brand: 'Sanford',
+        productName: project.product_name,
+        modelNumber: project.model_number,
+      });
+      const zipFileName = getSeoZipFilename({
+        brand: 'Sanford',
+        productName: project.product_name,
+        modelNumber: project.model_number,
+      });
 
       await Promise.all(
         completedGens.map(async (gen, idx) => {
           try {
             const resp = await fetch(gen.imageUrl!);
-            const blob = await resp.blob();
-            const fileName =
-              gen.kind === 'poster'
-                ? `${productSlug}-poster.png`
-                : `${productSlug}-slot-${gen.slot ?? idx + 1}.png`;
-            zip.file(fileName, blob);
+            const rawBlob = await resp.blob();
+            const webpBlob = await convertToWebpBlob(rawBlob);
+            const fileName = getSeoImageFilename({
+              brand: 'Sanford',
+              productName: project.product_name,
+              modelNumber: project.model_number,
+              item: {
+                kind: gen.kind,
+                slot: gen.slot,
+                slotTitle: (gen as any).slot_title || gen.slotTitle,
+                sanfordSlot: gen.theme ? { theme: gen.theme as any } : undefined,
+              },
+              index: idx + 1,
+            });
+            zip.file(`${seoFolder}/${fileName}`, webpBlob);
           } catch (fetchErr) {
-            console.error(`Failed to download image for slot ${gen.slot}:`, fetchErr);
+            console.error(`Failed to download WebP image for slot ${gen.slot}:`, fetchErr);
           }
         })
       );
@@ -114,7 +130,7 @@ export function History() {
       const zipUrl = URL.createObjectURL(zipBlob);
       const link = document.createElement('a');
       link.href = zipUrl;
-      link.download = `${productSlug}-10day-archive.zip`;
+      link.download = zipFileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -289,14 +305,14 @@ export function History() {
                           disabled={completedImages.length === 0 || isDownloading}
                           onClick={(e) => handleDownloadAllZip(e, project)}
                           className="flex-1 py-1.5 px-3 rounded-lg bg-[var(--brand-tint)] hover:bg-[var(--brand-tint)]/80 text-[var(--brand-ink)] border border-[var(--brand)]/30 dark:bg-indigo-600/20 dark:hover:bg-indigo-600/30 dark:text-indigo-300 dark:border-indigo-500/30 text-xs font-semibold flex items-center justify-center space-x-1.5 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                          title="Download all generated images as ZIP"
+                          title="Download all generated images as SEO WebP ZIP"
                         >
                           {isDownloading ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--brand)] dark:text-indigo-400" />
                           ) : (
                             <Download className="w-3.5 h-3.5 text-[var(--brand)] dark:text-indigo-400" />
                           )}
-                          <span>{isDownloading ? 'Archiving...' : 'Download (ZIP)'}</span>
+                          <span>{isDownloading ? 'Archiving WebP...' : 'Download (WebP ZIP)'}</span>
                         </button>
                       </div>
                     </div>
