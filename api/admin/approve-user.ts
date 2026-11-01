@@ -1,6 +1,6 @@
-import { requireAdmin } from '../_lib/requireUser';
-import { supabaseAdmin } from '../_lib/supabase-server';
-import { sendAccountApprovedEmail } from '../_lib/email';
+import { requireAdmin } from '../_lib/requireUser.js';
+import { supabaseAdmin } from '../_lib/supabase-server.js';
+import { sendAccountApprovedEmail } from '../_lib/email.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {

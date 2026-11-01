@@ -1,5 +1,5 @@
-import { requireAdmin } from '../_lib/requireUser';
-import { supabaseAdmin } from '../_lib/supabase-server';
+import { requireAdmin } from '../_lib/requireUser.js';
+import { supabaseAdmin } from '../_lib/supabase-server.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {

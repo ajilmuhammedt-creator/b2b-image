@@ -1,5 +1,5 @@
 import type { User } from '@supabase/supabase-js';
-import { supabaseAdmin } from './supabase-server';
+import { supabaseAdmin } from './supabase-server.js';
 
 export interface AdminAuthResult {
   user: User;

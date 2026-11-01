@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'http';
-import { supabaseAdmin } from './_lib/supabase-server';
-import { requireUser } from './_lib/requireUser';
+import { supabaseAdmin } from './_lib/supabase-server.js';
+import { requireUser } from './_lib/requireUser.js';
 
 interface RequestBody {
   productName?: string;

@@ -1,7 +1,7 @@
 import crypto from 'crypto';
-import { supabaseAdmin } from './_lib/supabase-server';
-import { requireUser } from './_lib/requireUser';
-import { buildFeaturePrompt, buildPosterPrompt, buildSanfordSlotPrompt } from './_lib/prompts';
+import { supabaseAdmin } from './_lib/supabase-server.js';
+import { requireUser } from './_lib/requireUser.js';
+import { buildFeaturePrompt, buildPosterPrompt, buildSanfordSlotPrompt } from './_lib/prompts.js';
 
 export const config = {
   maxDuration: 300,

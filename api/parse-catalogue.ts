@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { requireUser } from './_lib/requireUser';
+import { requireUser } from './_lib/requireUser.js';
 
 export const config = {
   maxDuration: 300,

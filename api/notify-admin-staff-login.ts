@@ -1,5 +1,5 @@
-import { supabaseAdmin } from './_lib/supabase-server';
-import { sendAdminStaffAlertEmail } from './_lib/email';
+import { supabaseAdmin } from './_lib/supabase-server.js';
+import { sendAdminStaffAlertEmail } from './_lib/email.js';
 
 // In-memory cooldown map (key: email:eventType, value: timestamp)
 const notificationCooldowns = new Map<string, number>();

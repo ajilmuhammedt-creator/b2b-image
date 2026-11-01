@@ -1,4 +1,4 @@
-import { supabaseAdmin } from './_lib/supabase-server';
+import { supabaseAdmin } from './_lib/supabase-server.js';
 
 export const config = {
   maxDuration: 120,
