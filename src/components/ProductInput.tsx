@@ -300,16 +300,16 @@ export function ProductInput({
   };
 
   return (
-    <div className="bg-[var(--surface)] dark:bg-[#0E1118]/80 border border-[var(--border)] dark:border-white/[0.06] rounded-[14px] p-4.5 space-y-4 shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:shadow-xl backdrop-blur-xl">
+    <div className="bg-[#FFFFFF] dark:bg-[#0E1118]/80 border border-[#E3E8EF] dark:border-white/[0.06] rounded-[16px] p-4.5 space-y-4 shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-xl backdrop-blur-xl">
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-[var(--border)] dark:border-white/[0.06]">
+      <div className="flex items-center justify-between pb-3 border-b border-[#E3E8EF] dark:border-white/[0.06]">
         <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 rounded-md bg-[var(--brand-tint)] dark:bg-white/[0.04] text-[var(--brand)] dark:text-slate-300 flex items-center justify-center">
+          <div className="w-6 h-6 rounded-md bg-[#E8EDF7] dark:bg-white/[0.04] text-[#0F1B3D] dark:text-slate-300 flex items-center justify-center">
             <FileUp className="w-3.5 h-3.5" />
           </div>
           <div>
-            <h2 className="text-xs font-semibold text-slate-900 dark:text-white">Catalogue & Specs</h2>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400">BuySanford Pattern Pipeline</p>
+            <h2 className="text-xs font-semibold text-[#0F172A] dark:text-white">Catalogue & Specs</h2>
+            <p className="text-[10px] text-[#5B6478] dark:text-slate-400">BuySanford Pattern Pipeline</p>
           </div>
         </div>
 
@@ -317,22 +317,24 @@ export function ProductInput({
           type="button"
           onClick={loadSanfordSample}
           disabled={isProcessing}
-          className="text-[11px] font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] px-2.5 py-1 rounded-lg border border-slate-200 dark:border-white/[0.08] transition flex items-center space-x-1"
+          className="text-[11px] font-medium text-[#5B6478] dark:text-slate-300 hover:text-[#0F172A] dark:hover:text-white bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] px-2.5 py-1 rounded-lg border border-[#E3E8EF] dark:border-white/[0.08] transition flex items-center space-x-1"
         >
-          <Sparkles className="w-3 h-3 text-[var(--brand)] dark:text-indigo-400" />
+          <Sparkles className="w-3 h-3 text-[#0F1B3D] dark:text-indigo-400" />
           <span>Load Sample</span>
         </button>
       </div>
 
-      {/* Mode Selector Tabs */}
-      <div className="grid grid-cols-2 gap-1 bg-slate-100 dark:bg-white/[0.02] p-1 rounded-xl border border-slate-200 dark:border-white/[0.06]">
+      {/* Mode Selector Tabs: 
+          Selected: background #E8EDF7, text #0F1B3D, font-weight 600, no border.
+          Unselected: white, 1px border #E3E8EF, text #5B6478. */}
+      <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-slate-100/60 dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.06]">
         <button
           type="button"
           onClick={() => setActiveTab('catalogue')}
-          className={`py-1.5 text-xs font-semibold rounded-lg transition flex items-center justify-center space-x-1.5 ${
+          className={`py-1.5 text-xs rounded-lg transition flex items-center justify-center space-x-1.5 ${
             activeTab === 'catalogue'
-              ? 'bg-[var(--brand-tint)] border-[1.5px] border-[var(--brand)] text-[var(--brand-ink)] shadow-sm dark:bg-white/[0.08] dark:text-white dark:border dark:border-white/[0.08]'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              ? 'bg-[#E8EDF7] text-[#0F1B3D] font-semibold border-0 shadow-none dark:bg-white/[0.08] dark:text-white dark:border dark:border-white/[0.08]'
+              : 'bg-[#FFFFFF] border border-[#E3E8EF] text-[#5B6478] hover:text-[#0F172A] dark:bg-transparent dark:border-transparent dark:text-slate-400 dark:hover:text-slate-200'
           }`}
         >
           <FileText className="w-3.5 h-3.5" />
@@ -342,10 +344,10 @@ export function ProductInput({
         <button
           type="button"
           onClick={() => setActiveTab('manual')}
-          className={`py-1.5 text-xs font-semibold rounded-lg transition flex items-center justify-center space-x-1.5 ${
+          className={`py-1.5 text-xs rounded-lg transition flex items-center justify-center space-x-1.5 ${
             activeTab === 'manual'
-              ? 'bg-[var(--brand-tint)] border-[1.5px] border-[var(--brand)] text-[var(--brand-ink)] shadow-sm dark:bg-white/[0.08] dark:text-white dark:border dark:border-white/[0.08]'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              ? 'bg-[#E8EDF7] text-[#0F1B3D] font-semibold border-0 shadow-none dark:bg-white/[0.08] dark:text-white dark:border dark:border-white/[0.08]'
+              : 'bg-[#FFFFFF] border border-[#E3E8EF] text-[#5B6478] hover:text-[#0F172A] dark:bg-transparent dark:border-transparent dark:text-slate-400 dark:hover:text-slate-200'
           }`}
         >
           <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -363,8 +365,8 @@ export function ProductInput({
             onClick={() => fileInputRef.current?.click()}
             className={`border-[1.5px] border-dashed rounded-xl p-4.5 text-center cursor-pointer transition ${
               isDragging
-                ? 'border-[var(--brand)] bg-[var(--brand-tint)] dark:border-indigo-400 dark:bg-indigo-500/10'
-                : 'border-[#CBD5E1] hover:border-[var(--brand)] dark:border-white/[0.12] dark:hover:border-indigo-400/50 bg-[var(--subtle)] hover:bg-slate-100 dark:bg-white/[0.015] dark:hover:bg-white/[0.03]'
+                ? 'border-[#0F1B3D] bg-[#E8EDF7] dark:border-indigo-400 dark:bg-indigo-500/10'
+                : 'border-[#CBD5E1] hover:border-[#0F1B3D] dark:border-white/[0.12] dark:hover:border-indigo-400/50 bg-[#F4F7FC] hover:bg-slate-100 dark:bg-white/[0.015] dark:hover:bg-white/[0.03]'
             }`}
           >
             <input
@@ -376,14 +378,14 @@ export function ProductInput({
             />
 
             <div className="flex flex-col items-center justify-center space-y-1.5">
-              <div className="w-8 h-8 rounded-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-transparent flex items-center justify-center text-slate-500 dark:text-slate-300">
+              <div className="w-8 h-8 rounded-full bg-white dark:bg-white/[0.04] border border-[#E3E8EF] dark:border-transparent flex items-center justify-center text-[#5B6478] dark:text-slate-300">
                 <UploadCloud className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                <p className="text-xs font-semibold text-[#0F172A] dark:text-slate-200">
                   {isProcessing ? processingStatus : 'Drop Catalogue PDF or Image'}
                 </p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-[10px] text-[#5B6478] dark:text-slate-400 mt-0.5">
                   PNG, JPG, WebP up to 10 MB or PDF up to 20 MB
                 </p>
               </div>
@@ -392,14 +394,14 @@ export function ProductInput({
 
           {/* Processing progress badge */}
           {isProcessing && (
-            <div className="flex items-center space-x-2 bg-[var(--brand-tint)] dark:bg-indigo-500/10 border border-[var(--brand)]/30 dark:border-indigo-500/20 p-2.5 rounded-xl text-xs text-[var(--brand-ink)] dark:text-indigo-300 animate-pulse">
-              <div className="animate-spin h-3.5 w-3.5 border-2 border-[var(--brand)] dark:border-indigo-400 border-t-transparent rounded-full" />
+            <div className="flex items-center space-x-2 bg-[#E8EDF7] dark:bg-indigo-500/10 border border-[#DCE4F2] dark:border-indigo-500/20 p-2.5 rounded-xl text-xs text-[#0F1B3D] dark:text-indigo-300 animate-pulse font-medium">
+              <div className="animate-spin h-3.5 w-3.5 border-2 border-[#0F1B3D] dark:border-indigo-400 border-t-transparent rounded-full" />
               <span>{processingStatus}</span>
             </div>
           )}
 
           {errorMessage && (
-            <div className="flex items-center space-x-2 text-xs text-[var(--error)] bg-[var(--error-bg)] dark:text-rose-400 dark:bg-rose-500/10 p-2.5 rounded-xl border border-rose-200 dark:border-rose-500/20">
+            <div className="flex items-center space-x-2 text-xs text-[var(--error)] bg-[var(--error-bg)] dark:text-rose-400 dark:bg-rose-500/10 p-2.5 rounded-xl border border-rose-200 dark:border-rose-500/20 font-medium">
               <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
               <span>{errorMessage}</span>
             </div>
@@ -409,11 +411,11 @@ export function ProductInput({
           {catalogueImage.previewUrl && (
             <div className="grid grid-cols-2 gap-2.5 pt-1">
               <div className="space-y-1">
-                <span className="text-[10px] uppercase font-semibold text-slate-600 dark:text-slate-400 flex items-center space-x-1">
-                  <FileText className="w-3 h-3 text-[var(--brand)] dark:text-indigo-400" />
+                <span className="text-[10px] uppercase font-semibold text-[#5B6478] dark:text-slate-400 flex items-center space-x-1">
+                  <FileText className="w-3 h-3 text-[#0F1B3D] dark:text-indigo-400" />
                   <span>Catalogue Sheet</span>
                 </span>
-                <div className="h-36 bg-[var(--subtle)] dark:bg-black/40 rounded-xl border border-[var(--border)] dark:border-white/[0.06] overflow-hidden flex items-center justify-center p-1">
+                <div className="h-36 bg-[#F4F7FC] dark:bg-black/40 rounded-xl border border-[#E3E8EF] dark:border-white/[0.06] overflow-hidden flex items-center justify-center p-1">
                   <img
                     src={catalogueImage.previewUrl}
                     alt="Catalogue"
@@ -423,11 +425,11 @@ export function ProductInput({
               </div>
 
               <div className="space-y-1">
-                <span className="text-[10px] uppercase font-semibold text-slate-600 dark:text-slate-400 flex items-center space-x-1">
+                <span className="text-[10px] uppercase font-semibold text-[#5B6478] dark:text-slate-400 flex items-center space-x-1">
                   <Crop className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                   <span>Isolated Product</span>
                 </span>
-                <div className="h-36 bg-[var(--subtle)] dark:bg-black/40 rounded-xl border border-[var(--border)] dark:border-white/[0.06] overflow-hidden flex items-center justify-center p-1 relative group">
+                <div className="h-36 bg-[#F4F7FC] dark:bg-black/40 rounded-xl border border-[#E3E8EF] dark:border-white/[0.06] overflow-hidden flex items-center justify-center p-1 relative group">
                   {sourceImage.previewUrl ? (
                     <img
                       src={sourceImage.previewUrl}
@@ -435,12 +437,12 @@ export function ProductInput({
                       className="max-h-full max-w-full object-contain rounded"
                     />
                   ) : (
-                    <span className="text-xs text-slate-500">Extracting...</span>
+                    <span className="text-xs text-[#94A3B8]">Extracting...</span>
                   )}
                   <button
                     type="button"
                     onClick={() => manualPhotoRef.current?.click()}
-                    className="absolute bottom-2 right-2 px-2 py-0.5 bg-white/90 text-slate-800 dark:bg-black/80 dark:text-slate-300 hover:text-black dark:hover:text-white rounded border border-slate-300 dark:border-white/[0.1] shadow"
+                    className="absolute bottom-2 right-2 px-2 py-0.5 bg-white/90 text-[#0F172A] dark:bg-black/80 dark:text-slate-300 hover:text-black dark:hover:text-white rounded border border-[#E3E8EF] dark:border-white/[0.1] shadow text-[10px] font-medium"
                     title="Replace with custom photo"
                   >
                     Change
@@ -504,65 +506,65 @@ export function ProductInput({
       )}
 
       {/* Extracted / Editable Product Details */}
-      <div className="space-y-2.5 pt-2 border-t border-[var(--border)] dark:border-white/[0.06]">
+      <div className="space-y-2.5 pt-2 border-t border-[#E3E8EF] dark:border-white/[0.06]">
         {/* Product Name & Model Code */}
         <div className="grid grid-cols-3 gap-2">
           <div className="col-span-2 space-y-1">
-            <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-400">Product Name</label>
+            <label className="block text-[11px] font-medium text-[#5B6478] dark:text-slate-400">Product Name</label>
             <input
               type="text"
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
               placeholder="Enter product title or upload catalogue"
-              className={`w-full px-2.5 py-1.5 bg-white dark:bg-white/[0.02] border rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 ${
+              className={`w-full px-2.5 py-1.5 bg-white dark:bg-white/[0.02] border rounded-lg text-xs text-[#0F172A] dark:text-slate-100 placeholder-[#94A3B8] focus:outline-none focus:ring-1 ${
                 isNameInvalid
                   ? 'border-red-500 focus:ring-red-500 ring-1 ring-red-500/30'
-                  : 'border-slate-300 dark:border-white/[0.08] focus:ring-[var(--brand)] dark:focus:ring-indigo-500'
+                  : 'border-[#E3E8EF] dark:border-white/[0.08] focus:ring-[#0F1B3D] dark:focus:ring-indigo-500'
               }`}
             />
           </div>
 
           <div className="space-y-1">
-            <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-400">Model #</label>
+            <label className="block text-[11px] font-medium text-[#5B6478] dark:text-slate-400">Model #</label>
             <input
               type="text"
               value={modelNumber}
               onChange={(e) => setModelNumber(e.target.value)}
               placeholder="e.g. SF6671HFN"
-              className="w-full px-2.5 py-1.5 bg-white dark:bg-white/[0.02] border border-slate-300 dark:border-white/[0.08] rounded-lg text-xs text-slate-900 dark:text-slate-100 font-mono placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[var(--brand)] dark:focus:ring-indigo-500"
+              className="w-full px-2.5 py-1.5 bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] rounded-lg text-xs text-[#0F172A] dark:text-slate-100 font-mono placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500"
             />
           </div>
         </div>
 
         {/* Tagline / Headline */}
         <div className="space-y-1">
-          <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-400">Marketing Tagline</label>
+          <label className="block text-[11px] font-medium text-[#5B6478] dark:text-slate-400">Marketing Tagline</label>
           <input
             type="text"
             value={tagline}
             onChange={(e) => setTagline(e.target.value)}
             placeholder="e.g. Refreshing Airflow In Every Spin!"
-            className="w-full px-2.5 py-1.5 bg-white dark:bg-white/[0.02] border border-slate-300 dark:border-white/[0.08] rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[var(--brand)] dark:focus:ring-indigo-500"
+            className="w-full px-2.5 py-1.5 bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] rounded-lg text-xs text-[#0F172A] dark:text-slate-100 placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500"
           />
         </div>
 
         {/* Verified Features */}
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-400">
+            <label className="block text-[11px] font-medium text-[#5B6478] dark:text-slate-400">
               Verified Specifications
             </label>
-            <span className="text-[10px] text-slate-500">One per line</span>
+            <span className="text-[10px] text-[#94A3B8]">One per line</span>
           </div>
           <textarea
             rows={4}
             value={featuresText}
             onChange={(e) => setFeaturesText(e.target.value)}
             placeholder="Paste or auto-extract specifications (one per line)..."
-            className={`w-full px-2.5 py-1.5 bg-white dark:bg-white/[0.02] border rounded-lg text-xs text-slate-900 dark:text-slate-100 font-mono leading-relaxed resize-y placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 ${
+            className={`w-full px-2.5 py-1.5 bg-white dark:bg-white/[0.02] border rounded-lg text-xs text-[#0F172A] dark:text-slate-100 font-mono leading-relaxed resize-y placeholder-[#94A3B8] focus:outline-none focus:ring-1 ${
               isSpecsInvalid
                 ? 'border-red-500 focus:ring-red-500 ring-1 ring-red-500/30'
-                : 'border-slate-300 dark:border-white/[0.08] focus:ring-[var(--brand)] dark:focus:ring-indigo-500'
+                : 'border-[#E3E8EF] dark:border-white/[0.08] focus:ring-[#0F1B3D] dark:focus:ring-indigo-500'
             }`}
           />
         </div>
@@ -570,20 +572,20 @@ export function ProductInput({
         {/* Warranty & Color Options */}
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="space-y-1">
-            <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-400">Warranty</label>
+            <label className="block text-[11px] font-medium text-[#5B6478] dark:text-slate-400">Warranty</label>
             <input
               type="text"
               value={warranty}
               onChange={(e) => setWarranty(e.target.value)}
               placeholder="e.g. 1 Year Service Warranty"
-              className="w-full px-2.5 py-1.5 bg-white dark:bg-white/[0.02] border border-slate-300 dark:border-white/[0.08] rounded-lg text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[var(--brand)] dark:focus:ring-indigo-500"
+              className="w-full px-2.5 py-1.5 bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] rounded-lg text-xs text-[#0F172A] dark:text-slate-200 placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500"
             />
           </div>
 
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-400">Color Options</label>
-              <span className="text-[9px] text-slate-500">
+              <label className="block text-[11px] font-medium text-[#5B6478] dark:text-slate-400">Color Options</label>
+              <span className="text-[9px] text-[#5B6478]">
                 {hasMultipleColors ? 'Multiple colors' : 'Single colour (Slot 5 skipped)'}
               </span>
             </div>
@@ -592,7 +594,7 @@ export function ProductInput({
               value={colors}
               onChange={(e) => setColors(e.target.value)}
               placeholder="e.g. Graphite Black, Arctic White (leave 1 color if no variants)"
-              className="w-full px-2.5 py-1.5 bg-white dark:bg-white/[0.02] border border-slate-300 dark:border-white/[0.08] rounded-lg text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[var(--brand)] dark:focus:ring-indigo-500"
+              className="w-full px-2.5 py-1.5 bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] rounded-lg text-xs text-[#0F172A] dark:text-slate-200 placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500"
             />
           </div>
         </div>
@@ -600,72 +602,73 @@ export function ProductInput({
 
       {/* 6 Sanford Pattern Slots (Collapsible Accordion) */}
       {sanfordSlots && sanfordSlots.length > 0 && (
-        <div className="pt-2 border-t border-[var(--border)] dark:border-white/[0.06]">
+        <div className="pt-2 border-t border-[#E3E8EF] dark:border-white/[0.06]">
           <button
             type="button"
             onClick={() => setIsSlotsOpen(!isSlotsOpen)}
             className="w-full flex items-center justify-between text-left py-1 select-none group"
           >
             <div className="flex items-center space-x-2">
-              <Layers className="w-3.5 h-3.5 text-[var(--brand)] dark:text-indigo-400" />
-              <span className="text-xs font-semibold text-slate-900 dark:text-white">
+              <Layers className="w-3.5 h-3.5 text-[#0F1B3D] dark:text-indigo-400" />
+              <span className="text-xs font-semibold text-[#0F172A] dark:text-white">
                 Slot Customization ({hasMultipleColors ? '6' : '5'} Images)
               </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--brand-tint)] dark:bg-red-500/10 text-[var(--brand)] dark:text-red-400 border border-[var(--brand)]/30 dark:border-red-500/20 font-medium">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#E8EDF7] dark:bg-red-500/10 text-[#0F1B3D] dark:text-red-400 border border-[#DCE4F2] dark:border-red-500/20 font-semibold">
                 Sharp Sans Font
               </span>
             </div>
-            <div className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition">
+            <div className="text-[#5B6478] group-hover:text-[#0F172A] dark:group-hover:text-white transition">
               {isSlotsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </div>
           </button>
 
+          {/* 6. Slot Customization block: background #F4F7FC, border #DCE4F2, radius 12px */}
           {isSlotsOpen && (
-            <div className="space-y-2 pt-2.5 mt-1">
+            <div className="space-y-2.5 pt-3 mt-2 bg-[#F4F7FC] dark:bg-transparent border border-[#DCE4F2] dark:border-white/[0.06] rounded-[12px] p-3">
               {sanfordSlots.map((slot, index) => {
                 const isSlot5Skipped = slot.slot === 5 && !hasMultipleColors;
 
-                let slotBadgeColor = 'text-indigo-300';
-                if (slot.slot === 1) slotBadgeColor = 'text-blue-300';
-                else if (slot.slot === 2) slotBadgeColor = 'text-emerald-300';
-                else if (slot.slot === 3) slotBadgeColor = 'text-indigo-300';
-                else if (slot.slot === 4) slotBadgeColor = 'text-purple-300';
-                else if (slot.slot === 5) slotBadgeColor = 'text-amber-300';
-                else if (slot.slot === 6) slotBadgeColor = 'text-rose-300';
+                let slotBadgeColor = 'text-indigo-600 dark:text-indigo-300';
+                if (slot.slot === 1) slotBadgeColor = 'text-blue-700 dark:text-blue-300';
+                else if (slot.slot === 2) slotBadgeColor = 'text-emerald-700 dark:text-emerald-300';
+                else if (slot.slot === 3) slotBadgeColor = 'text-indigo-700 dark:text-indigo-300';
+                else if (slot.slot === 4) slotBadgeColor = 'text-purple-700 dark:text-purple-300';
+                else if (slot.slot === 5) slotBadgeColor = 'text-amber-700 dark:text-amber-300';
+                else if (slot.slot === 6) slotBadgeColor = 'text-rose-700 dark:text-rose-300';
 
                 return (
                   <div
                     key={index}
-                    className={`bg-slate-50/80 dark:bg-black/30 border rounded-xl p-2.5 space-y-1.5 ${
+                    className={`bg-white dark:bg-black/30 border rounded-[10px] p-2.5 space-y-1.5 shadow-sm ${
                       isSlot5Skipped
-                        ? 'border-amber-400/40 bg-[var(--warn-bg)] dark:bg-black/30 dark:border-amber-500/20 opacity-85'
-                        : 'border-slate-200 dark:border-white/[0.06]'
+                        ? 'border-amber-300 bg-[#FEF3C7]/40 dark:bg-black/30 dark:border-amber-500/20 opacity-85'
+                        : 'border-[#E3E8EF] dark:border-white/[0.06]'
                     }`}
                   >
                     <div className="flex items-center justify-between text-xs font-medium">
-                      <span className={`${slotBadgeColor} font-semibold text-[11px] text-slate-800 dark:text-inherit`}>
+                      <span className={`${slotBadgeColor} font-semibold text-[11px]`}>
                         Slot {slot.slot}: {slot.title}
                       </span>
                       {isSlot5Skipped ? (
-                        <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-[var(--warn-bg)] text-[var(--warn)] border border-[#FCD34D] dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20">
+                        <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D] dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20">
                           Skipped (Single colour)
                         </span>
                       ) : (
-                        <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 dark:bg-white/[0.04] dark:text-slate-400 dark:border-white/[0.06]">
+                        <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-100 text-[#5B6478] border border-[#E3E8EF] dark:bg-white/[0.04] dark:text-slate-400 dark:border-white/[0.06]">
                           {slot.theme}
                         </span>
                       )}
                     </div>
 
                     {isSlot5Skipped && (
-                      <p className="text-[10px] text-[var(--warn)] bg-white/60 dark:bg-amber-500/5 border border-amber-300 dark:border-amber-500/10 rounded px-2 py-1">
+                      <p className="text-[10px] text-[#92400E] bg-white/70 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/10 rounded px-2 py-1">
                         Product only has 1 colour or no colour options. Slot 5 will be skipped during generation.
                       </p>
                     )}
 
                     {slot.slot !== 1 && (
                       <div className="space-y-0.5">
-                        <label className="text-[10px] font-medium text-slate-700 dark:text-slate-400">
+                        <label className="text-[10px] font-medium text-[#5B6478] dark:text-slate-400">
                           {slot.slot === 2
                             ? 'Top-Right Red Badge Tagline (Sharp Sans Text)'
                             : slot.slot === 3 || slot.slot === 4
@@ -689,14 +692,14 @@ export function ProductInput({
                               ? 'e.g. Available Colors'
                               : 'e.g. Unit Dimension'
                           }
-                          className="w-full bg-white dark:bg-white/[0.02] border border-slate-300 dark:border-white/[0.08] px-2 py-1 rounded text-[11px] text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[var(--brand)] dark:focus:ring-indigo-500"
+                          className="w-full bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] px-2 py-1 rounded text-[11px] text-[#0F172A] dark:text-slate-200 placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500"
                         />
                       </div>
                     )}
 
                     {(slot.slot === 3 || slot.slot === 4 || slot.slot === 5) && (
                       <div className="space-y-0.5">
-                        <label className="text-[10px] font-medium text-slate-700 dark:text-slate-400">
+                        <label className="text-[10px] font-medium text-[#5B6478] dark:text-slate-400">
                           Bottom Banner Text
                         </label>
                         <input
@@ -704,7 +707,7 @@ export function ProductInput({
                           value={slot.promoBanner || ''}
                           onChange={(e) => updateSlotField(index, 'promoBanner', e.target.value)}
                           placeholder="e.g. Rechargeable Cooling Hand Fan with Cold Plate"
-                          className="w-full bg-white dark:bg-white/[0.02] border border-slate-300 dark:border-white/[0.08] px-2 py-1 rounded text-[11px] text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[var(--brand)] dark:focus:ring-indigo-500"
+                          className="w-full bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] px-2 py-1 rounded text-[11px] text-[#0F172A] dark:text-slate-200 placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500"
                         />
                       </div>
                     )}
@@ -721,7 +724,7 @@ export function ProductInput({
                           )
                         }
                         placeholder="e.g. Feature callouts (one per line)..."
-                        className="w-full bg-white dark:bg-white/[0.02] border border-slate-300 dark:border-white/[0.08] p-1.5 rounded text-[11px] text-slate-900 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[var(--brand)] dark:focus:ring-indigo-500 resize-y font-mono leading-relaxed"
+                        className="w-full bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] p-1.5 rounded text-[11px] text-[#0F172A] dark:text-slate-300 placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500 resize-y font-mono leading-relaxed"
                       />
                     )}
                   </div>

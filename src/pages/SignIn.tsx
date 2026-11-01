@@ -160,7 +160,7 @@ export function SignIn() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-[#090B10] px-4 py-12 relative overflow-hidden transition-colors">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#EEF1F6] dark:bg-[#090B10] px-4 py-12 relative overflow-hidden transition-colors">
       {/* Theme Toggle Top Right */}
       <div className="absolute top-5 right-5 z-20">
         <ThemeToggle />
@@ -169,13 +169,13 @@ export function SignIn() {
       {/* Subtle background glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] bg-indigo-500/10 dark:bg-indigo-500/8 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="w-full max-w-md bg-white dark:bg-[#0E1118]/85 p-8 rounded-2xl border border-slate-200 dark:border-white/[0.08] shadow-xl dark:shadow-2xl backdrop-blur-xl relative z-10 space-y-6">
+      <div className="w-full max-w-md bg-[#FFFFFF] dark:bg-[#0E1118]/85 p-8 rounded-[16px] border border-[#E3E8EF] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-2xl backdrop-blur-xl relative z-10 space-y-6">
         {/* Brand header */}
         <div className="text-center space-y-1.5">
           <div className="inline-flex items-center justify-center mb-1">
             <BrandLogo heightClass="h-10" />
           </div>
-          <p className="text-xs font-semibold tracking-wider uppercase text-slate-500 dark:text-slate-400 font-sans">
+          <p className="text-xs font-semibold tracking-wider uppercase text-[#5B6478] dark:text-slate-400 font-sans">
             Image Studio
           </p>
         </div>
@@ -315,7 +315,7 @@ export function SignIn() {
           /* Sign In vs Request Account Tabbed Form */
           <div>
             {/* Tabs */}
-            <div className="grid grid-cols-2 p-1 bg-slate-100 dark:bg-white/[0.04] rounded-xl border border-slate-200 dark:border-white/[0.06] mb-5">
+            <div className="grid grid-cols-2 p-1 bg-[#F4F7FC] dark:bg-white/[0.04] rounded-xl border border-[#DCE4F2] dark:border-white/[0.06] mb-5">
               <button
                 type="button"
                 onClick={() => {
@@ -324,8 +324,8 @@ export function SignIn() {
                 }}
                 className={`py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center space-x-1.5 ${
                   activeTab === 'signin'
-                    ? 'bg-[var(--brand-tint)] border-[1.5px] border-[var(--brand)] text-[var(--brand-ink)] shadow-sm dark:bg-indigo-600 dark:text-white dark:border-0'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    ? 'bg-[#E8EDF7] text-[#0F1B3D] font-semibold border-0 shadow-none dark:bg-indigo-600 dark:text-white'
+                    : 'text-[#5B6478] hover:text-[#0F172A] dark:text-slate-400 dark:hover:text-slate-200'
                 }`}
               >
                 <LogIn className="w-3.5 h-3.5" />
@@ -340,8 +340,8 @@ export function SignIn() {
                 }}
                 className={`py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center space-x-1.5 ${
                   activeTab === 'signup'
-                    ? 'bg-[var(--brand-tint)] border-[1.5px] border-[var(--brand)] text-[var(--brand-ink)] shadow-sm dark:bg-indigo-600 dark:text-white dark:border-0'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    ? 'bg-[#E8EDF7] text-[#0F1B3D] font-semibold border-0 shadow-none dark:bg-indigo-600 dark:text-white'
+                    : 'text-[#5B6478] hover:text-[#0F172A] dark:text-slate-400 dark:hover:text-slate-200'
                 }`}
               >
                 <UserPlus className="w-3.5 h-3.5" />

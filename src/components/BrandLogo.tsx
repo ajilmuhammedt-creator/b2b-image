@@ -30,3 +30,4 @@ export function BrandLogo({ className = '', heightClass = 'h-8' }: BrandLogoProp
     </div>
   );
 }
+

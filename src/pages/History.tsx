@@ -128,24 +128,24 @@ export function History() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#090B10] text-slate-900 dark:text-slate-100 flex flex-col selection:bg-indigo-500/20 selection:text-indigo-200 transition-colors">
+    <div className="min-h-screen bg-[#EEF1F6] dark:bg-[#090B10] text-[#0F172A] dark:text-slate-100 flex flex-col selection:bg-indigo-500/20 selection:text-indigo-200 transition-colors">
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-slate-200 dark:border-slate-800 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-[#E3E8EF] dark:border-slate-800 gap-4">
           <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center space-x-2.5">
-              <HistoryIcon className="w-5 h-5 text-[var(--brand)] dark:text-indigo-400" />
+            <h1 className="text-xl font-bold text-[#0F172A] dark:text-white flex items-center space-x-2.5">
+              <HistoryIcon className="w-5 h-5 text-[#E11D2E] dark:text-indigo-400" />
               <span>Project History (10-Day Retention)</span>
             </h1>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+            <p className="text-xs text-[#5B6478] dark:text-slate-400 mt-1">
               Generated assets are automatically retained for 10 days before deletion. Reopen any project to continue editing.
             </p>
           </div>
 
           <button
             onClick={() => navigate('/studio')}
-            className="self-start sm:self-auto py-2 px-4 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-white rounded-xl text-xs font-semibold uppercase tracking-wider flex items-center space-x-1.5 transition shadow-sm dark:shadow-lg"
+            className="self-start sm:self-auto py-2.5 px-4 bg-[#E11D2E] hover:bg-[#C8102E] text-white rounded-[12px] text-xs font-semibold uppercase tracking-wider flex items-center space-x-1.5 transition shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-lg"
           >
             <Sparkles className="w-4 h-4" />
             <span>New Studio Run</span>
@@ -154,23 +154,23 @@ export function History() {
 
         {loading ? (
           <div className="py-24 flex flex-col items-center justify-center space-y-3">
-            <div className="animate-spin h-7 w-7 border-2 border-[var(--brand)] dark:border-indigo-500 border-t-transparent rounded-full" />
-            <span className="text-xs text-slate-500 dark:text-slate-400">Loading your project library...</span>
+            <div className="animate-spin h-7 w-7 border-2 border-[#E11D2E] dark:border-indigo-500 border-t-transparent rounded-full" />
+            <span className="text-xs text-[#5B6478] dark:text-slate-400">Loading your project library...</span>
           </div>
         ) : projects.length === 0 ? (
           <div className="py-24 text-center max-w-md mx-auto space-y-4">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-white dark:bg-slate-900 border border-[#E3E8EF] dark:border-slate-800 text-[#94A3B8] dark:text-slate-500 flex items-center justify-center">
               <ImageIcon className="w-7 h-7" />
             </div>
             <div className="space-y-1">
-              <h2 className="text-base font-semibold text-slate-900 dark:text-white">No active projects found</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <h2 className="text-base font-semibold text-[#0F172A] dark:text-white">No active projects found</h2>
+              <p className="text-xs text-[#5B6478] dark:text-slate-400">
                 Projects created within the last 10 days appear here. Start a new run in Studio to generate product photos.
               </p>
             </div>
             <button
               onClick={() => navigate('/studio')}
-              className="mt-2 py-2 px-4 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-white rounded-xl text-xs font-semibold transition shadow-sm"
+              className="mt-2 py-2 px-4 bg-[#E11D2E] hover:bg-[#C8102E] text-white rounded-[12px] text-xs font-semibold transition shadow-sm"
             >
               Start First Studio Project
             </button>
@@ -189,7 +189,7 @@ export function History() {
                 <div
                   key={project.id}
                   onClick={() => handleOpenProject(project.id)}
-                  className="bg-[var(--surface)] dark:bg-slate-900/90 border border-[var(--border)] dark:border-slate-800/80 hover:border-[var(--brand)] dark:hover:border-indigo-500/60 rounded-[14px] overflow-hidden cursor-pointer shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:shadow-xl transition-all duration-200 group flex flex-col relative"
+                  className="bg-[#FFFFFF] dark:bg-slate-900/90 border border-[#E3E8EF] dark:border-slate-800/80 hover:border-[#E11D2E] dark:hover:border-indigo-500/60 rounded-[16px] overflow-hidden cursor-pointer shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-xl transition-all duration-200 group flex flex-col relative"
                 >
                   {/* Thumbnail Banner */}
                   <div className="h-48 bg-[var(--subtle)] dark:bg-slate-950 relative flex items-center justify-center overflow-hidden border-b border-[var(--border)] dark:border-slate-800/80">

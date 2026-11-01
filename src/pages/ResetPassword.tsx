@@ -59,14 +59,14 @@ export function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-[#090B10] px-4 py-12 relative overflow-hidden transition-colors">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#EEF1F6] dark:bg-[#090B10] px-4 py-12 relative overflow-hidden transition-colors">
       <div className="absolute top-5 right-5 z-20">
         <ThemeToggle />
       </div>
       {/* Background glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="w-full max-w-md space-y-7 bg-[var(--surface)] dark:bg-[#0E1118]/80 p-8 rounded-[14px] border border-[var(--border)] dark:border-white/[0.08] shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:shadow-2xl backdrop-blur-xl relative z-10">
+      <div className="w-full max-w-md space-y-7 bg-[#FFFFFF] dark:bg-[#0E1118]/80 p-8 rounded-[16px] border border-[#E3E8EF] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-2xl backdrop-blur-xl relative z-10">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center mb-2">
             <BrandLogo heightClass="h-10" />

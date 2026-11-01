@@ -523,7 +523,7 @@ export function Studio() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#090B10] text-slate-900 dark:text-slate-100 flex flex-col selection:bg-indigo-500/20 selection:text-indigo-200 transition-colors">
+    <div className="min-h-screen bg-[#EEF1F6] dark:bg-[#090B10] text-[#0F172A] dark:text-slate-100 flex flex-col selection:bg-indigo-500/20 selection:text-indigo-200 transition-colors">
       <Navbar />
 
       {/* Toast Alert */}

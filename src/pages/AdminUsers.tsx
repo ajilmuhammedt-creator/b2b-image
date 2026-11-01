@@ -182,21 +182,21 @@ export function AdminUsers() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#090B10] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors">
+    <div className="min-h-screen bg-[#EEF1F6] dark:bg-[#090B10] text-[#0F172A] dark:text-slate-100 flex flex-col font-sans transition-colors">
       <Navbar />
 
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200 dark:border-white/[0.06]">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-[#E3E8EF] dark:border-white/[0.06]">
           <div>
-            <div className="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-1">
+            <div className="flex items-center space-x-2 text-[#0F1B3D] dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-1">
               <Shield className="w-3.5 h-3.5" />
               <span>Admin Dashboard</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-bold tracking-tight text-[#0F172A] dark:text-white">
               Staff Access & Daily Credit Usage
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-xs text-[#5B6478] dark:text-slate-400 mt-1">
               Monitor daily image credit consumption, approve staff accounts, and manage permissions.
             </p>
           </div>
@@ -205,7 +205,7 @@ export function AdminUsers() {
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="px-3.5 py-2 bg-white dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] text-xs font-medium text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-white/[0.08] shadow-sm transition flex items-center space-x-2"
+              className="px-3.5 py-2 bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.08] text-xs font-medium text-[#5B6478] dark:text-slate-300 rounded-[12px] border border-[#E3E8EF] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(15,27,61,0.06)] transition flex items-center space-x-2"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
               <span>Refresh Telemetry</span>
@@ -249,75 +249,75 @@ export function AdminUsers() {
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: Credits Used Today */}
-          <div className="p-4 rounded-xl bg-gradient-to-br from-[var(--brand-tint)] to-white dark:from-[#111624] dark:to-[#0E1118] border border-[var(--brand)]/30 dark:border-indigo-500/30 shadow-sm backdrop-blur-xl space-y-2">
+          <div className="p-4 rounded-[16px] bg-[#FFFFFF] dark:from-[#111624] dark:to-[#0E1118] border border-[#E3E8EF] dark:border-indigo-500/30 shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-sm backdrop-blur-xl space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-[var(--brand-ink)] dark:text-indigo-300 font-semibold uppercase tracking-wider">
+              <span className="text-xs text-[#0F1B3D] dark:text-indigo-300 font-semibold uppercase tracking-wider">
                 Credits Used Today
               </span>
-              <div className="w-7 h-7 rounded-lg bg-white/80 dark:bg-indigo-500/20 text-[var(--brand)] dark:text-indigo-400 flex items-center justify-center border border-[var(--brand)]/20 dark:border-transparent">
+              <div className="w-7 h-7 rounded-lg bg-[#E8EDF7] dark:bg-indigo-500/20 text-[#0F1B3D] dark:text-indigo-400 flex items-center justify-center">
                 <Zap className="w-4 h-4 fill-current" />
               </div>
             </div>
-            <div className="text-3xl font-extrabold text-[var(--brand-ink)] dark:text-indigo-400 font-mono">
+            <div className="text-3xl font-extrabold text-[#0F1B3D] dark:text-indigo-400 font-mono">
               {creditStats?.creditsToday ?? 0}
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-[11px] text-[#5B6478] dark:text-slate-400">
               {creditStats?.creditsYesterday ?? 0} yesterday &bull; {creditStats?.creditsTotal ?? 0} total all-time
             </p>
           </div>
 
           {/* Card 2: Pending Requests */}
-          <div className="p-4 rounded-xl bg-white dark:bg-[#0E1118]/80 border border-amber-200 dark:border-amber-500/20 shadow-sm backdrop-blur-xl space-y-2">
+          <div className="p-4 rounded-[16px] bg-[#FFFFFF] dark:bg-[#0E1118]/80 border border-[#E3E8EF] dark:border-amber-500/20 shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-sm backdrop-blur-xl space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs text-amber-700 dark:text-amber-300/80 font-medium">Pending Requests</span>
-              <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400">
+              <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400">
                 <Clock className="w-4 h-4" />
               </div>
             </div>
             <div className="text-3xl font-bold text-amber-600 dark:text-amber-400 font-mono">
               {pendingUsers.length}
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">Awaiting your approval</p>
+            <p className="text-[11px] text-[#5B6478] dark:text-slate-400">Awaiting your approval</p>
           </div>
 
           {/* Card 3: Active Staff */}
-          <div className="p-4 rounded-xl bg-white dark:bg-[#0E1118]/80 border border-emerald-200 dark:border-emerald-500/20 shadow-sm backdrop-blur-xl space-y-2">
+          <div className="p-4 rounded-[16px] bg-[#FFFFFF] dark:bg-[#0E1118]/80 border border-[#E3E8EF] dark:border-emerald-500/20 shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-sm backdrop-blur-xl space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs text-emerald-700 dark:text-emerald-300/80 font-medium">Active Staff</span>
-              <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
             </div>
             <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
               {approvedUsers.length}
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">Authorized staff members</p>
+            <p className="text-[11px] text-[#5B6478] dark:text-slate-400">Authorized staff members</p>
           </div>
 
           {/* Card 4: Total Registered Accounts */}
-          <div className="p-4 rounded-xl bg-white dark:bg-[#0E1118]/80 border border-slate-200 dark:border-white/[0.08] shadow-sm backdrop-blur-xl space-y-2">
+          <div className="p-4 rounded-[16px] bg-[#FFFFFF] dark:bg-[#0E1118]/80 border border-[#E3E8EF] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-sm backdrop-blur-xl space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Accounts</span>
-              <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/[0.04] flex items-center justify-center text-slate-600 dark:text-slate-400">
+              <span className="text-xs text-[#5B6478] dark:text-slate-400 font-medium">Total Accounts</span>
+              <div className="w-7 h-7 rounded-lg bg-[#F4F7FC] dark:bg-white/[0.04] flex items-center justify-center text-[#5B6478] dark:text-slate-400">
                 <Users className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-3xl font-bold text-slate-900 dark:text-white font-mono">{users.length}</div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">Total registered in database</p>
+            <div className="text-3xl font-bold text-[#0F172A] dark:text-white font-mono">{users.length}</div>
+            <p className="text-[11px] text-[#5B6478] dark:text-slate-400">Total registered in database</p>
           </div>
         </div>
 
         {/* Daily Credit Consumption Timeline (Past 7 Days) */}
         {creditStats && creditStats.dailyBreakdown && creditStats.dailyBreakdown.length > 0 && (
-          <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1118]/80 border border-slate-200 dark:border-white/[0.08] shadow-sm backdrop-blur-xl space-y-3.5">
+          <div className="p-5 rounded-[16px] bg-[#FFFFFF] dark:bg-[#0E1118]/80 border border-[#E3E8EF] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-sm backdrop-blur-xl space-y-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <BarChart3 className="w-4 h-4 text-[var(--brand)] dark:text-indigo-400" />
-                <h2 className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider">
+                <BarChart3 className="w-4 h-4 text-[#0F1B3D] dark:text-indigo-400" />
+                <h2 className="text-xs font-bold text-[#0F172A] dark:text-white uppercase tracking-wider">
                   Daily Credit Consumption (Past 7 Days)
                 </h2>
               </div>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">
+              <span className="text-[11px] text-[#5B6478] dark:text-slate-400">
                 1 image generated = 1 credit
               </span>
             </div>
@@ -330,20 +330,20 @@ export function AdminUsers() {
                     key={day.date}
                     className={`p-3 rounded-xl border text-center transition flex flex-col justify-between space-y-1.5 ${
                       isToday
-                        ? 'bg-[var(--brand-tint)] dark:bg-indigo-950/30 border-[var(--brand)]/40 dark:border-indigo-500/40 shadow-sm'
-                        : 'bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/[0.05]'
+                        ? 'bg-[#E8EDF7] dark:bg-indigo-950/30 border-[#DCE4F2] dark:border-indigo-500/40 shadow-sm'
+                        : 'bg-[#F4F7FC] dark:bg-white/[0.02] border-[#E3E8EF] dark:border-white/[0.05]'
                     }`}
                   >
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center justify-center space-x-1">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-[#5B6478] dark:text-slate-400 flex items-center justify-center space-x-1">
                       <Calendar className="w-2.5 h-2.5" />
                       <span>{day.label}</span>
                     </div>
 
-                    <div className={`text-xl font-bold font-mono ${isToday ? 'text-[var(--brand-ink)] dark:text-white' : 'text-slate-900 dark:text-white'}`}>
+                    <div className={`text-xl font-bold font-mono ${isToday ? 'text-[#0F1B3D] dark:text-white' : 'text-[#0F172A] dark:text-white'}`}>
                       {day.credits}
                     </div>
 
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                    <div className="text-[10px] text-[#5B6478] dark:text-slate-400">
                       {day.credits === 1 ? '1 credit' : `${day.credits} credits`}
                       {day.activeUsers > 0 && ` (${day.activeUsers} user${day.activeUsers > 1 ? 's' : ''})`}
                     </div>
@@ -435,11 +435,11 @@ export function AdminUsers() {
         )}
 
         {/* Directory Controls & Table */}
-        <div className="p-6 rounded-2xl bg-white dark:bg-[#0E1118]/80 border border-slate-200 dark:border-white/[0.08] shadow-sm backdrop-blur-xl space-y-5">
+        <div className="p-6 rounded-[16px] bg-[#FFFFFF] dark:bg-[#0E1118]/80 border border-[#E3E8EF] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-sm backdrop-blur-xl space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">Staff Directory & Usage</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <h2 className="text-base font-bold text-[#0F172A] dark:text-white">Staff Directory & Usage</h2>
+              <p className="text-xs text-[#5B6478] dark:text-slate-400">
                 All registered users with role, approval status, and daily credit usage.
               </p>
             </div>
@@ -447,25 +447,25 @@ export function AdminUsers() {
             {/* Search & Status Filters */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
               <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] dark:text-slate-500" />
                 <input
                   type="text"
                   placeholder="Search by name or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-lg text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[var(--brand)] dark:focus:ring-indigo-500 w-full sm:w-60"
+                  className="pl-9 pr-3 py-1.5 bg-[#FFFFFF] dark:bg-slate-950 border border-[#E3E8EF] dark:border-slate-700/80 rounded-lg text-xs text-[#0F172A] dark:text-slate-200 placeholder-[#94A3B8] dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500 w-full sm:w-60"
                 />
               </div>
 
-              <div className="flex items-center space-x-1 bg-slate-100 dark:bg-white/[0.03] p-1 rounded-lg border border-slate-200 dark:border-white/[0.06] text-xs">
+              <div className="flex items-center space-x-1 bg-[#F4F7FC] dark:bg-white/[0.03] p-1 rounded-lg border border-[#DCE4F2] dark:border-white/[0.06] text-xs">
                 {(['all', 'pending', 'approved', 'rejected'] as const).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setStatusFilter(tab)}
                     className={`px-2.5 py-1 rounded-md text-xs font-semibold transition capitalize ${
                       statusFilter === tab
-                        ? 'bg-[var(--brand-tint)] border-[1.5px] border-[var(--brand)] text-[var(--brand-ink)] shadow-sm dark:bg-indigo-600 dark:text-white dark:border-0'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                        ? 'bg-[#E8EDF7] text-[#0F1B3D] font-semibold border-0 shadow-none dark:bg-indigo-600 dark:text-white'
+                        : 'bg-white border border-[#E3E8EF] text-[#5B6478] hover:text-[#0F172A] dark:bg-transparent dark:border-0 dark:text-slate-400 dark:hover:text-slate-200'
                     }`}
                   >
                     {tab}

@@ -4,13 +4,16 @@
 
 /* 1. Light Mode CSS Variables specified by user */
 html.light {
-  --bg: #F6F7F9;
+  --bg: #EEF1F6;
   --surface: #FFFFFF;
-  --border: #E5E7EB;
-  --subtle: #F1F5F9;
+  --border: #E3E8EF;
+  --subtle: #F4F7FC;
+  --subtle-border: #DCE4F2;
   --text: #0F172A;
-  --text-2: #475569;
+  --text-2: #5B6478;
   --muted: #94A3B8;
+  --navy: #0F1B3D;
+  --navy-tint: #E8EDF7;
   --brand: #E11D2E;
   --brand-hover: #C8102E;
   --brand-tint: #FDECEE;
@@ -69,9 +72,9 @@ html.light {
     background: var(--muted);
   }
 
-  /* 8. Cards in Light mode: border var(--border), radius 14px, shadow 0 1px 2px rgba(15,23,42,.05) */
+  /* 1. Cards and Panels in Light mode: border #E3E8EF, radius 16px, shadow 0 1px 3px rgba(15,27,61,.06) */
   html.light .rounded-2xl {
-    border-radius: 14px !important;
+    border-radius: 16px !important;
   }
 
   html.light .bg-\[\#0E1118\],
@@ -80,22 +83,22 @@ html.light {
   html.light .bg-\[\#0E1118\]\/90 {
     background-color: var(--surface) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 14px !important;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 3px rgba(15, 27, 61, 0.06) !important;
   }
 
   html.light .bg-\[\#090B10\] {
     background-color: var(--bg) !important;
   }
 
-  /* 8. Focus ring in light mode: 3px rgba(225,29,46,.25) */
+  /* 8. Focus ring in light mode: 3px rgba(15,27,61,.15) */
   html.light *:focus-visible,
   html.light input:focus,
   html.light select:focus,
   html.light textarea:focus {
     outline: none !important;
-    border-color: var(--brand) !important;
-    box-shadow: 0 0 0 3px rgba(225, 29, 46, 0.25) !important;
+    border-color: #0F1B3D !important;
+    box-shadow: 0 0 0 3px rgba(15, 27, 61, 0.15) !important;
   }
 
   /* Inputs in light mode */
@@ -105,6 +108,11 @@ html.light {
     background-color: var(--surface) !important;
     border: 1px solid var(--border) !important;
     color: var(--text) !important;
+  }
+
+  html.light input::placeholder,
+  html.light textarea::placeholder {
+    color: var(--muted) !important;
   }
 
   /* 5. Disabled buttons: background #E5E7EB, text var(--muted), no pink */
@@ -126,7 +134,11 @@ html.light {
     color: var(--muted) !important;
   }
 
-  /* 4. High-contrast typography in Light mode */
+  /* 5. Text: headings #0F172A, helper text #5B6478, placeholders #94A3B8 */
+  html.light h1,
+  html.light h2,
+  html.light h3,
+  html.light h4,
   html.light h1.text-white,
   html.light h2.text-white,
   html.light h3.text-white,
