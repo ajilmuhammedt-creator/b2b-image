@@ -2,6 +2,7 @@ import { useState, type FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { BrandLogo } from '../components/BrandLogo';
 import {
   Mail,
   Lock,
@@ -172,11 +173,7 @@ export function SignIn() {
         {/* Brand header */}
         <div className="text-center space-y-1.5">
           <div className="inline-flex items-center justify-center mb-1">
-            <img
-              src="/sanford-ai-logo.png"
-              alt="Sanford AI"
-              className="h-10 w-auto object-contain dark:mix-blend-screen"
-            />
+            <BrandLogo heightClass="h-10" />
           </div>
           <p className="text-xs font-semibold tracking-wider uppercase text-slate-500 dark:text-slate-400 font-sans">
             Image Studio
@@ -245,7 +242,7 @@ export function SignIn() {
               <button
                 type="submit"
                 disabled={resetSubmitting}
-                className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-xs rounded-lg shadow-md shadow-indigo-600/30 transition flex items-center justify-center space-x-2"
+                className="w-full py-2.5 px-4 bg-[var(--brand)] hover:bg-[var(--brand-hover)] dark:bg-indigo-600 dark:hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-xs rounded-lg shadow-sm dark:shadow-md transition flex items-center justify-center space-x-2"
               >
                 {resetSubmitting ? (
                   <>
@@ -308,7 +305,7 @@ export function SignIn() {
                 setPassword('');
                 setConfirmPassword('');
               }}
-              className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-lg shadow-md shadow-indigo-600/30 transition flex items-center justify-center space-x-2"
+              className="w-full py-2.5 px-4 bg-[var(--brand)] hover:bg-[var(--brand-hover)] dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white font-medium text-xs rounded-lg shadow-sm dark:shadow-md transition flex items-center justify-center space-x-2"
             >
               <span>Back to Sign In</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -327,7 +324,7 @@ export function SignIn() {
                 }}
                 className={`py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center space-x-1.5 ${
                   activeTab === 'signin'
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-[var(--brand-tint)] border-[1.5px] border-[var(--brand)] text-[var(--brand-ink)] shadow-sm dark:bg-indigo-600 dark:text-white dark:border-0'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
               >
@@ -343,7 +340,7 @@ export function SignIn() {
                 }}
                 className={`py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center space-x-1.5 ${
                   activeTab === 'signup'
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-[var(--brand-tint)] border-[1.5px] border-[var(--brand)] text-[var(--brand-ink)] shadow-sm dark:bg-indigo-600 dark:text-white dark:border-0'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
               >
@@ -395,7 +392,7 @@ export function SignIn() {
                         setErrorMessage(null);
                         setForgotPasswordMode(true);
                       }}
-                      className="text-[11px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition"
+                      className="text-[11px] text-[var(--brand)] hover:underline dark:text-indigo-400 dark:hover:text-indigo-300 transition"
                     >
                       Forgot password?
                     </button>
@@ -413,7 +410,7 @@ export function SignIn() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder=""
-                      className="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
+                      className="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[var(--brand)] dark:focus:ring-indigo-500 transition"
                     />
                     <button
                       type="button"
@@ -429,7 +426,7 @@ export function SignIn() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-xs rounded-lg shadow-md shadow-indigo-600/30 transition duration-150 flex items-center justify-center space-x-2"
+                  className="w-full py-2.5 px-4 bg-[var(--brand)] hover:bg-[var(--brand-hover)] dark:bg-indigo-600 dark:hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-xs rounded-lg shadow-sm dark:shadow-md transition duration-150 flex items-center justify-center space-x-2"
                 >
                   {submitting ? (
                     <>
@@ -550,8 +547,8 @@ export function SignIn() {
                   </div>
                 </div>
 
-                <div className="p-2.5 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-lg text-[11px] text-indigo-700 dark:text-indigo-300 flex items-start space-x-2">
-                  <Clock className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-indigo-600 dark:text-indigo-400" />
+                <div className="p-2.5 bg-[var(--brand-tint)] dark:bg-indigo-500/10 border border-[var(--brand)]/30 dark:border-indigo-500/20 rounded-lg text-[11px] text-[var(--brand-ink)] dark:text-indigo-300 flex items-start space-x-2">
+                  <Clock className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-[var(--brand)] dark:text-indigo-400" />
                   <span>
                     New accounts require administrator approval. An email notification will be sent upon approval.
                   </span>
@@ -560,7 +557,7 @@ export function SignIn() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-xs rounded-lg shadow-md shadow-indigo-600/30 transition duration-150 flex items-center justify-center space-x-2"
+                  className="w-full py-2.5 px-4 bg-[var(--brand)] hover:bg-[var(--brand-hover)] dark:bg-indigo-600 dark:hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-xs rounded-lg shadow-sm dark:shadow-md transition duration-150 flex items-center justify-center space-x-2"
                 >
                   {submitting ? (
                     <>

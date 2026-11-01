@@ -249,16 +249,16 @@ export function AdminUsers() {
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: Credits Used Today */}
-          <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-50 to-white dark:from-[#111624] dark:to-[#0E1118] border border-indigo-200 dark:border-indigo-500/30 shadow-sm backdrop-blur-xl space-y-2">
+          <div className="p-4 rounded-xl bg-gradient-to-br from-[var(--brand-tint)] to-white dark:from-[#111624] dark:to-[#0E1118] border border-[var(--brand)]/30 dark:border-indigo-500/30 shadow-sm backdrop-blur-xl space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-indigo-700 dark:text-indigo-300 font-semibold uppercase tracking-wider">
+              <span className="text-xs text-[var(--brand-ink)] dark:text-indigo-300 font-semibold uppercase tracking-wider">
                 Credits Used Today
               </span>
-              <div className="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-lg bg-white/80 dark:bg-indigo-500/20 text-[var(--brand)] dark:text-indigo-400 flex items-center justify-center border border-[var(--brand)]/20 dark:border-transparent">
                 <Zap className="w-4 h-4 fill-current" />
               </div>
             </div>
-            <div className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 font-mono">
+            <div className="text-3xl font-extrabold text-[var(--brand-ink)] dark:text-indigo-400 font-mono">
               {creditStats?.creditsToday ?? 0}
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -312,7 +312,7 @@ export function AdminUsers() {
           <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1118]/80 border border-slate-200 dark:border-white/[0.08] shadow-sm backdrop-blur-xl space-y-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <BarChart3 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <BarChart3 className="w-4 h-4 text-[var(--brand)] dark:text-indigo-400" />
                 <h2 className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider">
                   Daily Credit Consumption (Past 7 Days)
                 </h2>
@@ -330,7 +330,7 @@ export function AdminUsers() {
                     key={day.date}
                     className={`p-3 rounded-xl border text-center transition flex flex-col justify-between space-y-1.5 ${
                       isToday
-                        ? 'bg-indigo-50/80 dark:bg-indigo-950/30 border-indigo-300 dark:border-indigo-500/40 shadow-sm'
+                        ? 'bg-[var(--brand-tint)] dark:bg-indigo-950/30 border-[var(--brand)]/40 dark:border-indigo-500/40 shadow-sm'
                         : 'bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/[0.05]'
                     }`}
                   >
@@ -339,7 +339,7 @@ export function AdminUsers() {
                       <span>{day.label}</span>
                     </div>
 
-                    <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+                    <div className={`text-xl font-bold font-mono ${isToday ? 'text-[var(--brand-ink)] dark:text-white' : 'text-slate-900 dark:text-white'}`}>
                       {day.credits}
                     </div>
 
@@ -453,7 +453,7 @@ export function AdminUsers() {
                   placeholder="Search by name or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-lg text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-full sm:w-60"
+                  className="pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-lg text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[var(--brand)] dark:focus:ring-indigo-500 w-full sm:w-60"
                 />
               </div>
 
@@ -462,9 +462,9 @@ export function AdminUsers() {
                   <button
                     key={tab}
                     onClick={() => setStatusFilter(tab)}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium transition capitalize ${
+                    className={`px-2.5 py-1 rounded-md text-xs font-semibold transition capitalize ${
                       statusFilter === tab
-                        ? 'bg-indigo-600 text-white shadow-sm'
+                        ? 'bg-[var(--brand-tint)] border-[1.5px] border-[var(--brand)] text-[var(--brand-ink)] shadow-sm dark:bg-indigo-600 dark:text-white dark:border-0'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >

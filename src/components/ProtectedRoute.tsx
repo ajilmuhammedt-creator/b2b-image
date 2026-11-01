@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
+import { BrandLogo } from './BrandLogo';
 import { Clock, ShieldAlert, RefreshCw, LogOut } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -50,13 +51,9 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
         {/* Amber glow */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="w-full max-w-md bg-white dark:bg-[#0E1118]/90 p-8 rounded-2xl border border-amber-300 dark:border-amber-500/20 shadow-xl dark:shadow-2xl backdrop-blur-xl relative z-10 text-center space-y-6">
+        <div className="w-full max-w-md bg-white dark:bg-[#0E1118]/90 p-8 rounded-[14px] border border-amber-300 dark:border-amber-500/20 shadow-xl dark:shadow-2xl backdrop-blur-xl relative z-10 text-center space-y-6">
           <div className="inline-flex items-center justify-center">
-            <img
-              src="/sanford-ai-logo.png"
-              alt="Sanford AI"
-              className="h-9 w-auto object-contain dark:mix-blend-screen"
-            />
+            <BrandLogo heightClass="h-9" />
           </div>
 
           <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-100 dark:bg-amber-500/15 border border-amber-300 dark:border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-inner">
@@ -83,7 +80,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
               type="button"
               onClick={handleCheckStatus}
               disabled={checking}
-              className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-xs rounded-lg shadow-md transition flex items-center justify-center space-x-2"
+              className="w-full py-2.5 px-4 bg-[var(--brand)] hover:bg-[var(--brand-hover)] dark:bg-indigo-600 dark:hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-xs rounded-lg shadow-sm dark:shadow-md transition flex items-center justify-center space-x-2"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${checking ? 'animate-spin' : ''}`} />
               <span>{checking ? 'Checking status...' : 'Check Approval Status'}</span>

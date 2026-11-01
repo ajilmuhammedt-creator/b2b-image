@@ -529,16 +529,16 @@ export function Studio() {
       {/* Toast Alert */}
       {toastMessage && (
         <div
-          className={`fixed top-18 right-6 z-50 py-2.5 px-4 rounded-xl shadow-2xl border text-xs font-medium flex items-center space-x-2 transition-all ${
+          className={`fixed top-18 right-6 z-50 py-2.5 px-4 rounded-xl shadow-lg border text-xs font-semibold flex items-center space-x-2 transition-all ${
             toastMessage.type === 'error'
-              ? 'bg-rose-950/90 border-rose-800/80 text-rose-200'
-              : 'bg-emerald-950/90 border-emerald-800/80 text-emerald-200'
+              ? 'bg-[var(--error-bg)] border-red-200 text-[var(--error)] dark:bg-rose-950/90 dark:border-rose-800/80 dark:text-rose-200'
+              : 'bg-[var(--success-bg)] border-emerald-200 text-[var(--success)] dark:bg-emerald-950/90 dark:border-emerald-800/80 dark:text-emerald-200'
           }`}
         >
           {toastMessage.type === 'error' ? (
-            <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+            <AlertCircle className="w-4 h-4 text-[var(--error)] dark:text-rose-400 flex-shrink-0" />
           ) : (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-[var(--success)] dark:text-emerald-400 flex-shrink-0" />
           )}
           <span>{toastMessage.text}</span>
         </div>

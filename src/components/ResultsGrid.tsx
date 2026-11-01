@@ -219,14 +219,14 @@ export function ResultsGrid({
   return (
     <div className="space-y-4">
       {/* Top Toolbar */}
-      <div className="bg-[#0E1118]/80 border border-white/[0.06] rounded-2xl p-3 shadow-xl flex flex-wrap items-center justify-between gap-2.5 backdrop-blur-xl">
+      <div className="bg-[var(--surface)] dark:bg-[#0E1118]/80 border border-[var(--border)] dark:border-white/[0.06] rounded-[14px] p-3 shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:shadow-xl flex flex-wrap items-center justify-between gap-2.5 backdrop-blur-xl">
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Generate Button */}
           <button
             type="button"
             onClick={onGenerateAll}
             disabled={isGeneratingAll || !isReadyToGenerate}
-            className="py-2 px-4.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-xs tracking-wide rounded-xl shadow-md shadow-red-900/20 transition-all flex items-center space-x-2 active:scale-[0.98]"
+            className="py-2 px-4.5 bg-[var(--brand)] hover:bg-[var(--brand-hover)] dark:bg-gradient-to-r dark:from-red-600 dark:to-rose-600 dark:hover:from-red-500 dark:hover:to-rose-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-xs tracking-wide rounded-xl shadow-sm dark:shadow-md transition-all flex items-center space-x-2 active:scale-[0.98]"
           >
             {isGeneratingAll ? (
               <>
@@ -246,21 +246,21 @@ export function ResultsGrid({
           </button>
 
           {!isReadyToGenerate && (
-            <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300">
-              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
+            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-[var(--warn-bg)] dark:bg-amber-500/10 border border-[#FCD34D] dark:border-amber-500/20 text-xs font-medium text-[var(--warn)] dark:text-amber-300">
+              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-[var(--warn)] dark:text-amber-400" />
               <span>Missing: {missingFields.join(', ')}</span>
             </div>
           )}
 
           {/* Also Make A Poster Checkbox */}
-          <label className="flex items-center space-x-1.5 bg-white/[0.02] hover:bg-white/[0.04] px-2.5 py-1.5 rounded-xl border border-white/[0.06] cursor-pointer transition">
+          <label className="flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200/60 dark:bg-white/[0.02] dark:hover:bg-white/[0.04] px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-white/[0.06] cursor-pointer transition">
             <input
               type="checkbox"
               checked={makePoster}
               onChange={(e) => setMakePoster(e.target.checked)}
-              className="rounded border-white/[0.12] bg-white/[0.04] text-red-600 focus:ring-0 w-3.5 h-3.5"
+              className="rounded border-slate-300 dark:border-white/[0.12] bg-white dark:bg-white/[0.04] text-[var(--brand)] focus:ring-0 w-3.5 h-3.5"
             />
-            <span className="text-[11px] font-medium text-slate-300">
+            <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300">
               Poster
             </span>
           </label>
@@ -273,9 +273,9 @@ export function ResultsGrid({
             type="button"
             onClick={() => handleDownloadZip(true)}
             disabled={selectedCount === 0 || isZipping}
-            className="py-1.5 px-2.5 bg-white/[0.03] hover:bg-white/[0.06] disabled:opacity-30 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-medium border border-white/[0.06] transition flex items-center space-x-1"
+            className="py-1.5 px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.03] dark:hover:bg-white/[0.06] text-slate-700 dark:text-slate-300 rounded-lg text-xs font-medium border border-slate-200 dark:border-white/[0.06] transition flex items-center space-x-1"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-3.5 h-3.5 text-[var(--brand)] dark:text-inherit" />
             <span>Selected ({selectedCount})</span>
           </button>
 
@@ -284,9 +284,9 @@ export function ResultsGrid({
             type="button"
             onClick={() => handleDownloadZip(false)}
             disabled={completedCount === 0 || isZipping}
-            className="py-1.5 px-2.5 bg-white/[0.03] hover:bg-white/[0.06] disabled:opacity-30 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-medium border border-white/[0.06] transition flex items-center space-x-1"
+            className="py-1.5 px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.03] dark:hover:bg-white/[0.06] text-slate-700 dark:text-slate-300 rounded-lg text-xs font-medium border border-slate-200 dark:border-white/[0.06] transition flex items-center space-x-1"
           >
-            <FileArchive className="w-3.5 h-3.5 text-indigo-400" />
+            <FileArchive className="w-3.5 h-3.5 text-[var(--brand)] dark:text-indigo-400" />
             <span>ZIP All</span>
           </button>
 
@@ -296,10 +296,10 @@ export function ResultsGrid({
               type="button"
               onClick={handleShareToPhone}
               disabled={completedCount === 0}
-              className="py-1.5 px-2.5 bg-white/[0.03] hover:bg-white/[0.06] disabled:opacity-30 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-medium border border-white/[0.06] transition flex items-center space-x-1"
+              className="py-1.5 px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.03] dark:hover:bg-white/[0.06] text-slate-700 dark:text-slate-300 rounded-lg text-xs font-medium border border-slate-200 dark:border-white/[0.06] transition flex items-center space-x-1"
               title="Save to Phone Photos"
             >
-              <Share2 className="w-3.5 h-3.5 text-emerald-400" />
+              <Share2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span className="hidden sm:inline">Phone</span>
             </button>
           )}
@@ -310,10 +310,10 @@ export function ResultsGrid({
               type="button"
               onClick={handleSaveToFolder}
               disabled={completedCount === 0}
-              className="py-1.5 px-2.5 bg-white/[0.03] hover:bg-white/[0.06] disabled:opacity-30 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-medium border border-white/[0.06] transition flex items-center space-x-1"
+              className="py-1.5 px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.03] dark:hover:bg-white/[0.06] text-slate-700 dark:text-slate-300 rounded-lg text-xs font-medium border border-slate-200 dark:border-white/[0.06] transition flex items-center space-x-1"
               title="Save directly to a folder"
             >
-              <FolderDown className="w-3.5 h-3.5 text-amber-400" />
+              <FolderDown className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               <span className="hidden sm:inline">Folder</span>
             </button>
           )}
@@ -328,68 +328,70 @@ export function ResultsGrid({
           return (
           <div
             key={item.id}
-            className={`bg-[#0E1118]/80 border rounded-2xl overflow-hidden shadow-xl flex flex-col transition-all duration-200 ${
+            className={`bg-[var(--surface)] dark:bg-[#0E1118]/80 border rounded-[14px] overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:shadow-xl flex flex-col transition-all duration-200 ${
               isSlot5Skipped
-                ? 'border-white/[0.04] opacity-80'
+                ? 'border-[var(--border)] dark:border-white/[0.04] opacity-80'
                 : item.selected
-                ? 'border-indigo-500/80 ring-1 ring-indigo-500/50'
-                : 'border-white/[0.06] hover:border-white/[0.12]'
+                ? 'border-[var(--brand)] dark:border-indigo-500/80 ring-1 ring-[var(--brand)] dark:ring-indigo-500/50'
+                : 'border-[var(--border)] dark:border-white/[0.06] hover:border-slate-300 dark:hover:border-white/[0.12]'
             }`}
           >
             {/* Card Header */}
-            <div className="px-3 py-2 bg-white/[0.02] border-b border-white/[0.06] flex items-center justify-between">
-              <div className="flex items-center space-x-2 min-w-0 flex-1">
+            <div className="px-3.5 py-2.5 bg-slate-50/70 dark:bg-white/[0.02] border-b border-[var(--border)] dark:border-white/[0.06] flex items-start justify-between gap-2">
+              <div className="flex items-start space-x-2.5 min-w-0 flex-1">
                 <input
                   type="checkbox"
                   checked={!isSlot5Skipped && !!item.selected}
                   disabled={isSlot5Skipped}
                   onChange={() => !isSlot5Skipped && toggleSelectCard(item.id)}
-                  className="rounded border-white/[0.12] bg-white/[0.04] text-indigo-500 focus:ring-0 w-3.5 h-3.5 shrink-0 disabled:opacity-30"
+                  className="mt-0.5 rounded border-slate-300 dark:border-white/[0.12] bg-white dark:bg-white/[0.04] text-[var(--brand)] focus:ring-[var(--brand)] w-3.5 h-3.5 shrink-0 disabled:opacity-30"
                 />
-                <span className="text-xs font-semibold text-white truncate">
-                  {item.sanfordSlot?.title || `Slot ${item.slot}`}
-                </span>
-                {isSlot5Skipped && (
-                  <span className="text-[9px] font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded shrink-0">
-                    Single colour (Skipped)
+                <div className="min-w-0 flex-1">
+                  <span className="text-xs font-semibold text-[var(--text)] dark:text-white line-clamp-2 leading-snug break-words">
+                    {item.sanfordSlot?.title || `Slot ${item.slot}`}
                   </span>
-                )}
+                  {isSlot5Skipped && (
+                    <span className="inline-block mt-1 text-[10px] font-medium text-[var(--warn)] bg-[var(--warn-bg)] border border-[#FCD34D] px-1.5 py-0.5 rounded">
+                      Single colour (Skipped)
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Card Canvas / Image Viewport (1:1 aspect ratio) */}
-            <div className="aspect-square bg-black/40 relative flex items-center justify-center overflow-hidden border-b border-white/[0.06]">
+            <div className="aspect-square bg-[var(--subtle)] dark:bg-black/40 relative flex items-center justify-center overflow-hidden border-b border-[var(--border)] dark:border-white/[0.06] p-3">
               {isSlot5Skipped && !item.imageUrl ? (
-                <div className="flex flex-col items-center justify-center space-y-2 p-6 text-center text-slate-500">
-                  <div className="w-10 h-10 rounded-full bg-white/[0.02] border border-white/[0.06] flex items-center justify-center text-slate-500">
+                <div className="w-full h-full rounded-lg border-[1.5px] border-dashed border-[#CBD5E1] dark:border-white/[0.08] flex flex-col items-center justify-center space-y-2 p-4 text-center">
+                  <div className="w-10 h-10 rounded-full bg-white dark:bg-white/[0.02] border border-[#CBD5E1] dark:border-white/[0.06] flex items-center justify-center text-[var(--muted)] dark:text-slate-500">
                     <Layers className="w-5 h-5 stroke-[1.5]" />
                   </div>
                   <div className="space-y-0.5">
-                    <p className="text-xs font-semibold text-slate-300">Single Colour Product</p>
-                    <p className="text-[10px] text-slate-500 max-w-[200px] leading-relaxed">
+                    <p className="text-xs font-semibold text-[var(--text-2)] dark:text-slate-300">Single Colour Product</p>
+                    <p className="text-[10px] text-[var(--muted)] dark:text-slate-500 max-w-[190px] leading-relaxed">
                       Slot 5 is skipped because there are no multiple colour options.
                     </p>
                   </div>
                 </div>
               ) : item.status === 'pending' ? (
                 <div className="flex flex-col items-center justify-center space-y-2 p-6 text-center">
-                  <div className="animate-spin h-7 w-7 border-2 border-indigo-400 border-t-transparent rounded-full" />
-                  <p className="text-xs font-medium text-slate-300">
+                  <div className="animate-spin h-7 w-7 border-2 border-[var(--brand)] dark:border-indigo-400 border-t-transparent rounded-full" />
+                  <p className="text-xs font-medium text-[var(--text)] dark:text-slate-300">
                     Generating Slot {item.slot}...
                   </p>
-                  <p className="text-[10px] text-slate-500">
+                  <p className="text-[10px] text-[var(--muted)] dark:text-slate-500">
                     Applying Sharp Sans & BuySanford template
                   </p>
                 </div>
               ) : item.status === 'failed' ? (
                 <div className="flex flex-col items-center justify-center space-y-1.5 p-4 text-center">
-                  <AlertCircle className="w-6 h-6 text-rose-400" />
-                  <p className="text-xs font-medium text-rose-300">Generation Failed</p>
-                  <p className="text-[10px] text-slate-400 max-w-xs">{item.error}</p>
+                  <AlertCircle className="w-6 h-6 text-[var(--error)] dark:text-rose-400" />
+                  <p className="text-xs font-medium text-[var(--error)] dark:text-rose-300">Generation Failed</p>
+                  <p className="text-[10px] text-[var(--text-2)] dark:text-slate-400 max-w-xs">{item.error}</p>
                   <button
                     type="button"
                     onClick={() => onRegenerateSlot(item.slot || 1)}
-                    className="mt-1 text-xs text-indigo-400 hover:text-indigo-300 underline"
+                    className="mt-1 text-xs text-[var(--brand)] hover:underline dark:text-indigo-400 dark:hover:text-indigo-300 underline"
                   >
                     Retry
                   </button>
@@ -401,11 +403,11 @@ export function ResultsGrid({
                     alt={`Feature ${item.slot}`}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
+                  <div className="absolute inset-0 bg-white/30 dark:bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
                     <button
                       type="button"
                       onClick={() => setZoomImage(item.imageUrl!)}
-                      className="p-2 bg-black/80 text-white rounded-lg hover:bg-black border border-white/[0.1] shadow transition"
+                      className="p-2 bg-white/90 text-slate-800 dark:bg-black/80 dark:text-white rounded-lg hover:bg-white dark:hover:bg-black border border-slate-200 dark:border-white/[0.1] shadow transition"
                       title="Enlarge"
                     >
                       <Eye className="w-4 h-4" />
@@ -413,66 +415,70 @@ export function ResultsGrid({
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center space-y-1.5 p-6 text-center text-slate-600">
-                  <ImageIcon className="w-7 h-7 stroke-[1.5]" />
-                  <span className="text-[11px] font-medium text-slate-500">Ready to generate</span>
+                <div className="w-full h-full rounded-lg border-[1.5px] border-dashed border-[#CBD5E1] dark:border-white/[0.08] flex flex-col items-center justify-center space-y-1.5 p-6 text-center">
+                  <ImageIcon className="w-7 h-7 stroke-[1.5] text-[var(--muted)]" />
+                  <span className="text-[11px] font-medium text-[var(--muted)]">Ready to generate</span>
                 </div>
               )}
             </div>
 
             {/* Card Actions Footer */}
-            <div className="p-2 bg-black/40 flex items-center justify-between gap-1 text-xs mt-auto">
+            <div className="p-2 bg-slate-50/80 dark:bg-black/40 border-t border-[var(--border)] dark:border-white/[0.06] flex items-center justify-between gap-1 text-xs mt-auto">
               <button
                 type="button"
                 onClick={() => handleDownloadSingle(item)}
                 disabled={item.status !== 'done'}
-                className="py-1 px-2.5 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed text-slate-200 rounded-lg border border-white/[0.06] transition flex items-center space-x-1"
+                className="py-1 px-2.5 bg-white dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed text-slate-700 dark:text-slate-200 rounded-lg border border-slate-200 dark:border-white/[0.06] transition flex items-center space-x-1"
                 title="Download this PNG"
               >
                 <Download className="w-3 h-3" />
-                <span className="text-[11px]">PNG</span>
+                <span className="text-[11px] font-medium">PNG</span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => !isSlot5Skipped && onRegenerateSlot(item.slot || 1)}
-                disabled={item.status === 'pending' || isGeneratingAll || isSlot5Skipped}
-                className="py-1 px-2.5 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 text-slate-200 rounded-lg border border-white/[0.06] transition flex items-center space-x-1"
-                title={isSlot5Skipped ? 'Slot 5 is skipped for single colour products' : 'Regenerate this card'}
-              >
-                <RotateCw className="w-3 h-3" />
-                <span className="text-[11px]">{isSlot5Skipped ? 'Skipped' : 'Regenerate'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleCopyPrompt(item.id, item.prompt)}
-                disabled={!item.prompt}
-                className="py-1 px-2 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 text-slate-400 hover:text-white rounded-lg border border-white/[0.06] transition"
-                title="Copy prompt"
-              >
-                {copiedId === item.id ? (
-                  <Check className="w-3 h-3 text-emerald-400" />
-                ) : (
-                  <Copy className="w-3 h-3" />
-                )}
-              </button>
-
-              {item.prompt && (
+              <div className="flex items-center space-x-1">
                 <button
                   type="button"
-                  onClick={() =>
-                    setViewingPrompt({
-                      title: `Image ${item.slot} Prompt`,
-                      prompt: item.prompt || '',
-                    })
-                  }
-                  className="py-1 px-2 bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-white rounded-lg border border-white/[0.06] transition"
-                  title="View full prompt"
+                  onClick={() => !isSlot5Skipped && onRegenerateSlot(item.slot || 1)}
+                  disabled={item.status === 'pending' || isGeneratingAll || isSlot5Skipped}
+                  className="p-1.5 bg-white dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] disabled:opacity-30 text-slate-700 dark:text-slate-200 rounded-lg border border-slate-200 dark:border-white/[0.06] transition flex items-center justify-center shrink-0"
+                  title={isSlot5Skipped ? 'Slot 5 is skipped for single colour products' : 'Regenerate card'}
+                  aria-label="Regenerate card"
                 >
-                  <Eye className="w-3 h-3" />
+                  <RotateCw className="w-3.5 h-3.5" />
                 </button>
-              )}
+
+                <button
+                  type="button"
+                  onClick={() => handleCopyPrompt(item.id, item.prompt)}
+                  disabled={!item.prompt}
+                  className="p-1.5 bg-white dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] disabled:opacity-30 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg border border-slate-200 dark:border-white/[0.06] transition flex items-center justify-center shrink-0"
+                  title="Copy prompt"
+                  aria-label="Copy prompt"
+                >
+                  {copiedId === item.id ? (
+                    <Check className="w-3.5 h-3.5 text-emerald-500" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </button>
+
+                {item.prompt && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setViewingPrompt({
+                        title: `Image ${item.slot} Prompt`,
+                        prompt: item.prompt || '',
+                      })
+                    }
+                    className="p-1.5 bg-white dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg border border-slate-200 dark:border-white/[0.06] transition flex items-center justify-center shrink-0"
+                    title="View full prompt"
+                    aria-label="View full prompt"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         );
@@ -481,55 +487,55 @@ export function ResultsGrid({
         {/* 6th Card: Poster (Only if makePoster is true) */}
         {makePoster && posterCard && (
           <div
-            className={`bg-slate-900 border rounded-2xl overflow-hidden shadow-xl flex flex-col transition-all duration-200 md:col-span-2 lg:col-span-1 ${
+            className={`bg-[var(--surface)] dark:bg-slate-900 border rounded-[14px] overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:shadow-xl flex flex-col transition-all duration-200 md:col-span-2 lg:col-span-1 ${
               posterCard.selected
-                ? 'border-indigo-500/80 ring-1 ring-indigo-500/50'
-                : 'border-slate-800 hover:border-slate-700'
+                ? 'border-[var(--brand)] dark:border-indigo-500/80 ring-1 ring-[var(--brand)] dark:ring-indigo-500/50'
+                : 'border-[var(--border)] dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
             }`}
           >
             {/* Header */}
-            <div className="px-4 py-3 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between">
+            <div className="px-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-950/70 border-b border-[var(--border)] dark:border-slate-800 flex items-center justify-between">
               <div className="flex items-center space-x-2 min-w-0 flex-1">
                 <input
                   type="checkbox"
                   checked={!!posterCard.selected}
                   onChange={() => toggleSelectCard(posterCard.id)}
-                  className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 shrink-0"
+                  className="rounded border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-[var(--brand)] focus:ring-[var(--brand)] shrink-0 w-3.5 h-3.5"
                 />
-                <span className="text-xs font-semibold text-white flex items-center space-x-1.5 truncate">
-                  <Layers className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                <span className="text-xs font-semibold text-[var(--text)] dark:text-white flex items-center space-x-1.5 line-clamp-2 leading-snug break-words">
+                  <Layers className="w-3.5 h-3.5 text-[var(--brand)] dark:text-indigo-400 shrink-0" />
                   <span>Poster (Portrait)</span>
                 </span>
               </div>
 
               {posterCard.usage && (
-                <span className="text-[10px] font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-1.5 py-0.5 rounded shrink-0">
+                <span className="text-[10px] font-mono bg-slate-100 dark:bg-indigo-500/10 text-slate-700 dark:text-indigo-300 border border-slate-200 dark:border-indigo-500/20 px-1.5 py-0.5 rounded shrink-0">
                   {posterCard.usage.total_tokens || 0} tok
                 </span>
               )}
             </div>
 
             {/* Poster Canvas Viewport */}
-            <div className="aspect-[2/3] bg-slate-950 relative flex items-center justify-center overflow-hidden border-b border-slate-800">
+            <div className="aspect-[2/3] bg-[var(--subtle)] dark:bg-slate-950 relative flex items-center justify-center overflow-hidden border-b border-[var(--border)] dark:border-slate-800 p-3">
               {posterCard.status === 'pending' ? (
                 <div className="flex flex-col items-center justify-center space-y-3 p-6 text-center">
-                  <div className="animate-spin h-9 w-9 border-3 border-indigo-500 border-t-transparent rounded-full" />
-                  <p className="text-xs font-medium text-slate-300">
+                  <div className="animate-spin h-9 w-9 border-3 border-[var(--brand)] dark:border-indigo-500 border-t-transparent rounded-full" />
+                  <p className="text-xs font-medium text-[var(--text)] dark:text-slate-300">
                     Generating Portrait Poster...
                   </p>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-[var(--muted)] dark:text-slate-500">
                     Product hero + verified specifications
                   </p>
                 </div>
               ) : posterCard.status === 'failed' ? (
                 <div className="flex flex-col items-center justify-center space-y-2 p-6 text-center">
-                  <AlertCircle className="w-8 h-8 text-red-400" />
-                  <p className="text-xs font-medium text-red-300">Poster Generation Failed</p>
-                  <p className="text-[11px] text-slate-400 max-w-xs">{posterCard.error}</p>
+                  <AlertCircle className="w-8 h-8 text-[var(--error)] dark:text-red-400" />
+                  <p className="text-xs font-medium text-[var(--error)] dark:text-red-300">Poster Generation Failed</p>
+                  <p className="text-[11px] text-[var(--text-2)] dark:text-slate-400 max-w-xs">{posterCard.error}</p>
                   <button
                     type="button"
                     onClick={() => onRegenerateSlot('poster')}
-                    className="mt-2 text-xs text-indigo-400 hover:text-indigo-300 underline"
+                    className="mt-2 text-xs text-[var(--brand)] hover:underline dark:text-indigo-400 dark:hover:text-indigo-300 underline"
                   >
                     Retry poster
                   </button>
@@ -541,11 +547,11 @@ export function ResultsGrid({
                     alt="Product poster"
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
+                  <div className="absolute inset-0 bg-white/30 dark:bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
                     <button
                       type="button"
                       onClick={() => setZoomImage(posterCard.imageUrl!)}
-                      className="p-2 bg-slate-900/90 text-white rounded-lg hover:bg-slate-900 border border-slate-700 shadow"
+                      className="p-2 bg-white/90 text-slate-800 dark:bg-slate-900/90 dark:text-white rounded-lg hover:bg-white dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow"
                       title="Enlarge"
                     >
                       <Eye className="w-4 h-4" />
@@ -553,66 +559,70 @@ export function ResultsGrid({
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center space-y-2 p-6 text-center text-slate-600">
-                  <Layers className="w-8 h-8" />
-                  <span className="text-xs">Ready for poster run</span>
+                <div className="w-full h-full rounded-lg border-[1.5px] border-dashed border-[#CBD5E1] dark:border-white/[0.08] flex flex-col items-center justify-center space-y-2 p-6 text-center">
+                  <Layers className="w-8 h-8 text-[var(--muted)] stroke-[1.5]" />
+                  <span className="text-xs font-medium text-[var(--muted)]">Ready for poster run</span>
                 </div>
               )}
             </div>
 
             {/* Poster Actions Footer */}
-            <div className="p-2 bg-black/40 flex items-center justify-between gap-1 text-xs mt-auto">
+            <div className="p-2 bg-slate-50/80 dark:bg-black/40 border-t border-[var(--border)] dark:border-white/[0.06] flex items-center justify-between gap-1 text-xs mt-auto">
               <button
                 type="button"
                 onClick={() => handleDownloadSingle(posterCard)}
                 disabled={posterCard.status !== 'done'}
-                className="py-1 px-2.5 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed text-slate-200 rounded-lg border border-white/[0.06] transition flex items-center space-x-1"
+                className="py-1 px-2.5 bg-white dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed text-slate-700 dark:text-slate-200 rounded-lg border border-slate-200 dark:border-white/[0.06] transition flex items-center space-x-1"
                 title="Download Poster PNG"
               >
                 <Download className="w-3 h-3" />
-                <span className="text-[11px]">PNG</span>
+                <span className="text-[11px] font-medium">PNG</span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => onRegenerateSlot('poster')}
-                disabled={posterCard.status === 'pending' || isGeneratingAll}
-                className="py-1 px-2.5 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 text-slate-200 rounded-lg border border-white/[0.06] transition flex items-center space-x-1"
-                title="Regenerate poster"
-              >
-                <RotateCw className="w-3 h-3" />
-                <span className="text-[11px]">Regenerate</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleCopyPrompt(posterCard.id, posterCard.prompt)}
-                disabled={!posterCard.prompt}
-                className="py-1 px-2 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 text-slate-400 hover:text-white rounded-lg border border-white/[0.06] transition"
-                title="Copy prompt"
-              >
-                {copiedId === posterCard.id ? (
-                  <Check className="w-3 h-3 text-emerald-400" />
-                ) : (
-                  <Copy className="w-3 h-3" />
-                )}
-              </button>
-
-              {posterCard.prompt && (
+              <div className="flex items-center space-x-1">
                 <button
                   type="button"
-                  onClick={() =>
-                    setViewingPrompt({
-                      title: 'Poster Prompt',
-                      prompt: posterCard.prompt || '',
-                    })
-                  }
-                  className="py-1 px-2 bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-white rounded-lg border border-white/[0.06] transition"
-                  title="View full prompt"
+                  onClick={() => onRegenerateSlot('poster')}
+                  disabled={posterCard.status === 'pending' || isGeneratingAll}
+                  className="p-1.5 bg-white dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] disabled:opacity-30 text-slate-700 dark:text-slate-200 rounded-lg border border-slate-200 dark:border-white/[0.06] transition flex items-center justify-center shrink-0"
+                  title="Regenerate poster"
+                  aria-label="Regenerate poster"
                 >
-                  <Eye className="w-3 h-3" />
+                  <RotateCw className="w-3.5 h-3.5" />
                 </button>
-              )}
+
+                <button
+                  type="button"
+                  onClick={() => handleCopyPrompt(posterCard.id, posterCard.prompt)}
+                  disabled={!posterCard.prompt}
+                  className="p-1.5 bg-white dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] disabled:opacity-30 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg border border-slate-200 dark:border-white/[0.06] transition flex items-center justify-center shrink-0"
+                  title="Copy prompt"
+                  aria-label="Copy prompt"
+                >
+                  {copiedId === posterCard.id ? (
+                    <Check className="w-3.5 h-3.5 text-emerald-500" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </button>
+
+                {posterCard.prompt && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setViewingPrompt({
+                        title: 'Poster Prompt',
+                        prompt: posterCard.prompt || '',
+                      })
+                    }
+                    className="p-1.5 bg-white dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg border border-slate-200 dark:border-white/[0.06] transition flex items-center justify-center shrink-0"
+                    title="View full prompt"
+                    aria-label="View full prompt"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -620,29 +630,29 @@ export function ResultsGrid({
 
       {/* Modal: View Full Prompt */}
       {viewingPrompt && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0E1118] border border-white/[0.08] rounded-2xl max-w-2xl w-full max-h-[80vh] flex flex-col shadow-2xl">
-            <div className="px-5 py-3 border-b border-white/[0.06] flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-white">{viewingPrompt.title}</h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-[var(--surface)] dark:bg-[#0E1118] border border-[var(--border)] dark:border-white/[0.08] rounded-[14px] max-w-2xl w-full max-h-[80vh] flex flex-col shadow-2xl">
+            <div className="px-5 py-3 border-b border-[var(--border)] dark:border-white/[0.06] flex items-center justify-between">
+              <h3 className="text-xs font-semibold text-slate-900 dark:text-white">{viewingPrompt.title}</h3>
               <button
                 type="button"
                 onClick={() => setViewingPrompt(null)}
-                className="text-slate-400 hover:text-white transition"
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="p-4 overflow-y-auto font-mono text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap bg-black/40 m-3 rounded-xl border border-white/[0.04]">
+            <div className="p-4 overflow-y-auto font-mono text-[11px] text-slate-800 dark:text-slate-300 leading-relaxed whitespace-pre-wrap bg-[var(--subtle)] dark:bg-black/40 m-3 rounded-xl border border-[var(--border)] dark:border-white/[0.04]">
               {viewingPrompt.prompt}
             </div>
-            <div className="px-5 py-3 border-t border-white/[0.06] flex justify-end">
+            <div className="px-5 py-3 border-t border-[var(--border)] dark:border-white/[0.06] flex justify-end">
               <button
                 type="button"
                 onClick={() => {
                   navigator.clipboard.writeText(viewingPrompt.prompt);
                   setViewingPrompt(null);
                 }}
-                className="px-3.5 py-1.5 bg-white text-black hover:bg-slate-200 text-xs font-semibold rounded-lg transition"
+                className="px-3.5 py-1.5 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-white dark:bg-white dark:text-black dark:hover:bg-slate-200 text-xs font-semibold rounded-lg transition"
               >
                 Copy & Close
               </button>
