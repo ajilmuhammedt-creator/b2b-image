@@ -55,6 +55,15 @@ function apiDevPlugin() {
           } else if (urlPath === '/api/cleanup') {
             const { default: handler } = await server.ssrLoadModule('/api/cleanup.ts');
             return await handler(req, res);
+          } else if (urlPath === '/api/admin/users') {
+            const { default: handler } = await server.ssrLoadModule('/api/admin/users.ts');
+            return await handler(req, res);
+          } else if (urlPath === '/api/admin/approve-user') {
+            const { default: handler } = await server.ssrLoadModule('/api/admin/approve-user.ts');
+            return await handler(req, res);
+          } else if (urlPath === '/api/admin/reject-user') {
+            const { default: handler } = await server.ssrLoadModule('/api/admin/reject-user.ts');
+            return await handler(req, res);
           } else {
             res.statusCode = 404;
             return res.end(JSON.stringify({ error: 'Endpoint not found' }));

@@ -95,3 +95,19 @@ export interface ProjectData {
   makePoster?: boolean;
   sanford_slots?: SanfordSlotSpec[];
 }
+
+export type UserRole = 'admin' | 'staff';
+export type UserStatus = 'pending' | 'approved' | 'rejected';
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string;
+  role: UserRole;
+  status: UserStatus;
+  requested_at: string;
+  approved_at: string | null;
+  approved_by: string | null;
+  created_at: string;
+  updated_at: string;
+}

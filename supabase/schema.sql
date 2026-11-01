@@ -154,3 +154,93 @@ DROP POLICY IF EXISTS "Allow authenticated delete from generated-images" ON stor
 CREATE POLICY "Allow authenticated delete from generated-images"
   ON storage.objects FOR DELETE
   USING (bucket_id = 'generated-images' AND auth.role() = 'authenticated');
+
+-- 5. User Profiles & Staff Approval Table
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT NOT NULL,
+  full_name TEXT DEFAULT '',
+  role TEXT NOT NULL DEFAULT 'staff', -- 'admin' | 'staff'
+  status TEXT NOT NULL DEFAULT 'pending', -- 'pending' | 'approved' | 'rejected'
+  requested_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()),
+  approved_at TIMESTAMPTZ,
+  approved_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Helper function to check if current user is an approved admin without recursion
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'admin' AND status = 'approved'
+  );
+$$;
+
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+CREATE POLICY "Users can view own profile"
+  ON public.profiles FOR SELECT
+  USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Admins can view all profiles" ON public.profiles;
+CREATE POLICY "Admins can view all profiles"
+  ON public.profiles FOR SELECT
+  USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins can update profiles" ON public.profiles;
+CREATE POLICY "Admins can update profiles"
+  ON public.profiles FOR UPDATE
+  USING (public.is_admin());
+
+-- Trigger to automatically create a profile when a new user registers
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  is_first_admin boolean;
+BEGIN
+  is_first_admin := (NEW.email = 'ajilmuhammedt@gmail.com');
+
+  INSERT INTO public.profiles (id, email, full_name, role, status, requested_at, approved_at)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
+    CASE WHEN is_first_admin THEN 'admin' ELSE 'staff' END,
+    CASE WHEN is_first_admin THEN 'approved' ELSE 'pending' END,
+    now(),
+    CASE WHEN is_first_admin THEN now() ELSE NULL END
+  )
+  ON CONFLICT (id) DO UPDATE
+  SET
+    email = EXCLUDED.email,
+    full_name = COALESCE(EXCLUDED.full_name, public.profiles.full_name),
+    updated_at = now();
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Seed primary admin
+INSERT INTO public.profiles (id, email, full_name, role, status, approved_at)
+SELECT id, email, 'Administrator', 'admin', 'approved', now()
+FROM auth.users
+WHERE email = 'ajilmuhammedt@gmail.com'
+ON CONFLICT (id) DO UPDATE
+SET role = 'admin', status = 'approved';

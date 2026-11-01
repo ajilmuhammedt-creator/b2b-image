@@ -4,6 +4,7 @@ import { SignIn } from './pages/SignIn';
 import { ResetPassword } from './pages/ResetPassword';
 import { Studio } from './pages/Studio';
 import { History } from './pages/History';
+import { AdminUsers } from './pages/AdminUsers';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 export default function App() {
@@ -30,6 +31,15 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminUsers />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
           {/* Catch-all redirect to sign in */}
           <Route path="*" element={<Navigate to="/signin" replace />} />
         </Routes>
