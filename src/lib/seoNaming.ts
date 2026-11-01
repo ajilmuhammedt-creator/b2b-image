@@ -123,3 +123,4 @@ export function getSeoFolderName(options: SeoNamingOptions): string {
 export function getSeoZipFilename(options: SeoNamingOptions): string {
   return `${getSeoFolderName(options)}.zip`;
 }
+

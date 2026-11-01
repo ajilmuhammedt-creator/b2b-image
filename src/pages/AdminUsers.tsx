@@ -39,6 +39,15 @@ export function AdminUsers() {
   } | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
+  const parseResponseSafe = async (res: Response) => {
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { error: text || `Server error (${res.status})` };
+    }
+  };
+
   const fetchUsers = useCallback(async () => {
     if (!session?.access_token) return;
     try {
@@ -48,12 +57,12 @@ export function AdminUsers() {
         },
       });
 
+      const data = await parseResponseSafe(res);
+
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Failed to fetch users');
+        throw new Error(data.error || 'Failed to fetch users');
       }
 
-      const data = await res.json();
       setUsers(data.users || []);
       setCreditStats(data.creditStats || null);
     } catch (err: any) {
@@ -92,7 +101,7 @@ export function AdminUsers() {
         body: JSON.stringify({ userId }),
       });
 
-      const data = await res.json();
+      const data = await parseResponseSafe(res);
       if (!res.ok) {
         throw new Error(data.error || 'Failed to approve user');
       }
@@ -136,7 +145,7 @@ export function AdminUsers() {
         body: JSON.stringify({ userId }),
       });
 
-      const data = await res.json();
+      const data = await parseResponseSafe(res);
       if (!res.ok) {
         throw new Error(data.error || 'Failed to decline user request');
       }

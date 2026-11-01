@@ -71,8 +71,12 @@ export default async function handler(req: any, res: any) {
 
     // Aggregate generations
     for (const gen of genList) {
-      const genTime = new Date(gen.created_at).getTime();
-      const genDateStr = new Date(gen.created_at).toISOString().slice(0, 10);
+      if (!gen.created_at) continue;
+      const genParsedDate = new Date(gen.created_at);
+      if (isNaN(genParsedDate.getTime())) continue;
+
+      const genTime = genParsedDate.getTime();
+      const genDateStr = genParsedDate.toISOString().slice(0, 10);
       const uid = gen.user_id;
 
       // Initialize user credit map
