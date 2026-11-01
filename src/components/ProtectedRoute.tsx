@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { BrandLogo } from './BrandLogo';
@@ -12,6 +12,25 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
   const { user, profile, loading, isRecoveryMode, refreshProfile, signOut } = useAuth();
   const [checking, setChecking] = useState(false);
+
+  // Notify admin when a pending staff user attempts to access the portal
+  useEffect(() => {
+    if (profile?.status === 'pending' && profile.email) {
+      const storageKey = `notified_admin_pending_${profile.email}`;
+      if (!sessionStorage.getItem(storageKey)) {
+        sessionStorage.setItem(storageKey, 'true');
+        fetch('/api/notify-admin-staff-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            staffEmail: profile.email,
+            staffName: profile.full_name || undefined,
+            eventType: 'pending_login_attempt',
+          }),
+        }).catch((err) => console.warn('Could not notify admin of pending login:', err));
+      }
+    }
+  }, [profile?.status, profile?.email, profile?.full_name]);
 
   // If user is currently in password recovery, send them to /reset-password
   if (isRecoveryMode) {

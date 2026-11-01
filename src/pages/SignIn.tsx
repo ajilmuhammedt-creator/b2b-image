@@ -52,7 +52,7 @@ export function SignIn() {
     }
 
     if (!loading && user) {
-      if (profile?.status === 'approved') {
+      if (profile?.status === 'approved' || profile?.status === 'pending') {
         navigate('/studio', { replace: true });
       }
     }
@@ -76,6 +76,16 @@ export function SignIn() {
           error.message || 'Invalid login credentials. Please check your email and password, or use "Forgot password?" to reset it.'
         );
       } else {
+        // Trigger notification check for staff login / pending staff
+        fetch('/api/notify-admin-staff-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            staffEmail: trimmedEmail,
+            eventType: 'pending_login_attempt',
+          }),
+        }).catch((err) => console.warn('Admin notification error:', err));
+
         navigate('/studio', { replace: true });
       }
     } catch (err: unknown) {
@@ -121,6 +131,16 @@ export function SignIn() {
         setErrorMessage(error.message || 'Failed to submit account request. Please try again.');
       } else {
         setRequestSubmitted(true);
+        // Alert admin about new staff account request
+        fetch('/api/notify-admin-staff-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            staffEmail: trimmedEmail,
+            staffName: trimmedName,
+            eventType: 'signup_request',
+          }),
+        }).catch((err) => console.warn('Admin notification error:', err));
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'An unexpected error occurred.');
