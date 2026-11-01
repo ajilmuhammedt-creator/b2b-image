@@ -9,9 +9,13 @@ export const projectStorage = {
     const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
 
     try {
+      // Exclude heavy multi-megabyte base64 strings (source_image_data_url, catalogue_preview_url)
+      // from list query to achieve sub-second loading speeds.
       const { data: projectsData, error: projErr } = await supabase
         .from('projects')
-        .select('*')
+        .select(
+          'id, user_id, product_name, model_number, tagline, features, colors, dimensions, weight, whats_in_the_box, warranty, feature_groups, source_image_path, settings, make_poster, created_at, updated_at'
+        )
         .eq('user_id', userId)
         .gte('created_at', tenDaysAgo)
         .order('created_at', { ascending: false });
@@ -28,7 +32,9 @@ export const projectStorage = {
       const projectIds = projectsData.map((p) => p.id);
       const { data: gensData, error: gensErr } = await supabase
         .from('generations')
-        .select('*')
+        .select(
+          'id, project_id, user_id, kind, slot, theme, slot_title, status, image_url, image_path, prompt, usage, created_at'
+        )
         .in('project_id', projectIds)
         .eq('user_id', userId)
         .order('created_at', { ascending: true });
@@ -67,28 +73,38 @@ export const projectStorage = {
         generationsByProject.set(g.project_id, existing);
       });
 
-      return projectsData.map((p: any) => ({
-        id: p.id,
-        user_id: p.user_id,
-        product_name: p.product_name,
-        model_number: p.model_number || '',
-        tagline: p.tagline || '',
-        features: Array.isArray(p.features) ? p.features : [],
-        colors: p.colors || '',
-        dimensions: p.dimensions || '',
-        weight: p.weight || '',
-        whats_in_the_box: Array.isArray(p.whats_in_the_box) ? p.whats_in_the_box : [],
-        warranty: p.warranty || '',
-        feature_groups: Array.isArray(p.feature_groups) ? p.feature_groups : [],
-        source_image_path: p.source_image_path || '',
-        source_image_data_url: p.source_image_data_url || '',
-        catalogue_preview_url: p.catalogue_preview_url || '',
-        sanford_slots: Array.isArray(p.sanford_slots) ? p.sanford_slots : [],
-        settings: p.settings || undefined,
-        makePoster: p.make_poster ?? false,
-        created_at: p.created_at,
-        generations: generationsByProject.get(p.id) || [],
-      }));
+      return projectsData.map((p: any) => {
+        let sourceImageUrl = '';
+        if (p.source_image_path) {
+          const { data: urlData } = supabase.storage
+            .from('source-images')
+            .getPublicUrl(p.source_image_path);
+          sourceImageUrl = urlData?.publicUrl || '';
+        }
+
+        return {
+          id: p.id,
+          user_id: p.user_id,
+          product_name: p.product_name,
+          model_number: p.model_number || '',
+          tagline: p.tagline || '',
+          features: Array.isArray(p.features) ? p.features : [],
+          colors: p.colors || '',
+          dimensions: p.dimensions || '',
+          weight: p.weight || '',
+          whats_in_the_box: Array.isArray(p.whats_in_the_box) ? p.whats_in_the_box : [],
+          warranty: p.warranty || '',
+          feature_groups: Array.isArray(p.feature_groups) ? p.feature_groups : [],
+          source_image_path: p.source_image_path || '',
+          source_image_data_url: sourceImageUrl, // fast public CDN URL
+          catalogue_preview_url: '',
+          sanford_slots: Array.isArray(p.sanford_slots) ? p.sanford_slots : [],
+          settings: p.settings || undefined,
+          makePoster: p.make_poster ?? false,
+          created_at: p.created_at,
+          generations: generationsByProject.get(p.id) || [],
+        };
+      });
     } catch (err) {
       console.error('Failed to load projects from Supabase:', err);
       return [];
@@ -144,6 +160,14 @@ export const projectStorage = {
         };
       });
 
+      let sourceImageUrl = p.source_image_data_url || '';
+      if (!sourceImageUrl && p.source_image_path) {
+        const { data: urlData } = supabase.storage
+          .from('source-images')
+          .getPublicUrl(p.source_image_path);
+        sourceImageUrl = urlData?.publicUrl || '';
+      }
+
       return {
         id: p.id,
         user_id: p.user_id,
@@ -158,7 +182,7 @@ export const projectStorage = {
         warranty: p.warranty || '',
         feature_groups: Array.isArray(p.feature_groups) ? p.feature_groups : [],
         source_image_path: p.source_image_path || '',
-        source_image_data_url: p.source_image_data_url || '',
+        source_image_data_url: sourceImageUrl,
         catalogue_preview_url: p.catalogue_preview_url || '',
         sanford_slots: Array.isArray(p.sanford_slots) ? p.sanford_slots : [],
         settings: p.settings || undefined,
@@ -177,6 +201,10 @@ export const projectStorage = {
     if (!project?.id || !project?.user_id) return;
 
     try {
+      // If image is already safely stored in Supabase storage bucket,
+      // avoid storing multi-megabyte base64 string in PostgreSQL table
+      const base64DataUrl = project.source_image_path ? '' : (project.source_image_data_url || '');
+
       const { error } = await supabase.from('projects').upsert({
         id: project.id,
         user_id: project.user_id,
@@ -191,7 +219,7 @@ export const projectStorage = {
         warranty: project.warranty || '',
         feature_groups: project.feature_groups || [],
         source_image_path: project.source_image_path || '',
-        source_image_data_url: project.source_image_data_url || '',
+        source_image_data_url: base64DataUrl,
         catalogue_preview_url: project.catalogue_preview_url || '',
         sanford_slots: project.sanford_slots || [],
         settings: project.settings || {},

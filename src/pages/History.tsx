@@ -18,26 +18,51 @@ import {
   Clock,
   Download,
   Loader2,
+  RefreshCw,
+  AlertCircle,
 } from 'lucide-react';
 
 export function History() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [failedThumbnails, setFailedThumbnails] = useState<Record<string, boolean>>({});
   const [downloadingProjectId, setDownloadingProjectId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user?.id) {
-      loadProjects();
+    if (!authLoading) {
+      if (user?.id) {
+        loadProjects();
+      } else {
+        setLoading(false);
+      }
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const loadProjects = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
+    setErrorMsg(null);
+
+    // Timeout safety: 10s max so the user never gets an infinite spinner
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(
+        () => reject(new Error('Loading timed out. Please check your internet connection and try again.')),
+        10000
+      )
+    );
+
     try {
-      const data = await projectStorage.getProjects(user.id);
+      const data = await Promise.race([
+        projectStorage.getProjects(user.id),
+        timeoutPromise,
+      ]);
+
       // Ensure only projects within the last 10 days are displayed
       const now = Date.now();
       const tenDaysMs = 10 * 24 * 60 * 60 * 1000;
@@ -48,8 +73,9 @@ export function History() {
       // Sort newest first
       valid.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       setProjects(valid);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error loading history:', err);
+      setErrorMsg(err?.message || 'Failed to load project history. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -159,14 +185,44 @@ export function History() {
             </p>
           </div>
 
-          <button
-            onClick={() => navigate('/studio')}
-            className="self-start sm:self-auto py-2.5 px-4 bg-[#E11D2E] hover:bg-[#C8102E] text-white rounded-[12px] text-xs font-semibold uppercase tracking-wider flex items-center space-x-1.5 transition shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-lg"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>New Studio Run</span>
-          </button>
+          <div className="flex items-center space-x-2 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={loadProjects}
+              disabled={loading}
+              className="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 rounded-[12px] text-xs font-semibold flex items-center space-x-1.5 transition disabled:opacity-50"
+              title="Refresh project list"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/studio')}
+              className="py-2.5 px-4 bg-[#E11D2E] hover:bg-[#C8102E] text-white rounded-[12px] text-xs font-semibold uppercase tracking-wider flex items-center space-x-1.5 transition shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-lg"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>New Studio Run</span>
+            </button>
+          </div>
         </div>
+
+        {errorMsg && (
+          <div className="mt-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+            <button
+              type="button"
+              onClick={loadProjects}
+              className="px-3 py-1 bg-red-600/30 hover:bg-red-600/50 text-red-200 rounded-lg font-medium text-xs transition"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
 
         {loading ? (
           <div className="py-24 flex flex-col items-center justify-center space-y-3">
@@ -196,8 +252,10 @@ export function History() {
             {projects.map((project) => {
               const completedImages =
                 project.generations?.filter((g) => g.status === 'done' && g.imageUrl) || [];
-              const thumbnail =
+              const hasFailed = failedThumbnails[project.id];
+              const rawThumb =
                 completedImages[0]?.imageUrl || project.source_image_data_url;
+              const thumbnail = !hasFailed && rawThumb ? rawThumb : null;
               const daysLeft = calculateDaysRemaining(project.created_at);
               const isDownloading = downloadingProjectId === project.id;
 
@@ -213,6 +271,7 @@ export function History() {
                       <img
                         src={thumbnail}
                         alt={project.product_name}
+                        onError={() => setFailedThumbnails((prev) => ({ ...prev, [project.id]: true }))}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
