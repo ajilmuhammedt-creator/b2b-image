@@ -116,7 +116,9 @@ export default async function handler(req: any, res: any) {
 
     const openaiApiKey = process.env.OPENAI_API_KEY;
     if (!openaiApiKey) {
-      return res.status(500).json({ error: 'OPENAI_API_KEY is not configured on the server.' });
+      return res.status(500).json({
+        error: 'OPENAI_API_KEY is not configured on Vercel. Please add OPENAI_API_KEY in Vercel Project Settings > Environment Variables and redeploy.',
+      });
     }
 
     // 1. Prepare Reference Image Buffer

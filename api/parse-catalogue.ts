@@ -39,7 +39,9 @@ export default async function handler(req: any, res: any) {
 
     const openaiApiKey = process.env.OPENAI_API_KEY;
     if (!openaiApiKey) {
-      return res.status(500).json({ error: 'OPENAI_API_KEY is not configured on the server.' });
+      return res.status(500).json({
+        error: 'OPENAI_API_KEY is not configured on Vercel. Please add OPENAI_API_KEY in Vercel Project Settings > Environment Variables and redeploy.',
+      });
     }
 
     const systemPrompt = `You are an elite e-commerce creative director specializing in high-converting product listings for electronics and appliances, patterned exactly after BuySanford e-commerce product pages (e.g., https://www.buysanford.com/products/sanford-camping-emergency-lantern-sf2722el).
