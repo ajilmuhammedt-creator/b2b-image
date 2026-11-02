@@ -67,25 +67,31 @@ export default async function handler(req: any, res: any) {
       console.warn('Could not query staff profile:', profErr);
     }
 
-    // Determine admin email:
-    // 1. Env variable ADMIN_ALERT_EMAIL
-    // 2. Query admin profile from database
-    // 3. Fallback: ajilmuhammedt@gmail.com
-    let targetAdminEmail = process.env.ADMIN_ALERT_EMAIL || 'ajilmuhammedt@gmail.com';
+    // Determine admin emails:
+    // Query all admin profiles from database so every active admin receives notifications
+    let targetAdminEmails: string[] = [];
 
     try {
       const { data: adminRows } = await supabaseAdmin
         .from('profiles')
         .select('email')
-        .eq('role', 'admin')
-        .order('created_at', { ascending: true })
-        .limit(1);
+        .eq('role', 'admin');
 
-      if (adminRows && adminRows.length > 0 && adminRows[0].email) {
-        targetAdminEmail = adminRows[0].email;
+      if (adminRows && adminRows.length > 0) {
+        targetAdminEmails = adminRows.map((r: any) => r.email).filter(Boolean);
       }
     } catch (dbErr) {
       console.warn('Could not query admin email from DB, falling back to default:', dbErr);
+    }
+
+    if (process.env.ADMIN_ALERT_EMAIL && !targetAdminEmails.includes(process.env.ADMIN_ALERT_EMAIL)) {
+      targetAdminEmails.push(process.env.ADMIN_ALERT_EMAIL);
+    }
+    if (!targetAdminEmails.includes('ajilmuhammedt@gmail.com')) {
+      targetAdminEmails.push('ajilmuhammedt@gmail.com');
+    }
+    if (!targetAdminEmails.includes('sanfordstudioai@gmail.com')) {
+      targetAdminEmails.push('sanfordstudioai@gmail.com');
     }
 
     const origin =
@@ -94,21 +100,24 @@ export default async function handler(req: any, res: any) {
       process.env.SITE_URL ||
       'https://b2b-image.vercel.app';
 
-    const result = await sendAdminStaffAlertEmail({
-      adminEmail: targetAdminEmail,
-      staffEmail: cleanEmail,
-      staffName: resolvedStaffName,
-      eventType: eventType as 'signup_request' | 'pending_login_attempt' | 'staff_login',
-      origin,
-    });
+    const results = await Promise.all(
+      targetAdminEmails.map((adminEmail) =>
+        sendAdminStaffAlertEmail({
+          adminEmail,
+          staffEmail: cleanEmail,
+          staffName: resolvedStaffName,
+          eventType: eventType as 'signup_request' | 'pending_login_attempt' | 'staff_login',
+          origin,
+        })
+      )
+    );
 
     notificationCooldowns.set(cooldownKey, now);
 
     return res.status(200).json({
       success: true,
-      delivered: result.sent,
-      provider: result.provider,
-      adminEmail: targetAdminEmail,
+      delivered: results.some((r) => r.sent),
+      adminEmails: targetAdminEmails,
     });
   } catch (err: any) {
     console.error('Error in notify-admin-staff-login handler:', err);

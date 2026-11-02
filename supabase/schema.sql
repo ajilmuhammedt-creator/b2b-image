@@ -208,24 +208,26 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  is_first_admin boolean;
+  is_admin_email boolean;
 BEGIN
-  is_first_admin := (NEW.email = 'ajilmuhammedt@gmail.com');
+  is_admin_email := (NEW.email IN ('ajilmuhammedt@gmail.com', 'sanfordstudioai@gmail.com'));
 
   INSERT INTO public.profiles (id, email, full_name, role, status, requested_at, approved_at)
   VALUES (
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-    CASE WHEN is_first_admin THEN 'admin' ELSE 'staff' END,
-    CASE WHEN is_first_admin THEN 'approved' ELSE 'pending' END,
+    CASE WHEN is_admin_email THEN 'admin' ELSE 'staff' END,
+    CASE WHEN is_admin_email THEN 'approved' ELSE 'pending' END,
     now(),
-    CASE WHEN is_first_admin THEN now() ELSE NULL END
+    CASE WHEN is_admin_email THEN now() ELSE NULL END
   )
   ON CONFLICT (id) DO UPDATE
   SET
     email = EXCLUDED.email,
     full_name = COALESCE(EXCLUDED.full_name, public.profiles.full_name),
+    role = CASE WHEN is_admin_email THEN 'admin' ELSE public.profiles.role END,
+    status = CASE WHEN is_admin_email THEN 'approved' ELSE public.profiles.status END,
     updated_at = now();
 
   RETURN NEW;
@@ -237,10 +239,10 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- Seed primary admin
+-- Seed primary admins
 INSERT INTO public.profiles (id, email, full_name, role, status, approved_at)
 SELECT id, email, 'Administrator', 'admin', 'approved', now()
 FROM auth.users
-WHERE email = 'ajilmuhammedt@gmail.com'
+WHERE email IN ('ajilmuhammedt@gmail.com', 'sanfordstudioai@gmail.com')
 ON CONFLICT (id) DO UPDATE
 SET role = 'admin', status = 'approved';
