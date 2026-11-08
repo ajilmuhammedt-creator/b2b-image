@@ -271,3 +271,4 @@ async function testCanvasCornerPureWhite(imageUrl: string): Promise<boolean> {
     img.src = imageUrl;
   });
 }
+

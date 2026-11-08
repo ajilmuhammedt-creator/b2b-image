@@ -7,6 +7,8 @@ import {
   buildSanfordSlotPrompt,
   buildAmazonSlotPrompt,
   buildAmazonAPlusPrompt,
+  buildNoonSlotPrompt,
+  buildNoonAPlusPrompt,
 } from './_lib/prompts.js';
 
 export const config = {
@@ -62,6 +64,8 @@ export default async function handler(req: any, res: any) {
       settings = {},
       platform = 'shopify',
       aplusType,
+      noonAplusType,
+      lang = 'en',
     } = body || {};
 
     // 2. Project ownership verification: project's user_id must match verified user id
@@ -208,6 +212,31 @@ export default async function handler(req: any, res: any) {
         modelNumber,
         headline: sanfordSlot?.headline,
         features: sanfordSlot?.features && sanfordSlot.features.length > 0 ? sanfordSlot.features : featureGroup,
+      });
+    } else if (platform === 'noon') {
+      // Noon UAE Product Listing Images (Slots 1-6)
+      prompt = buildNoonSlotPrompt({
+        productName,
+        theme: sanfordSlot?.theme || `noon_slot_${slot}`,
+        slotNumber: slot || 1,
+        slotTitle: sanfordSlot?.title || `Noon Image ${slot}`,
+        brand,
+        modelNumber,
+        features: sanfordSlot?.features && sanfordSlot.features.length > 0 ? sanfordSlot.features : featureGroup,
+        dimensions: sanfordSlot?.dimensions,
+        colors,
+      });
+    } else if (platform === 'noon_aplus') {
+      // Noon UAE A+ Content Module (English or Arabic)
+      prompt = buildNoonAPlusPrompt({
+        productName,
+        moduleType: noonAplusType || sanfordSlot?.noonAplusType || 'intro_banner_2400x1000',
+        slotNumber: slot || 1,
+        modelNumber,
+        features: sanfordSlot?.features && sanfordSlot.features.length > 0 ? sanfordSlot.features : featureGroup,
+        dimensions: sanfordSlot?.dimensions,
+        colors,
+        lang: lang || sanfordSlot?.noonLanguage || 'en',
       });
     } else if (sanfordSlot && sanfordSlot.theme) {
       // Shopify / BuySanford Pattern

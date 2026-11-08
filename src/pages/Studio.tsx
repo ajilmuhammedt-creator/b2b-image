@@ -7,6 +7,7 @@ import { ResultsGrid } from '../components/ResultsGrid';
 import { SettingsPanel } from '../components/SettingsPanel';
 import { PlatformSelectModal } from '../components/PlatformSelectModal';
 import { evaluateAmazonCompliance } from '../lib/amazonCompliance';
+import { evaluateNoonCompliance } from '../lib/noonCompliance';
 import { projectStorage } from '../lib/projectStorage';
 import { fetchApi } from '../lib/apiClient';
 import type {
@@ -166,6 +167,114 @@ export const DEFAULT_AMAZON_APLUS_SLOTS: SanfordSlotSpec[] = [
   },
 ];
 
+export const DEFAULT_NOON_SLOTS: SanfordSlotSpec[] = [
+  {
+    slot: 1,
+    theme: 'noon_front',
+    title: 'IMAGE 01 · Primary Front View (Pure White)',
+    headline: '',
+    description: 'Noon Primary Listing Standard: Direct front view, pure white (#FFFFFF), balanced margins (75–80% fill). Zero text, zero badges, zero packaging.',
+    features: [],
+  },
+  {
+    slot: 2,
+    theme: 'noon_back',
+    title: 'IMAGE 02 · Back View (Rear Photography)',
+    headline: '',
+    description: 'Actual rear product view on pure white. Visible ventilation grilles, power cord socket, and authentic rear switches. Strictly zero text.',
+    features: [],
+  },
+  {
+    slot: 3,
+    theme: 'noon_side',
+    title: 'IMAGE 03 · Side View (Product Profile)',
+    headline: '',
+    description: 'Clean 90° profile view communicating true thickness, depth, buttons, and handles with crisp product silhouette. Zero text.',
+    features: [],
+  },
+  {
+    slot: 4,
+    theme: 'noon_angle',
+    title: 'IMAGE 04 · Three-Quarter Perspective',
+    headline: '',
+    description: 'Commercial 3/4 perspective displaying volumetric depth, front face, and side form simultaneously with softbox lighting. Zero text.',
+    features: [],
+  },
+  {
+    slot: 5,
+    theme: 'noon_detail',
+    title: 'IMAGE 05 · Product Detail (Close-Up)',
+    headline: '',
+    description: 'Macro close-up highlighting key functional controls (LED panel, temperature dial, heating element, or stainless finish). Zero text.',
+    features: [],
+  },
+  {
+    slot: 6,
+    theme: 'noon_lifestyle',
+    title: 'IMAGE 06 · Realistic Lifestyle In-Use',
+    headline: '',
+    description: 'Photorealistic commercial photography in authentic home setting (kitchen, vanity, living room). Accurate scale. Strictly zero text.',
+    features: [],
+  },
+];
+
+export const DEFAULT_NOON_APLUS_SLOTS: SanfordSlotSpec[] = [
+  {
+    slot: 1,
+    theme: 'noon_aplus_intro',
+    title: 'Noon A+ 01 · Product Introduction Banner',
+    headline: '',
+    description: '2400 × 1000 px panoramic branded hero banner presenting the product in an architectural lifestyle environment.',
+    features: [],
+    noonAplusType: 'intro_banner_2400x1000',
+  },
+  {
+    slot: 2,
+    theme: 'noon_aplus_features',
+    title: 'Noon A+ 02 · Primary Features Infographic',
+    headline: '',
+    description: '2400 × 1200 px layout displaying 3–4 key verified specifications with red circular badges and full-width red bottom benefits banner.',
+    features: [],
+    noonAplusType: 'primary_features_2400x1200',
+  },
+  {
+    slot: 3,
+    theme: 'noon_aplus_details',
+    title: 'Noon A+ 03 · Additional Features Deep-Dive',
+    headline: '',
+    description: '2400 × 1200 px engineering detail breakdown with secondary verified specifications, red icon badges, and red bottom banner.',
+    features: [],
+    noonAplusType: 'additional_features_2400x1200',
+  },
+  {
+    slot: 4,
+    theme: 'noon_aplus_lifestyle',
+    title: 'Noon A+ 04 · Product Lifestyle Story',
+    headline: '',
+    description: '2400 × 1000 px expansive lifestyle photography showcasing the appliance in an upscale modern residence with minimal benefit statement.',
+    features: [],
+    noonAplusType: 'lifestyle_banner_2400x1000',
+  },
+  {
+    slot: 5,
+    theme: 'noon_aplus_dimensions',
+    title: 'Noon A+ 05 · Product Dimensions Spec',
+    headline: '',
+    description: '2400 × 1200 px clean dimensional diagram with crimson measurement arrows (<----->) in mm/cm. Strictly NO warranty graphics per Noon.',
+    features: [],
+    noonAplusType: 'dimensions_2400x1200',
+  },
+  {
+    slot: 6,
+    theme: 'noon_aplus_colors',
+    title: 'Noon A+ 06 · Available Colour Finishes',
+    headline: '',
+    description: '2400 × 1000 px multi-unit lineup exhibiting verified catalog colour finishes. (Auto-skipped if single colour).',
+    features: [],
+    noonAplusType: 'colors_2400x1000',
+  },
+];
+
 export function Studio() {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
@@ -190,7 +299,7 @@ export function Studio() {
   const [sanfordSlots, setSanfordSlots] = useState<SanfordSlotSpec[]>(DEFAULT_SHOPIFY_SLOTS);
   const [validationAttempted, setValidationAttempted] = useState(false);
 
-  // Colour options detection: Slot 5 is only applicable if product has multiple colour options
+  // Colour options detection: Slot 5 (Shopify/Amazon) or Slot 6 (Noon A+) is only applicable if product has multiple colour options
   const colorList = colors.split(/[,;/]+/).map((c) => c.trim()).filter(Boolean);
   const hasMultipleColors = colorList.length > 1;
 
@@ -226,6 +335,7 @@ export function Studio() {
     styleLock: false,
     imagesPerRun: 6,
     background: 'white',
+    noonLanguage: 'en',
   });
 
   const [makePoster, setMakePoster] = useState(false);
@@ -276,6 +386,10 @@ export function Studio() {
         ? DEFAULT_AMAZON_SLOTS
         : newPlatform === 'amazon_aplus'
         ? DEFAULT_AMAZON_APLUS_SLOTS
+        : newPlatform === 'noon'
+        ? DEFAULT_NOON_SLOTS
+        : newPlatform === 'noon_aplus'
+        ? DEFAULT_NOON_APLUS_SLOTS
         : DEFAULT_SHOPIFY_SLOTS;
 
     setSanfordSlots((prev) =>
@@ -316,6 +430,7 @@ export function Studio() {
           sanfordSlot: tmpl,
           platform: newPlatform,
           compliance: existing?.compliance,
+          noonCompliance: existing?.noonCompliance,
         };
       });
 
@@ -330,15 +445,20 @@ export function Studio() {
         ? 'Amazon Listing Standard selected (2000×2000 px, pure white hero, strict compliance)'
         : newPlatform === 'amazon_aplus'
         ? 'Amazon A+ Content mode selected (EBC banners and comparison modules)'
+        : newPlatform === 'noon'
+        ? 'Noon UAE Listing Standard selected (6 dedicated photo angles, JPEG, zero overlays)'
+        : newPlatform === 'noon_aplus'
+        ? 'Noon UAE A+ Content selected (2400px banners, English & Arabic support)'
         : 'Shopify BuySanford mode selected (6-slot pattern with WebP SEO export)'
     );
   };
 
-  // Sync Slot 5 status when color options change: automatically skip Slot 5 if <= 1 color
+  // Sync Slot 5/6 status when color options change: automatically skip if <= 1 color
   useEffect(() => {
     setGenerations((prev) =>
       prev.map((g) => {
-        if (g.slot === 5) {
+        const isColorSlot = (platform === 'noon_aplus' && g.slot === 6) || (platform !== 'noon' && platform !== 'noon_aplus' && g.slot === 5);
+        if (isColorSlot) {
           if (!hasMultipleColors && (g.status === 'idle' || g.status === 'skipped')) {
             return { ...g, status: 'skipped', selected: false };
           } else if (hasMultipleColors && g.status === 'skipped') {
@@ -348,7 +468,7 @@ export function Studio() {
         return g;
       })
     );
-  }, [hasMultipleColors]);
+  }, [hasMultipleColors, platform]);
 
   // When Catalogue is parsed from ProductInput
   const handleCatalogueParsed = (data: CatalogueParsedData) => {
@@ -522,6 +642,8 @@ export function Studio() {
           styleRefPath,
           platform: targetPlatform,
           aplusType: targetSlotSpec?.aplusType,
+          noonAplusType: targetSlotSpec?.noonAplusType,
+          lang: targetSlotSpec?.noonLanguage || settings.noonLanguage || 'en',
           sanfordSlot: targetSlotSpec
             ? {
                 ...targetSlotSpec,
@@ -560,7 +682,7 @@ export function Studio() {
         platform: targetPlatform,
       };
 
-      // In Amazon mode, evaluate listing compliance
+      // In Amazon mode, evaluate Amazon listing compliance
       if (targetPlatform === 'amazon') {
         try {
           const comp = await evaluateAmazonCompliance({
@@ -572,6 +694,21 @@ export function Studio() {
           updatedCard.compliance = comp;
         } catch (compErr) {
           console.warn('Amazon compliance evaluation warning:', compErr);
+        }
+      }
+
+      // In Noon mode, evaluate Noon listing compliance
+      if (targetPlatform === 'noon') {
+        try {
+          const noonComp = await evaluateNoonCompliance({
+            item: updatedCard,
+            productName,
+            modelNumber,
+            hasMultipleColors,
+          });
+          updatedCard.noonCompliance = noonComp;
+        } catch (compErr) {
+          console.warn('Noon compliance evaluation warning:', compErr);
         }
       }
 
@@ -600,7 +737,7 @@ export function Studio() {
   const handleGenerateAll = async () => {
     if (!platform) {
       setIsPlatformModalOpen(true);
-      showToast('Please select your target platform (Shopify or Amazon) first.', 'error');
+      showToast('Please select your target platform (Shopify, Amazon, or Noon) first.', 'error');
       return;
     }
 
@@ -614,6 +751,15 @@ export function Studio() {
     let slotsToRun: number[] = [];
     if (platform === 'amazon_aplus') {
       slotsToRun = [1, 2, 3, 4];
+    } else if (platform === 'noon_aplus') {
+      slotsToRun = [1, 2, 3, 4, 5];
+      if (hasMultipleColors) {
+        slotsToRun.push(6);
+        slotsToRun.sort((a, b) => a - b);
+      }
+    } else if (platform === 'noon') {
+      // Noon UAE 6 dedicated listing views: Front, Back, Side, 3/4, Detail, Lifestyle
+      slotsToRun = [1, 2, 3, 4, 5, 6];
     } else {
       slotsToRun = [1, 2, 3, 4, 6];
       if (hasMultipleColors) {
@@ -641,10 +787,22 @@ export function Studio() {
 
         await Promise.allSettled(remainingPromises);
       } else {
-        const platformName = platform === 'amazon' ? 'Amazon Listing' : platform === 'amazon_aplus' ? 'Amazon A+' : 'Shopify';
+        const platformName =
+          platform === 'amazon'
+            ? 'Amazon'
+            : platform === 'amazon_aplus'
+            ? 'Amazon A+'
+            : platform === 'noon'
+            ? 'Noon UAE'
+            : platform === 'noon_aplus'
+            ? 'Noon A+'
+            : 'Shopify';
+
         showToast(
           `Generating ${totalCalls} ${platformName} images in parallel${
-            !hasMultipleColors && platform !== 'amazon_aplus' ? ' (Slot 5 skipped: single colour)' : ''
+            !hasMultipleColors && platform !== 'noon' && platform !== 'amazon_aplus' && platform !== 'noon_aplus'
+              ? ' (Slot 5 skipped: single colour)'
+              : ''
           }...`
         );
         const promises: Promise<GenerationItem>[] = [];
@@ -658,9 +816,18 @@ export function Studio() {
         await Promise.allSettled(promises);
       }
 
-      showToast(
-        `${platform === 'amazon' ? 'Amazon listing' : platform === 'amazon_aplus' ? 'Amazon A+' : 'Shopify'} generation batch completed! (${slotsToRun.length} images)`
-      );
+      const platformLabel =
+        platform === 'amazon'
+          ? 'Amazon'
+          : platform === 'amazon_aplus'
+          ? 'Amazon A+'
+          : platform === 'noon'
+          ? 'Noon UAE'
+          : platform === 'noon_aplus'
+          ? 'Noon A+'
+          : 'Shopify';
+
+      showToast(`${platformLabel} generation batch completed! (${slotsToRun.length} images)`);
 
       // Save project state to projectStorage
       setTimeout(async () => {
@@ -714,7 +881,7 @@ export function Studio() {
   const handleRegenerateSlot = async (slotOrKind: number | 'poster') => {
     if (!platform) {
       setIsPlatformModalOpen(true);
-      showToast('Please select your target platform (Shopify or Amazon) first.', 'error');
+      showToast('Please select your target platform (Shopify, Amazon, or Noon) first.', 'error');
       return;
     }
 
@@ -724,7 +891,7 @@ export function Studio() {
       return;
     }
 
-    if (slotOrKind === 5 && !hasMultipleColors) {
+    if (slotOrKind === 5 && !hasMultipleColors && platform !== 'noon') {
       showToast(
         'Slot 5 (Available Colour Models) cannot be generated because this product has only one colour or no colour options.',
         'error'

@@ -1,4 +1,9 @@
-export type EcommercePlatform = 'shopify' | 'amazon' | 'amazon_aplus';
+export type EcommercePlatform =
+  | 'shopify'
+  | 'amazon'
+  | 'amazon_aplus'
+  | 'noon'
+  | 'noon_aplus';
 
 export type AmazonFormat = 'jpeg' | 'png';
 
@@ -19,11 +24,38 @@ export interface AmazonComplianceResult {
   summary: string;
 }
 
+export type NoonComplianceStatus = 'pass' | 'review' | 'failed';
+
+export interface NoonRuleCheck {
+  id: string;
+  name: string;
+  status: 'pass' | 'warning' | 'fail';
+  message: string;
+  category: 'technical' | 'content' | 'accuracy';
+}
+
+export interface NoonComplianceResult {
+  status: NoonComplianceStatus;
+  score: number;
+  rules: NoonRuleCheck[];
+  summary: string;
+}
+
 export type AmazonAPlusModuleType =
   | 'standard_banner_970x300'
   | 'premium_banner_1464x600'
   | 'triple_card_300x300'
   | 'technical_deepdive_970x600';
+
+export type NoonAPlusModuleType =
+  | 'intro_banner_2400x1000'
+  | 'primary_features_2400x1200'
+  | 'additional_features_2400x1200'
+  | 'lifestyle_banner_2400x1000'
+  | 'dimensions_2400x1200'
+  | 'colors_2400x1000';
+
+export type NoonAPlusLanguage = 'en' | 'ar' | 'both';
 
 export interface StudioSettings {
   model: 'gpt-image-2.5-sunburst' | 'gpt-image-2.5-flare';
@@ -36,6 +68,7 @@ export interface StudioSettings {
   background: 'white' | 'pale tint';
   platform?: EcommercePlatform | null;
   amazonFormat?: AmazonFormat;
+  noonLanguage?: NoonAPlusLanguage;
 }
 
 export type SanfordTheme =
@@ -49,7 +82,19 @@ export type SanfordTheme =
   | 'aplus_standard_banner'
   | 'aplus_premium_banner'
   | 'aplus_triple_card'
-  | 'aplus_comparison';
+  | 'aplus_comparison'
+  | 'noon_front'
+  | 'noon_back'
+  | 'noon_side'
+  | 'noon_angle'
+  | 'noon_detail'
+  | 'noon_lifestyle'
+  | 'noon_aplus_intro'
+  | 'noon_aplus_features'
+  | 'noon_aplus_details'
+  | 'noon_aplus_lifestyle'
+  | 'noon_aplus_dimensions'
+  | 'noon_aplus_colors';
 
 export interface SanfordSlotSpec {
   slot: number;
@@ -66,6 +111,8 @@ export interface SanfordSlotSpec {
   colors?: string;
   platform?: EcommercePlatform;
   aplusType?: AmazonAPlusModuleType;
+  noonAplusType?: NoonAPlusModuleType;
+  noonLanguage?: NoonAPlusLanguage;
 }
 
 export interface GenerationItem {
@@ -92,7 +139,9 @@ export interface GenerationItem {
   disabled?: boolean;
   platform?: EcommercePlatform;
   compliance?: AmazonComplianceResult;
+  noonCompliance?: NoonComplianceResult;
   exportFormat?: 'webp' | 'jpeg' | 'png';
+  noonLanguage?: 'en' | 'ar';
 }
 
 export interface CatalogueParsedData {

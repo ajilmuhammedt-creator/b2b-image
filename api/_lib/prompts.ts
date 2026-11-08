@@ -737,3 +737,281 @@ ${moduleSpec}
 OUTPUT:
 Generate exactly ONE clean, high-resolution Amazon A+ graphic module adhering strictly to Amazon A+ Content content guidelines.`;
 }
+
+/**
+ * Noon UAE Product Listing Image Prompt Builder
+ * Generates 100% compliant Noon UAE listing images following official Noon Seller Help Center guidelines:
+ * - 2000 × 2000 px production standard (1:1 square, JPEG export)
+ * - Strict marketplace visual sequencing:
+ *   1. Front Hero: Pure white (#FFFFFF), front-facing, balanced margins (70–80% fill), zero text/badges
+ *   2. Back View: Rear view with authentic visible components, studio lighting, zero text
+ *   3. Side View: Profile perspective showing true depth/thickness, zero text
+ *   4. Three-Quarter View: Commercial 3/4 angle showcasing physical structure, zero text
+ *   5. Product Detail: Close-up macro view of control panel, display, or key mechanism, zero text
+ *   6. Lifestyle In-Use: Photorealistic aspirational environment, zero text, zero badges
+ * - Strict Noon Rule: Standard gallery contains ZERO promotional overlays, banners, or warranty badges.
+ */
+export function buildNoonSlotPrompt(params: {
+  productName: string;
+  theme: string;
+  slotNumber: number;
+  slotTitle: string;
+  brand?: string;
+  modelNumber?: string;
+  features?: string[];
+  dimensions?: string;
+  colors?: string;
+}): string {
+  const {
+    productName,
+    slotNumber,
+    brand = 'Sanford',
+    modelNumber = '',
+    features = [],
+    colors = '',
+  } = params;
+
+  // Clean brand and model numbers
+  const brandRegex = new RegExp(`\\b${brand}\\b`, 'gi');
+  const modelRegex = modelNumber ? new RegExp(`\\b${modelNumber}\\b`, 'gi') : /\b[A-Z]{2,4}\d{4,}[A-Z0-9]*\b/gi;
+
+  const cleanText = (t?: string): string => {
+    if (!t) return '';
+    return t
+      .replace(brandRegex, '')
+      .replace(modelRegex, '')
+      .replace(/\bSanford\b/gi, '')
+      .replace(/\b[A-Z]{2,4}\d{4,}[A-Z0-9]*\b/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  const cleanProductTitle = cleanText(productName) || productName;
+  const cleanedFeatures = features.map((f) => cleanText(f)).filter((f) => f.length > 2);
+  const featureListStr = cleanedFeatures.join('; ');
+
+  let slotDirective = '';
+
+  switch (slotNumber) {
+    case 1:
+      // IMAGE 01 — PRIMARY FRONT VIEW (Clean White Product Hero)
+      slotDirective = `IMAGE 01 — NOON UAE PRIMARY FRONT VIEW (CLEAN WHITE PRODUCT HERO):
+- PRIMARY OBJECTIVE: Official Noon UAE Primary Listing Image.
+- ORIENTATION: Direct straight-on front view showing the primary controls and face of the product.
+- BACKGROUND: Pure seamless white background (#FFFFFF / RGB 255, 255, 255) across the entire canvas with zero gradient or tint.
+- FRAMING & MARGINS: Product occupies approximately 75% to 80% of the canvas with balanced breathing margins on all sides.
+- LIGHTING & SHADOW: Clean commercial studio softbox lighting. Soft, minimal, natural contact grounding shadow only.
+- STRICT NOON PRIMARY IMAGE NEGATIVE CONSTRAINTS (ZERO TOLERANCE):
+  * ABSOLUTELY NO text, NO numbers, NO letters, NO words of any kind on the canvas.
+  * ABSOLUTELY NO promotional badges, NO banners, NO warranty ribbons, NO price tags, NO watermarks, NO borders.
+  * ABSOLUTELY NO lifestyle props, NO human hands, NO unrelated decorative objects.
+  * ABSOLUTELY NO packaging box or retail carton. Standalone product only.
+  * Preserve original factory molding, buttons, and physical logos from the reference photograph.`;
+      break;
+
+    case 2:
+      // IMAGE 02 — REAR PRODUCT PHOTOGRAPHY (BACK VIEW)
+      slotDirective = `IMAGE 02 — NOON UAE BACK VIEW (REAR PRODUCT PHOTOGRAPHY):
+- PRIMARY OBJECTIVE: Show the actual product from the back with complete structural accuracy.
+- ORIENTATION: Direct rear perspective of the product.
+- BACKGROUND: Seamless pure white (#FFFFFF) studio background.
+- PRODUCT FIDELITY: Accurately depict visible rear components, ventilation grilles, power cord entry/socket, rear switches, and authentic structural casing based on the reference product. Do not invent arbitrary fantasy parts.
+- LIGHTING: Crisp professional studio illumination with subtle grounding shadow.
+- STRICT NOON RULE: Zero text, zero icons, zero promotional badges, zero overlays. Commercial studio photograph only.`;
+      break;
+
+    case 3:
+      // IMAGE 03 — PRODUCT PROFILE VIEW (SIDE VIEW)
+      slotDirective = `IMAGE 03 — NOON UAE SIDE VIEW (PRODUCT PROFILE VIEW):
+- PRIMARY OBJECTIVE: Clean profile view communicating exact physical depth and thickness.
+- ORIENTATION: 90-degree side profile perspective.
+- BACKGROUND: Seamless pure white (#FFFFFF) studio background.
+- DETAILS: Accurate product depth, handle curvature, side buttons, dials, or cord attachments.
+- LIGHTING: Soft studio rim and key lighting accentuating the clean silhouette of the appliance.
+- STRICT NOON RULE: Zero text, zero icons, zero marketing graphics. Standalone studio photograph only.`;
+      break;
+
+    case 4:
+      // IMAGE 04 — THREE-QUARTER PRODUCT VIEW (PREMIUM ANGLE)
+      slotDirective = `IMAGE 04 — NOON UAE THREE-QUARTER PRODUCT VIEW (PREMIUM PRODUCT ANGLE):
+- PRIMARY OBJECTIVE: Dynamic 3/4 perspective revealing the product's volumetric depth, front face, and side form simultaneously.
+- ORIENTATION: Three-quarter commercial studio angle.
+- BACKGROUND: Clean white studio background (#FFFFFF).
+- LIGHTING: High-end commercial catalog photography with gentle softbox reflections and subtle natural grounding shadow.
+- STRICT NOON RULE: Zero text, zero badges, zero graphic overlays. Premium studio photograph only.`;
+      break;
+
+    case 5:
+      // IMAGE 05 — PRODUCT DETAIL PHOTOGRAPHY (CLOSE-UP DETAIL)
+      slotDirective = `IMAGE 05 — NOON UAE PRODUCT DETAIL PHOTOGRAPHY (CLOSE-UP DETAIL):
+- PRIMARY OBJECTIVE: High-resolution macro close-up of a key functional feature or control interface.
+- SUBJECT: Focus closely on one prominent verified detail of this ${cleanProductTitle}:
+  * E.g., digital LED touch panel, temperature control dial, precision blade assembly, stainless steel finish, or ergonomic grip.
+- COMPOSITION: Elegant tight crop with shallow depth-of-field, highlighting engineering precision, premium texture, and tactile craftsmanship.
+- STRICT NOON RULE: Standard Noon gallery prohibits textual feature labels or decorative icons. Clean, realistic photographic detail view only.`;
+      break;
+
+    case 6:
+      // IMAGE 06 — REALISTIC LIFESTYLE IMAGE (PRODUCT IN USE)
+      slotDirective = `IMAGE 06 — NOON UAE REALISTIC LIFESTYLE IMAGE (PRODUCT IN USE):
+- PRIMARY OBJECTIVE: Photorealistic aspirational commercial photography showing the product in its authentic usage environment.
+- CONTEXT ENVIRONMENT:
+  * Kitchen appliances: Modern luxury kitchen countertop with natural ambient morning sunlight.
+  * Personal care / grooming: Elegant minimalist bathroom vanity or contemporary dressing area.
+  * Fans / climate control: Tastefully decorated modern living room or bedroom.
+  * Lighting & electronics: Clean contemporary home or office workspace.
+- PHOTOGRAPHY STYLE: Hyper-realistic commercial editorial photography, accurate scale relative to countertops and furnishings, soft background blur.
+- PRODUCT FOCUS: Product is the sharp, prominent hero subject.
+- STRICT NOON RULE: ABSOLUTELY NO text, NO icons, NO badges, NO promotional banners or overlays on this image. Flawless commercial lifestyle photograph only.`;
+      break;
+
+    default:
+      slotDirective = `COMMERCIAL STUDIO VIEW: Product photographed on seamless pure white background (#FFFFFF) with studio lighting and zero text overlays.`;
+  }
+
+  return `Create ONE high-definition Noon UAE product listing image (2000 × 2000 px square standard, sRGB) using the attached reference photograph and supplied specifications.
+
+PRODUCT DETAILS:
+- Product Name: ${cleanProductTitle}
+- Model Number: ${modelNumber || 'None'}
+- Category: Home & Kitchen Appliances / Electronics
+- Key Specifications: ${featureListStr}
+- Colors: ${colors || 'Standard'}
+
+${PRODUCT_ACCURACY_BLOCK}
+
+NOON UAE MARKETPLACE DIRECTIVE:
+${slotDirective}
+
+OUTPUT:
+Generate exactly ONE complete, standalone 1:1 square image.
+Strictly adhere to Noon UAE Seller Help Center image standards (photographic realism, pure white studio backgrounds where specified, and ZERO added text or promotional elements).`;
+}
+
+/**
+ * Noon UAE A+ Content Module Prompt Builder
+ * Generates premium branded A+ graphics for Noon UAE Enhanced Brand Content:
+ * - Supports English and Arabic sets
+ * - 2400 px width standard
+ * - Templates: 01 Hero Intro, 02 Primary Features, 03 Additional Features, 04 Lifestyle, 05 Dimensions, 06 Colors
+ */
+export function buildNoonAPlusPrompt(params: {
+  productName: string;
+  moduleType: string;
+  slotNumber?: number;
+  modelNumber?: string;
+  features?: string[];
+  dimensions?: string;
+  colors?: string;
+  lang?: 'en' | 'ar';
+}): string {
+  const {
+    productName,
+    moduleType,
+    slotNumber = 1,
+    modelNumber = '',
+    features = [],
+    dimensions,
+    colors,
+    lang = 'en',
+  } = params;
+
+  const isArabic = lang === 'ar';
+  const cleanFeatures = (features || []).filter((f) => f && f.trim().length > 2);
+  const dims = parseDimensionMeasurements(dimensions);
+
+  let moduleSpec = '';
+
+  switch (moduleType) {
+    case 'intro_banner_2400x1000':
+      moduleSpec = `A+ TEMPLATE 01 — PRODUCT INTRODUCTION (2400 × 1000 px WIDE HERO BANNER):
+- COMPOSITION: Full-width panoramic branded hero banner.
+- PRODUCT: Prominently centered or positioned with dramatic architectural presence.
+- BACKGROUND: Sophisticated modern interior tailored to appliance category.
+- TYPOGRAPHY: ${
+        isArabic
+          ? 'Arabic typography (Cairo / Neo Sans Arabic aesthetic, Right-to-Left alignment). Clean Arabic headline introducing the appliance with understated subtitle.'
+          : 'Sharp Sans Bold typography. Clean English headline celebrating product innovation with minimal supporting subtitle.'
+      }
+- STYLE: Luxurious commercial advertisement aesthetic with crisp studio lighting.`;
+      break;
+
+    case 'primary_features_2400x1200':
+      moduleSpec = `A+ TEMPLATE 02 — PRIMARY FEATURES INFOGRAPHIC (2400 × 1200 px):
+- COMPOSITION: Product hero flanked by 3 to 4 key verified specifications: ${cleanFeatures.slice(0, 4).join('; ')}.
+- FEATURE CALLOUTS:
+  * Vibrant red circular badges (#E53935) with minimalist white pictograms.
+  * ${
+    isArabic
+      ? 'Arabic headline and benefit text positioned on the RIGHT with RTL alignment.'
+      : 'Sharp Sans Bold / Medium feature headlines and benefit descriptions.'
+  }
+- FULL-WIDTH RED BENEFIT BANNER:
+  * Solid vibrant red banner spanning the bottom 12% of the canvas.
+  * Pure white typography stating key selling proposition in ${isArabic ? 'Arabic' : 'Sharp Sans Bold'}.
+- NOON RULE: Feature claims must strictly reflect verified catalogue specifications.`;
+      break;
+
+    case 'additional_features_2400x1200':
+      moduleSpec = `A+ TEMPLATE 03 — ADDITIONAL FEATURES DEEP-DIVE (2400 × 1200 px):
+- COMPOSITION: Close-up macro engineering perspective displaying secondary features: ${cleanFeatures.slice(4, 8).join('; ') || cleanFeatures.join('; ')}.
+- DESIGN LANGUAGE: Identical visual hierarchy to Template 02 with red circular icon badges and full-width red benefits banner.
+- LANGUAGE: ${isArabic ? 'Arabic RTL typography and translation.' : 'Sharp Sans typography.'}
+- ANTI-DUPLICATION: Non-overlapping features from Template 02.`;
+      break;
+
+    case 'lifestyle_banner_2400x1000':
+      moduleSpec = `A+ TEMPLATE 04 — PRODUCT LIFESTYLE STORY (2400 × 1000 px):
+- COMPOSITION: Expansive premium lifestyle photography placing the product in an upscale contemporary residence.
+- OVERLAY: Minimalist translucent benefit pill with a single verified claim in ${isArabic ? 'Arabic' : 'Sharp Sans'}.
+- MOOD: Warm, inviting, commercial editorial quality.`;
+      break;
+
+    case 'dimensions_2400x1200':
+      moduleSpec = `A+ TEMPLATE 05 — PRODUCT DIMENSIONS SPECIFICATION (2400 × 1200 px):
+- COMPOSITION: Upright front or 3/4 angle on neutral light studio canvas.
+- DIMENSION ARROWS:
+  * Crisp crimson red double-ended arrows (<----->) marking Height (${dims.height}), Width (${dims.width}), and Depth (${dims.depth}).
+  * Crisp measurement numbers in mm/cm.
+- STRICT NOON A+ RULE: DO NOT display warranty graphics or price badges. Exclude packaging weight and box contents.`;
+      break;
+
+    case 'colors_2400x1000':
+      moduleSpec = `A+ TEMPLATE 06 — AVAILABLE COLOUR FINISHES (2400 × 1000 px):
+- COMPOSITION: Multi-unit lineup exhibiting verified colour options: ${colors || 'Standard finishes'}.
+- STYLE: Clean white studio background with circular colour indicator swatches and matching red bottom banner.`;
+      break;
+
+    default:
+      moduleSpec = `A+ BANNER: Branded product showcase adhering to Noon UAE A+ Content design guidelines.`;
+  }
+
+  return `Create ONE high-impact Noon UAE A+ Content banner (${isArabic ? 'Arabic Edition (RTL)' : 'English Edition'}) using the attached reference photograph.
+
+PRODUCT DETAILS:
+- Product: ${productName}
+- Model: ${modelNumber}
+- Target Language: ${isArabic ? 'Arabic (RTL)' : 'English'}
+- Verified Specifications: ${cleanFeatures.join('; ')}
+
+${PRODUCT_ACCURACY_BLOCK}
+
+${SHARP_SANS_TYPOGRAPHY_BLOCK}
+
+${
+  isArabic
+    ? `ARABIC TYPOGRAPHY & RTL MANDATE:
+- All text overlays, headlines, and feature descriptions MUST be rendered in professional, grammatically correct Arabic.
+- Text must follow standard Right-to-Left (RTL) reading flow and alignment.
+- Use a modern, elegant Arabic sans-serif typeface (Cairo / Neo Sans Arabic style) that matches the precision of Sharp Sans.
+- Keep model numbers (e.g. "${modelNumber}") in their original alphanumeric form.`
+    : ''
+}
+
+NOON A+ MODULE SPECIFICATION:
+${moduleSpec}
+
+OUTPUT:
+Generate exactly ONE clean, high-resolution Noon UAE A+ Content banner.`;
+}
+

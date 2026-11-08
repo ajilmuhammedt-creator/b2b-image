@@ -207,3 +207,80 @@ export function getAmazonZipFilename(options: SeoNamingOptions): string {
   return `${getAmazonFolderName(options)}.zip`;
 }
 
+/**
+ * Derives a clean SKU or model identifier for Noon UAE marketplace listings.
+ * e.g. `SF6671HFN` or `SANFORD_AIR_FRYER`
+ */
+export function getNoonIdentifier(modelNumber?: string, productName?: string): string {
+  if (modelNumber && modelNumber.trim()) {
+    const clean = modelNumber.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+    if (clean) return clean;
+  }
+  if (productName && productName.trim()) {
+    const slug = slugify(productName).toUpperCase().replace(/-/g, '_');
+    return slug.slice(0, 24) || 'SANFORD_SKU';
+  }
+  return 'SANFORD_SKU';
+}
+
+/**
+ * Builds official Noon UAE product listing image filename according to seller guidelines:
+ * - 01: `[SKU]_NOON_01_MAIN.jpg`
+ * - 02: `[SKU]_NOON_02_BACK.jpg`
+ * - 03: `[SKU]_NOON_03_SIDE.jpg`
+ * - 04: `[SKU]_NOON_04_ANGLE.jpg`
+ * - 05: `[SKU]_NOON_05_DETAIL.jpg`
+ * - 06: `[SKU]_NOON_06_LIFESTYLE.jpg`
+ */
+export function getNoonImageFilename(options: {
+  modelNumber?: string;
+  productName?: string;
+  slotNumber: number;
+  theme?: string;
+}): string {
+  const sku = getNoonIdentifier(options.modelNumber, options.productName);
+  const themeMap: Record<number, string> = {
+    1: '01_MAIN',
+    2: '02_BACK',
+    3: '03_SIDE',
+    4: '04_ANGLE',
+    5: '05_DETAIL',
+    6: '06_LIFESTYLE',
+  };
+
+  const tag = themeMap[options.slotNumber] || `0${options.slotNumber}_VIEW`;
+  return `${sku}_NOON_${tag}.jpg`;
+}
+
+/**
+ * Builds official Noon UAE A+ Content image filename supporting English and Arabic sets:
+ * e.g. `[SKU]_NOON_APLUS_01_EN.jpg` or `[SKU]_NOON_APLUS_01_AR.jpg`
+ */
+export function getNoonAPlusFilename(options: {
+  modelNumber?: string;
+  productName?: string;
+  slotNumber: number;
+  language?: 'en' | 'ar';
+}): string {
+  const sku = getNoonIdentifier(options.modelNumber, options.productName);
+  const paddedSlot = String(options.slotNumber).padStart(2, '0');
+  const lang = (options.language || 'en').toUpperCase();
+  return `${sku}_NOON_APLUS_${paddedSlot}_${lang}.jpg`;
+}
+
+/**
+ * Builds standard folder name for Noon UAE exports.
+ */
+export function getNoonFolderName(options: SeoNamingOptions & { isAPlus?: boolean }): string {
+  const sku = getNoonIdentifier(options.modelNumber, options.productName);
+  return options.isAPlus ? `Noon-UAE-${sku}-APlus-Content` : `Noon-UAE-${sku}-Listing-Images`;
+}
+
+/**
+ * Builds ZIP filename for Noon UAE exports.
+ */
+export function getNoonZipFilename(options: SeoNamingOptions & { isAPlus?: boolean }): string {
+  return `${getNoonFolderName(options)}.zip`;
+}
+
+
