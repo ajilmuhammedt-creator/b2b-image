@@ -5,6 +5,8 @@ import { Navbar } from '../components/Navbar';
 import { ProductInput } from '../components/ProductInput';
 import { ResultsGrid } from '../components/ResultsGrid';
 import { SettingsPanel } from '../components/SettingsPanel';
+import { PlatformSelectModal } from '../components/PlatformSelectModal';
+import { evaluateAmazonCompliance } from '../lib/amazonCompliance';
 import { projectStorage } from '../lib/projectStorage';
 import { fetchApi } from '../lib/apiClient';
 import type {
@@ -13,10 +15,11 @@ import type {
   StudioSettings,
   SanfordSlotSpec,
   CatalogueParsedData,
+  EcommercePlatform,
 } from '../types';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 
-const DEFAULT_SANFORD_SLOTS: SanfordSlotSpec[] = [
+export const DEFAULT_SHOPIFY_SLOTS: SanfordSlotSpec[] = [
   {
     slot: 1,
     theme: 'hero',
@@ -70,6 +73,99 @@ const DEFAULT_SANFORD_SLOTS: SanfordSlotSpec[] = [
   },
 ];
 
+export const DEFAULT_AMAZON_SLOTS: SanfordSlotSpec[] = [
+  {
+    slot: 1,
+    theme: 'hero',
+    title: 'IMAGE 01 · MAIN Product Hero',
+    headline: '',
+    description: 'Amazon MAIN Listing Standard: Pure white (#FFFFFF), product occupies 85–90% of frame, balanced studio softbox lighting. Strictly ZERO text, ZERO badges, ZERO props.',
+    features: [],
+  },
+  {
+    slot: 2,
+    theme: 'lifestyle',
+    title: 'IMAGE 02 · Premium Lifestyle In-Use',
+    headline: '',
+    description: 'Photorealistic commercial setting (kitchen, vanity, bedroom, or living space). Product as primary hero with soft blur. Strict Amazon rule: ZERO text or badge overlays.',
+    features: [],
+  },
+  {
+    slot: 3,
+    theme: 'specs_part_1',
+    title: 'IMAGE 03 · Primary Features Infographic',
+    headline: '',
+    promoBanner: '',
+    description: 'Top 3–4 verified features, vibrant red circular badges, Sharp Sans typography, full-width red benefits banner at bottom. Zero duplication.',
+    features: [],
+  },
+  {
+    slot: 4,
+    theme: 'specs_part_2',
+    title: 'IMAGE 04 · Secondary Features Infographic',
+    headline: '',
+    promoBanner: '',
+    description: 'Secondary verified features, matching red circular badge design system, alternative product perspective, full-width red benefits banner.',
+    features: [],
+  },
+  {
+    slot: 5,
+    theme: 'colors',
+    title: 'IMAGE 05 · Available Colour Options',
+    headline: '',
+    promoBanner: '',
+    description: 'Multi-color product lineup on clean white background. Shows only verified catalog colors with matching bottom banner. Auto-skipped if single color.',
+    features: [],
+  },
+  {
+    slot: 6,
+    theme: 'size_warranty',
+    title: 'IMAGE 06 · Dimensions & Warranty',
+    headline: '',
+    description: 'Accurate technical dimension arrows (<----->) for Height, Width, Depth in mm/cm plus official warranty seal. Strictly NO weight, NO box contents.',
+    features: [],
+  },
+];
+
+export const DEFAULT_AMAZON_APLUS_SLOTS: SanfordSlotSpec[] = [
+  {
+    slot: 1,
+    theme: 'aplus_standard_banner',
+    title: 'A+ 01 · Standard Brand Banner',
+    headline: '',
+    description: '970 × 300 px panoramic header banner establishing brand prestige and flagship product category.',
+    features: [],
+    aplusType: 'standard_banner_970x300',
+  },
+  {
+    slot: 2,
+    theme: 'aplus_premium_banner',
+    title: 'A+ 02 · Premium Brand Story Hero',
+    headline: '',
+    description: '1464 × 600 px high-impact ultra-wide lifestyle composition highlighting engineering and craftsmanship.',
+    features: [],
+    aplusType: 'premium_banner_1464x600',
+  },
+  {
+    slot: 3,
+    theme: 'aplus_comparison',
+    title: 'A+ 03 · Technical Comparison Matrix',
+    headline: '',
+    description: '970 × 600 px structured specification and model comparison chart with clean technical metrics.',
+    features: [],
+    aplusType: 'technical_deepdive_970x600',
+  },
+  {
+    slot: 4,
+    theme: 'aplus_triple_card',
+    title: 'A+ 04 · Feature Deep-Dive Cards',
+    headline: '',
+    description: '300 × 300 px modular square cards breaking down 3 critical product technologies with icon callouts.',
+    features: [],
+    aplusType: 'triple_card_300x300',
+  },
+];
+
 export function Studio() {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
@@ -79,6 +175,8 @@ export function Studio() {
 
   // Project state - starts completely blank until a catalogue is uploaded
   const [projectId, setProjectId] = useState<string>(() => crypto.randomUUID());
+  const [platform, setPlatform] = useState<EcommercePlatform | null>(null);
+  const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
   const [productName, setProductName] = useState('');
   const [modelNumber, setModelNumber] = useState('');
   const [brand, setBrand] = useState('Sanford');
@@ -89,7 +187,7 @@ export function Studio() {
   const [weight, setWeight] = useState('');
   const [whatsInTheBox, setWhatsInTheBox] = useState<string[]>([]);
   const [warranty, setWarranty] = useState('');
-  const [sanfordSlots, setSanfordSlots] = useState<SanfordSlotSpec[]>(DEFAULT_SANFORD_SLOTS);
+  const [sanfordSlots, setSanfordSlots] = useState<SanfordSlotSpec[]>(DEFAULT_SHOPIFY_SLOTS);
   const [validationAttempted, setValidationAttempted] = useState(false);
 
   // Colour options detection: Slot 5 is only applicable if product has multiple colour options
@@ -134,9 +232,9 @@ export function Studio() {
   const [isGeneratingAll, setIsGeneratingAll] = useState(false);
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Initialize 6 Sanford Cards + 1 Poster card
+  // Initialize Cards + Poster card
   const [generations, setGenerations] = useState<GenerationItem[]>(() => {
-    const initial: GenerationItem[] = DEFAULT_SANFORD_SLOTS.map((slot) => ({
+    const initial: GenerationItem[] = DEFAULT_SHOPIFY_SLOTS.map((slot) => ({
       id: `card-${slot.slot}`,
       projectId: '',
       kind: 'feature',
@@ -168,6 +266,74 @@ export function Studio() {
     setTimeout(() => setToastMessage(null), 5000);
   };
 
+  // Switch Platform Handler
+  const handleSelectPlatform = (newPlatform: EcommercePlatform) => {
+    setPlatform(newPlatform);
+    setIsPlatformModalOpen(false);
+
+    const templateSlots =
+      newPlatform === 'amazon'
+        ? DEFAULT_AMAZON_SLOTS
+        : newPlatform === 'amazon_aplus'
+        ? DEFAULT_AMAZON_APLUS_SLOTS
+        : DEFAULT_SHOPIFY_SLOTS;
+
+    setSanfordSlots((prev) =>
+      templateSlots.map((tmpl) => {
+        const existing = prev.find((p) => p.slot === tmpl.slot);
+        return {
+          ...tmpl,
+          features: existing?.features && existing.features.length > 0 ? existing.features : tmpl.features,
+          headline: existing?.headline || tmpl.headline,
+          promoBanner: existing?.promoBanner || tmpl.promoBanner,
+          dimensions: dimensions || tmpl.dimensions,
+          warranty: warranty || tmpl.warranty,
+          colors: colors || tmpl.colors,
+        };
+      })
+    );
+
+    setGenerations((prev) => {
+      const posterCard = prev.find((g) => g.kind === 'poster');
+      const updatedCards: GenerationItem[] = templateSlots.map((tmpl) => {
+        const existing = prev.find((g) => g.slot === tmpl.slot);
+        return {
+          id: `card-${tmpl.slot}`,
+          projectId,
+          kind: 'feature',
+          slot: tmpl.slot,
+          theme: tmpl.theme,
+          slotTitle: tmpl.title,
+          status: existing?.status || 'idle',
+          imageUrl: existing?.imageUrl,
+          imagePath: existing?.imagePath,
+          b64_json: existing?.b64_json,
+          prompt: existing?.prompt,
+          usage: existing?.usage,
+          error: existing?.error,
+          selected: existing?.selected ?? true,
+          featureGroup: existing?.featureGroup || tmpl.features,
+          sanfordSlot: tmpl,
+          platform: newPlatform,
+          compliance: existing?.compliance,
+        };
+      });
+
+      if (posterCard && newPlatform === 'shopify') {
+        updatedCards.push(posterCard);
+      }
+      return updatedCards;
+    });
+
+    showToast(
+      newPlatform === 'amazon'
+        ? 'Amazon Listing Standard selected (2000×2000 px, pure white hero, strict compliance)'
+        : newPlatform === 'amazon_aplus'
+        ? 'Amazon A+ Content mode selected (EBC banners and comparison modules)'
+        : 'Shopify BuySanford mode selected (6-slot pattern with WebP SEO export)'
+    );
+  };
+
   // Sync Slot 5 status when color options change: automatically skip Slot 5 if <= 1 color
   useEffect(() => {
     setGenerations((prev) =>
@@ -187,6 +353,20 @@ export function Studio() {
   // When Catalogue is parsed from ProductInput
   const handleCatalogueParsed = (data: CatalogueParsedData) => {
     if (data.brand) setBrand(data.brand);
+    if (data.productName && !productName) setProductName(data.productName);
+    if (data.modelNumber && !modelNumber) setModelNumber(data.modelNumber);
+    if (data.tagline && !tagline) setTagline(data.tagline);
+    if (data.fullFeatures && data.fullFeatures.length > 0 && !featuresText) {
+      setFeaturesText(data.fullFeatures.join('\n'));
+    }
+    if (data.colors && !colors) setColors(data.colors);
+    if (data.dimensions && !dimensions) setDimensions(data.dimensions);
+    if (data.weight && !weight) setWeight(data.weight);
+    if (data.warranty && !warranty) setWarranty(data.warranty);
+    if (data.whatsInTheBox && data.whatsInTheBox.length > 0 && whatsInTheBox.length === 0) {
+      setWhatsInTheBox(data.whatsInTheBox);
+    }
+
     if (data.slots && data.slots.length > 0) {
       setGenerations((prev) => {
         const posterCard = prev.find((g) => g.kind === 'poster');
@@ -201,8 +381,11 @@ export function Studio() {
             slotTitle: slot.title,
             status: existing?.status || 'idle',
             imageUrl: existing?.imageUrl,
+            imagePath: existing?.imagePath,
+            b64_json: existing?.b64_json,
             selected: true,
             featureGroup: slot.features,
+            platform: platform || undefined,
             sanfordSlot: {
               ...slot,
               dimensions: data.dimensions,
@@ -213,12 +396,17 @@ export function Studio() {
           };
         });
 
-        if (posterCard) {
+        if (posterCard && (platform === 'shopify' || !platform)) {
           newSlots.push(posterCard);
         }
         return newSlots;
       });
-      showToast(`Catalogue parsed: 6 Sanford pattern slots generated for ${data.productName}`);
+      showToast(`Catalogue parsed: specifications extracted for ${data.productName}`);
+    }
+
+    // Automatically prompt user to choose platform if not yet chosen
+    if (!platform) {
+      setIsPlatformModalOpen(true);
     }
   };
 
@@ -238,6 +426,9 @@ export function Studio() {
           if (saved.whats_in_the_box) setWhatsInTheBox(saved.whats_in_the_box);
           if (saved.warranty) setWarranty(saved.warranty);
 
+          if (saved.platform) {
+            setPlatform(saved.platform);
+          }
           if (saved.sanford_slots && saved.sanford_slots.length > 0) {
             setSanfordSlots(saved.sanford_slots);
           }
@@ -297,6 +488,7 @@ export function Studio() {
 
     const targetSlotSpec = !isPoster && currentSlot ? sanfordSlots.find((s) => s.slot === currentSlot) : undefined;
     const slotGroup = targetSlotSpec?.features || fullFeatures;
+    const targetPlatform = platform || 'shopify';
 
     // Get source image base64 if available
     let sourceImageDataUrl = '';
@@ -321,12 +513,15 @@ export function Studio() {
           productName: productName.trim(),
           modelNumber: modelNumber.trim(),
           brand: 'Sanford',
+          tagline: tagline.trim(),
           fullFeatures,
           featureGroup: slotGroup,
           colors: colors.trim(),
           sourceImagePath: sourceImage.storagePath,
           sourceImageDataUrl,
           styleRefPath,
+          platform: targetPlatform,
+          aplusType: targetSlotSpec?.aplusType,
           sanfordSlot: targetSlotSpec
             ? {
                 ...targetSlotSpec,
@@ -346,7 +541,7 @@ export function Studio() {
         throw new Error(data.error || `HTTP error ${res.status}`);
       }
 
-      const updatedCard: GenerationItem = {
+      let updatedCard: GenerationItem = {
         id: cardId,
         projectId,
         kind: isPoster ? 'poster' : 'feature',
@@ -362,7 +557,23 @@ export function Studio() {
         featureGroup: slotGroup,
         sanfordSlot: targetSlotSpec,
         selected: true,
+        platform: targetPlatform,
       };
+
+      // In Amazon mode, evaluate listing compliance
+      if (targetPlatform === 'amazon') {
+        try {
+          const comp = await evaluateAmazonCompliance({
+            item: updatedCard,
+            productName,
+            modelNumber,
+            hasMultipleColors,
+          });
+          updatedCard.compliance = comp;
+        } catch (compErr) {
+          console.warn('Amazon compliance evaluation warning:', compErr);
+        }
+      }
 
       setGenerations((prev) => prev.map((g) => (g.id === cardId ? updatedCard : g)));
       return updatedCard;
@@ -377,6 +588,7 @@ export function Studio() {
         status: 'failed',
         error: err.message || 'Generation failed',
         featureGroup: slotGroup,
+        platform: targetPlatform,
       };
 
       setGenerations((prev) => prev.map((g) => (g.id === cardId ? failedCard : g)));
@@ -386,6 +598,12 @@ export function Studio() {
 
   // Generate All Handler
   const handleGenerateAll = async () => {
+    if (!platform) {
+      setIsPlatformModalOpen(true);
+      showToast('Please select your target platform (Shopify or Amazon) first.', 'error');
+      return;
+    }
+
     if (!isReadyToGenerate) {
       setValidationAttempted(true);
       showToast(`Please fill in: ${missingFields.join(', ')}`, 'error');
@@ -393,13 +611,19 @@ export function Studio() {
     }
 
     setIsGeneratingAll(true);
-    // Determine which slots to run: Slot 5 is strictly skipped if product has only 1 color or no color options
-    const slotsToRun = [1, 2, 3, 4, 6];
-    if (hasMultipleColors) {
-      slotsToRun.push(5);
-      slotsToRun.sort((a, b) => a - b);
+    let slotsToRun: number[] = [];
+    if (platform === 'amazon_aplus') {
+      slotsToRun = [1, 2, 3, 4];
+    } else {
+      slotsToRun = [1, 2, 3, 4, 6];
+      if (hasMultipleColors) {
+        slotsToRun.push(5);
+        slotsToRun.sort((a, b) => a - b);
+      }
     }
-    const totalCalls = makePoster ? slotsToRun.length + 1 : slotsToRun.length;
+
+    const includePoster = makePoster && platform === 'shopify';
+    const totalCalls = includePoster ? slotsToRun.length + 1 : slotsToRun.length;
 
     try {
       if (settings.styleLock) {
@@ -411,22 +635,23 @@ export function Studio() {
           if (s === 1) continue;
           remainingPromises.push(callGenerateApi(s, slot1Result.imagePath));
         }
-        if (makePoster) {
+        if (includePoster) {
           remainingPromises.push(callGenerateApi('poster', slot1Result.imagePath));
         }
 
         await Promise.allSettled(remainingPromises);
       } else {
+        const platformName = platform === 'amazon' ? 'Amazon Listing' : platform === 'amazon_aplus' ? 'Amazon A+' : 'Shopify';
         showToast(
-          `Generating ${totalCalls} Sanford e-commerce images in parallel${
-            !hasMultipleColors ? ' (Slot 5 skipped: single colour product)' : ''
+          `Generating ${totalCalls} ${platformName} images in parallel${
+            !hasMultipleColors && platform !== 'amazon_aplus' ? ' (Slot 5 skipped: single colour)' : ''
           }...`
         );
         const promises: Promise<GenerationItem>[] = [];
         for (const s of slotsToRun) {
           promises.push(callGenerateApi(s));
         }
-        if (makePoster) {
+        if (includePoster) {
           promises.push(callGenerateApi('poster'));
         }
 
@@ -434,9 +659,7 @@ export function Studio() {
       }
 
       showToast(
-        `Sanford pattern generation batch completed! (${slotsToRun.length} images${
-          !hasMultipleColors ? ', Slot 5 skipped' : ''
-        })`
+        `${platform === 'amazon' ? 'Amazon listing' : platform === 'amazon_aplus' ? 'Amazon A+' : 'Shopify'} generation batch completed! (${slotsToRun.length} images)`
       );
 
       // Save project state to projectStorage
@@ -482,12 +705,19 @@ export function Studio() {
       makePoster,
       sanford_slots: sanfordSlots,
       generations: overrideGenerations || generations,
+      platform,
     };
     await projectStorage.saveProject(projectPayload);
   };
 
   // Regenerate single slot
   const handleRegenerateSlot = async (slotOrKind: number | 'poster') => {
+    if (!platform) {
+      setIsPlatformModalOpen(true);
+      showToast('Please select your target platform (Shopify or Amazon) first.', 'error');
+      return;
+    }
+
     if (!isReadyToGenerate) {
       setValidationAttempted(true);
       showToast(`Please fill in: ${missingFields.join(', ')}`, 'error');
@@ -601,6 +831,9 @@ export function Studio() {
               isReadyToGenerate={isReadyToGenerate}
               missingFields={missingFields}
               hasMultipleColors={hasMultipleColors}
+              platform={platform}
+              onSelectPlatform={handleSelectPlatform}
+              onOpenPlatformModal={() => setIsPlatformModalOpen(true)}
             />
           </div>
 
@@ -610,6 +843,15 @@ export function Studio() {
           </div>
         </div>
       </main>
+
+      {/* Platform Select Modal */}
+      <PlatformSelectModal
+        isOpen={isPlatformModalOpen}
+        currentPlatform={platform}
+        onSelectPlatform={handleSelectPlatform}
+        onClose={() => setIsPlatformModalOpen(false)}
+        productName={productName}
+      />
     </div>
   );
 }

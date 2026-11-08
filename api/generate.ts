@@ -1,7 +1,13 @@
 import crypto from 'crypto';
 import { supabaseAdmin } from './_lib/supabase-server.js';
 import { requireUser } from './_lib/requireUser.js';
-import { buildFeaturePrompt, buildPosterPrompt, buildSanfordSlotPrompt } from './_lib/prompts.js';
+import {
+  buildFeaturePrompt,
+  buildPosterPrompt,
+  buildSanfordSlotPrompt,
+  buildAmazonSlotPrompt,
+  buildAmazonAPlusPrompt,
+} from './_lib/prompts.js';
 
 export const config = {
   maxDuration: 300,
@@ -45,6 +51,7 @@ export default async function handler(req: any, res: any) {
       productName = 'Product',
       modelNumber = '',
       brand = 'Sanford',
+      tagline = '',
       fullFeatures = [],
       featureGroup = [],
       colors = '',
@@ -53,6 +60,8 @@ export default async function handler(req: any, res: any) {
       styleRefPath,
       sanfordSlot,
       settings = {},
+      platform = 'shopify',
+      aplusType,
     } = body || {};
 
     // 2. Project ownership verification: project's user_id must match verified user id
@@ -174,7 +183,34 @@ export default async function handler(req: any, res: any) {
         accentColor: settings.accentColor,
         background: settings.background,
       });
+    } else if (platform === 'amazon') {
+      // Amazon Product Listing Template
+      prompt = buildAmazonSlotPrompt({
+        productName,
+        theme: sanfordSlot?.theme || (slot === 1 ? 'hero' : slot === 2 ? 'lifestyle' : slot === 6 ? 'size_warranty' : 'specs_part_1'),
+        slotNumber: slot || 1,
+        slotTitle: sanfordSlot?.title || `Amazon Image ${slot}`,
+        headline: sanfordSlot?.headline,
+        promoBanner: sanfordSlot?.promoBanner,
+        brand,
+        modelNumber,
+        features: sanfordSlot?.features && sanfordSlot.features.length > 0 ? sanfordSlot.features : featureGroup,
+        dimensions: sanfordSlot?.dimensions,
+        warranty: sanfordSlot?.warranty,
+        colors,
+      });
+    } else if (platform === 'amazon_aplus') {
+      // Amazon A+ Content Module
+      prompt = buildAmazonAPlusPrompt({
+        productName,
+        moduleType: aplusType || sanfordSlot?.aplusType || 'standard_banner_970x300',
+        brand,
+        modelNumber,
+        headline: sanfordSlot?.headline,
+        features: sanfordSlot?.features && sanfordSlot.features.length > 0 ? sanfordSlot.features : featureGroup,
+      });
     } else if (sanfordSlot && sanfordSlot.theme) {
+      // Shopify / BuySanford Pattern
       const isSizeWarranty = sanfordSlot.theme === 'size_warranty' || sanfordSlot.slot === 6;
       prompt = buildSanfordSlotPrompt({
         productName,

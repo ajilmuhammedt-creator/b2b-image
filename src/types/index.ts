@@ -1,3 +1,30 @@
+export type EcommercePlatform = 'shopify' | 'amazon' | 'amazon_aplus';
+
+export type AmazonFormat = 'jpeg' | 'png';
+
+export type AmazonComplianceStatus = 'pass' | 'review' | 'failed';
+
+export interface AmazonRuleCheck {
+  id: string;
+  name: string;
+  status: 'pass' | 'warning' | 'fail';
+  message: string;
+  category: 'technical' | 'content' | 'accuracy';
+}
+
+export interface AmazonComplianceResult {
+  status: AmazonComplianceStatus;
+  score: number;
+  rules: AmazonRuleCheck[];
+  summary: string;
+}
+
+export type AmazonAPlusModuleType =
+  | 'standard_banner_970x300'
+  | 'premium_banner_1464x600'
+  | 'triple_card_300x300'
+  | 'technical_deepdive_970x600';
+
 export interface StudioSettings {
   model: 'gpt-image-2.5-sunburst' | 'gpt-image-2.5-flare';
   quality: 'low' | 'medium' | 'high' | 'xhigh' | 'max';
@@ -7,6 +34,8 @@ export interface StudioSettings {
   styleLock: boolean;
   imagesPerRun: number; // 1 to 6
   background: 'white' | 'pale tint';
+  platform?: EcommercePlatform | null;
+  amazonFormat?: AmazonFormat;
 }
 
 export type SanfordTheme =
@@ -16,7 +45,11 @@ export type SanfordTheme =
   | 'specs_part_2'
   | 'colors'
   | 'size_warranty'
-  | 'poster';
+  | 'poster'
+  | 'aplus_standard_banner'
+  | 'aplus_premium_banner'
+  | 'aplus_triple_card'
+  | 'aplus_comparison';
 
 export interface SanfordSlotSpec {
   slot: number;
@@ -31,6 +64,8 @@ export interface SanfordSlotSpec {
   whatsInTheBox?: string[];
   warranty?: string;
   colors?: string;
+  platform?: EcommercePlatform;
+  aplusType?: AmazonAPlusModuleType;
 }
 
 export interface GenerationItem {
@@ -55,6 +90,9 @@ export interface GenerationItem {
   featureGroup?: string[];
   sanfordSlot?: SanfordSlotSpec;
   disabled?: boolean;
+  platform?: EcommercePlatform;
+  compliance?: AmazonComplianceResult;
+  exportFormat?: 'webp' | 'jpeg' | 'png';
 }
 
 export interface CatalogueParsedData {
@@ -94,6 +132,7 @@ export interface ProjectData {
   settings?: StudioSettings;
   makePoster?: boolean;
   sanford_slots?: SanfordSlotSpec[];
+  platform?: EcommercePlatform | null;
 }
 
 export type UserRole = 'admin' | 'staff';

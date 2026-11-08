@@ -479,3 +479,261 @@ OUTPUT
 Generate exactly ONE complete portrait poster. Not a collage.
 No outer frame, watermark, instructions, placeholders or production notes.`;
 }
+
+/**
+ * Amazon Product Listing Image Prompt Builder
+ * Generates 100% compliant Amazon product images following official Amazon Seller Central guidelines:
+ * - 2000 × 2000 px production standard (1:1 square)
+ * - Image 1: Main hero on pure white (#FFFFFF), 85-90% coverage, zero text/badges/props
+ * - Image 2: Photorealistic lifestyle, zero text/badge overlays
+ * - Image 3 & 4: Primary & secondary infographics, red circular badges, Sharp Sans typography, red bottom benefits banner
+ * - Image 5: Multi-color variants only (auto-skipped if single color)
+ * - Image 6: Technical dimension arrows (<--->) & verified warranty badge only (no weight/box contents)
+ */
+export function buildAmazonSlotPrompt(params: {
+  productName: string;
+  theme: 'hero' | 'lifestyle' | 'specs_part_1' | 'specs_part_2' | 'colors' | 'size_warranty' | string;
+  slotNumber: number;
+  slotTitle: string;
+  headline?: string;
+  promoBanner?: string;
+  brand?: string;
+  modelNumber?: string;
+  features: string[];
+  dimensions?: string;
+  warranty?: string;
+  colors?: string;
+}): string {
+  const {
+    productName,
+    theme,
+    slotNumber,
+    slotTitle,
+    headline,
+    promoBanner,
+    brand = 'Sanford',
+    modelNumber = '',
+    features = [],
+    dimensions,
+    warranty,
+    colors,
+  } = params;
+
+  // Clean brand name and model number regexes for text layers
+  const brandRegex = new RegExp(`\\b${brand}\\b`, 'gi');
+  const modelRegex = modelNumber ? new RegExp(`\\b${modelNumber}\\b`, 'gi') : /\b[A-Z]{2,4}\d{4,}[A-Z0-9]*\b/gi;
+
+  const cleanText = (t?: string): string => {
+    if (!t) return '';
+    return t
+      .replace(brandRegex, '')
+      .replace(modelRegex, '')
+      .replace(/\bSanford\b/gi, '')
+      .replace(/\b[A-Z]{2,4}\d{4,}[A-Z0-9]*\b/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  const cleanProductTitle = cleanText(productName) || productName;
+  const cleanHeadline = cleanText(headline) || headline;
+  const cleanPromoBanner = cleanText(promoBanner) || promoBanner;
+
+  const cleanedFeatures = features.map((f) => cleanText(f)).filter((f) => f.length > 2);
+  const featureListStr = cleanedFeatures.join('; ');
+
+  let slotDirective = '';
+
+  switch (slotNumber) {
+    case 1:
+      // IMAGE 01 — MAIN PRODUCT HERO (STRICT AMAZON MAIN IMAGE RULES)
+      slotDirective = `IMAGE 01 — AMAZON MAIN PRODUCT HERO (STRICT COMPLIANCE MANDATE):
+- PRIMARY OBJECTIVE: Generate the compliant Amazon MAIN listing image.
+- BACKGROUND: Seamless pure white (#FFFFFF / RGB 255, 255, 255) across the entire canvas with zero gradient or tint.
+- COMPOSITION & SCALE: Product is centered and must occupy 85% to 90% of the image frame without touching or clipping any border.
+- LIGHTING & SHADOW: Balanced commercial studio softbox illumination. Only a subtle, natural contact floor shadow directly under the base is permitted.
+- PRODUCT FIDELITY: Depict the exact product from the reference photograph. Preserve its real proportions, buttons, knobs, ports, screen, finish, and factory molding.
+- STRICT AMAZON MAIN IMAGE RESTRICTIONS (ZERO TOLERANCE):
+  * ABSOLUTELY NO text, NO numbers, NO letters, NO words of any kind anywhere on the canvas.
+  * ABSOLUTELY NO promotional badges, NO warranty ribbons, NO seals, NO discount tags, NO callouts.
+  * ABSOLUTELY NO watermarks, NO added brand logos, NO graphic borders.
+  * ABSOLUTELY NO lifestyle props, NO human hands/models, NO unrelated background objects.
+  * Only show the actual product being sold. Flawless standalone studio photograph on pure white background (#FFFFFF).`;
+      break;
+
+    case 2:
+      // IMAGE 02 — PREMIUM LIFESTYLE IMAGE (NO TEXT OVERLAYS)
+      slotDirective = `IMAGE 02 — AMAZON PREMIUM LIFESTYLE IN-USE (STRICT ZERO-TEXT OVERLAY RULE):
+- PRIMARY OBJECTIVE: Show the product naturally in an authentic, aspirational, photorealistic commercial setting.
+- CONTEXT ENVIRONMENT:
+  * Select an environment tailored to the product category:
+    - Kitchen appliances: Modern premium kitchen countertop with natural morning window light.
+    - Personal care/grooming: Clean contemporary bathroom counter or minimalist dressing vanity.
+    - Fans, heaters, air coolers: Modern living room or bedroom with clean architecture and tasteful furnishings.
+    - Lighting & outdoor: Realistic ambient home interior or evening terrace.
+    - Electronics & office: Clean contemporary wooden work desk.
+- PHOTOGRAPHY STYLE: Commercial editorial photography, realistic ambient illumination, true-to-life reflections, proper scale, soft depth-of-field background blur.
+- PRODUCT VISIBILITY: The product is the clear primary subject and remains sharply in focus.
+- STRICT AMAZON LIFESTYLE RULE:
+  * ABSOLUTELY NO text, NO icons, NO badges, NO callouts, NO specifications, and NO promotional banners or overlays on this image.
+  * Flawless commercial lifestyle photograph only.`;
+      break;
+
+    case 3:
+      // IMAGE 03 — PRIMARY PRODUCT FEATURES INFOGRAPHIC
+      slotDirective = `IMAGE 03 — AMAZON PRIMARY PRODUCT FEATURES INFOGRAPHIC:
+- PRIMARY OBJECTIVE: Clearly communicate the top 3–4 primary verified features from the catalogue.
+- BACKGROUND: Clean white or light neutral grey studio environment (#F8F9FA).
+- INFOGRAPHIC DESIGN SYSTEM:
+  * Upper-left: Vertical stack of 3 to 4 feature callouts for: ${featureListStr}.
+  * Each feature item consists of:
+    1. A solid vibrant RED circular icon badge (#E53935) with a clean white minimalist pictogram.
+    2. Bold, short headline and benefit text in clean "Sharp Sans Bold" / "Sharp Sans Medium" font.
+    3. Fine horizontal hairline dividers between items.
+- FULL-WIDTH RED BENEFIT BANNER:
+  * Across the bottom 10% of the canvas, include a solid vibrant RED full-width rectangular banner.
+  * Inside the red banner: Large, bold, clean WHITE typography in "Sharp Sans Bold" delivering the main benefit: "${cleanPromoBanner || cleanHeadline || 'High Performance Engineering'}".
+- ANTI-DUPLICATION RULE: Each feature appears once and only once. No extra brand watermarks or model numbers inside the graphic layout.`;
+      break;
+
+    case 4:
+      // IMAGE 04 — ADDITIONAL PRODUCT FEATURES INFOGRAPHIC
+      slotDirective = `IMAGE 04 — AMAZON SECONDARY FEATURES INFOGRAPHIC:
+- PRIMARY OBJECTIVE: Explain secondary features not covered in Image 03.
+- DESIGN SYSTEM: Matches Image 03 exactly in typography, red circular icon badges, alignment, and full-width red bottom benefits banner.
+- COMPOSITION: Feature callouts for secondary specifications: ${featureListStr}.
+- PRODUCT ANGLE: May feature a detailed close-up, functional angle, or alternative perspective of the product.
+- BENEFIT BANNER: Full-width solid red banner at the bottom with pure white typography in "Sharp Sans Bold".
+- STRICT RULE: Zero repetition with features displayed in Image 03.`;
+      break;
+
+    case 5:
+      // IMAGE 05 — AVAILABLE COLOUR OPTIONS (CONDITIONAL)
+      slotDirective = `IMAGE 05 — AMAZON AVAILABLE COLOUR OPTIONS:
+- PRIMARY OBJECTIVE: Display officially confirmed colour variants of the product side by side.
+- CONFIRMED COLOURS: ${colors || 'Standard colour range'}.
+- COMPOSITION: Clean white studio background. Product variants arranged in a balanced lineup or staggered front-to-back perspective.
+- VISUAL STYLE: Exact structural identity across all units; clean circular colour indicator badges and labels in Sharp Sans font.
+- BENEFIT BANNER: Full-width solid red banner at the bottom with white typography.
+- STRICT RULE: Do not invent unconfirmed colours or fantasy editions.`;
+      break;
+
+    case 6:
+      // IMAGE 06 — PRODUCT DIMENSIONS AND WARRANTY
+      {
+        const dims = parseDimensionMeasurements(dimensions);
+        const hasWarranty = Boolean(warranty && warranty.trim());
+        const warrantyBadgeText = hasWarranty ? (warranty!.trim()) : '';
+
+        slotDirective = `IMAGE 06 — AMAZON PRODUCT DIMENSIONS & WARRANTY:
+- PRIMARY OBJECTIVE: Clearly explain physical dimensions with clean technical callouts.
+- BACKGROUND: Clean neutral white technical illustration studio canvas.
+- COMPOSITION: Product centered upright in a clear front or three-quarter view.
+- MEASUREMENT ARROWS & CALLOUTS:
+  * Display accurate dimensions using crimson red double-ended technical dimension arrows (<----->):
+    - Height: ${dims.height} (vertical arrow beside product)
+    - Width: ${dims.width} (horizontal arrow at base)
+    - Depth: ${dims.depth} (angled perspective arrow for depth/thickness)
+  * Numbers and millimeter/centimeter units must be crisp and readable in "Sharp Sans Medium" font.
+- WARRANTY BADGE:${hasWarranty ? `\n  * In the top-right corner, place a compact official red seal/ribbon badge: "${warrantyBadgeText}".` : '\n  * No warranty badge (omit warranty claim because not specified in source).'}
+- STRICT PROHIBITED CONTENT:
+  * ABSOLUTELY DO NOT DISPLAY product weight, package weight, box contents, or "What's in the box" listings.
+  * Keep the focus strictly on unit dimensions and warranty.`;
+      }
+      break;
+
+    default:
+      slotDirective = `INFOGRAPHIC VIEW: Product featured prominently with red circular badges and Sharp Sans typography.`;
+  }
+
+  return `Create ONE high-definition Amazon-ready product listing image (2000 × 2000 px square standard) using the attached reference photograph and supplied product details.
+
+PRODUCT SPECIFICATIONS:
+- Product Name: ${cleanProductTitle}
+- Model Number: ${modelNumber || 'None'}
+- Category: Home & Kitchen Appliances / Electronics
+- Key Features: ${featureListStr}
+- Dimensions: ${dimensions || 'Not specified'}
+- Warranty: ${warranty || 'Not specified'}
+- Available Colours: ${colors || 'Single'}
+
+${PRODUCT_ACCURACY_BLOCK}
+
+${SHARP_SANS_TYPOGRAPHY_BLOCK}
+
+${NO_BRAND_OR_MODEL_RULE}
+
+AMAZON TEMPLATE DIRECTIVE:
+${slotDirective}
+
+OUTPUT REQUIREMENT:
+Generate exactly ONE 1:1 square image (rendered at 2000 × 2000 px production standard).
+Clean commercial photography and graphic design. No outer canvas borders or watermarks.`;
+}
+
+/**
+ * Amazon A+ Content Module Prompt Builder
+ * Generates modular banners and rich comparison cards for Amazon Enhanced Brand Content (A+ Content):
+ * - Standard Banner: 970 × 300 px
+ * - Premium Full-Width Banner: 1464 × 600 px
+ * - Triple Feature Card: 300 × 300 px
+ * - Technical Deep-Dive / Comparison: 970 × 600 px
+ */
+export function buildAmazonAPlusPrompt(params: {
+  productName: string;
+  moduleType: 'standard_banner_970x300' | 'premium_banner_1464x600' | 'triple_card_300x300' | 'technical_deepdive_970x600' | string;
+  brand?: string;
+  modelNumber?: string;
+  headline?: string;
+  features: string[];
+}): string {
+  const { productName, moduleType, brand = 'Sanford', modelNumber = '', headline = '', features = [] } = params;
+
+  let moduleSpec = '';
+  switch (moduleType) {
+    case 'standard_banner_970x300':
+      moduleSpec = `MODULE: AMAZON STANDARD A+ HEADER BANNER (970 × 300 Aspect Ratio)
+- Wide cinematic header composition featuring the product placed dynamically on the right side.
+- Left side: Bold, inspiring brand headline in Sharp Sans Bold: "${headline || 'Engineered For Superior Performance'}" with 2 short benefit bullets.
+- Background: Elegant dark or sleek studio environment with atmospheric lighting matching the product finish.
+- Amazon A+ Rule: No pricing, no promotional terms, no external URLs, no claims not supported by product specs.`;
+      break;
+
+    case 'premium_banner_1464x600':
+      moduleSpec = `MODULE: AMAZON PREMIUM A+ ULTRA-WIDE HERO BANNER (1464 × 600 Aspect Ratio)
+- Ultra-wide high-impact premium brand banner showcasing the product in a breathtaking, photorealistic modern setting.
+- Clean negative space on one side for rich typography in Sharp Sans font.
+- Premium craftsmanship focus, cinematic depth of field, high-contrast crisp product details.`;
+      break;
+
+    case 'triple_card_300x300':
+      moduleSpec = `MODULE: AMAZON A+ FEATURE SPOTLIGHT CARD (1:1 Square)
+- Macro close-up focus on one key functional innovation or core technology of the product.
+- Red circular icon badge with white pictogram at the top.
+- Clear, bold title and 2-sentence explanatory paragraph in Sharp Sans font.`;
+      break;
+
+    case 'technical_deepdive_970x600':
+    default:
+      moduleSpec = `MODULE: AMAZON A+ TECHNICAL SPECIFICATIONS & COMPARISON (970 × 600 Aspect Ratio)
+- Comprehensive technical breakdown highlighting components, motor/power mechanism, ergonomic controls, and engineering durability.
+- Product centered with clean callout lines connecting to key components.
+- Modern high-tech commercial visualization.`;
+      break;
+  }
+
+  return `Create ONE Amazon A+ Content (Enhanced Brand Content) marketing module using the attached reference photograph.
+
+PRODUCT DETAILS:
+- Product: ${productName}
+- Model: ${modelNumber}
+- Verified Features: ${features.join('; ')}
+
+${PRODUCT_ACCURACY_BLOCK}
+
+${SHARP_SANS_TYPOGRAPHY_BLOCK}
+
+${moduleSpec}
+
+OUTPUT:
+Generate exactly ONE clean, high-resolution Amazon A+ graphic module adhering strictly to Amazon A+ Content content guidelines.`;
+}

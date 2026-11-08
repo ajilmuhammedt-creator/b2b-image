@@ -124,3 +124,86 @@ export function getSeoZipFilename(options: SeoNamingOptions): string {
   return `${getSeoFolderName(options)}.zip`;
 }
 
+/**
+ * Derives a clean Amazon identifier from product model number or sanitized product title.
+ * Used for official Amazon filename convention (e.g. `SF6671HFN` or `SANFORD-FAN`).
+ */
+export function getAmazonIdentifier(modelNumber?: string, productName?: string): string {
+  if (modelNumber && modelNumber.trim()) {
+    // Keep alphanumeric and uppercase, remove spaces/symbols
+    const cleanModel = modelNumber.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+    if (cleanModel) return cleanModel;
+  }
+  if (productName && productName.trim()) {
+    const slug = slugify(productName).toUpperCase().replace(/-/g, '_');
+    return slug.slice(0, 24) || 'SANFORD_ITEM';
+  }
+  return 'SANFORD_PRODUCT';
+}
+
+/**
+ * Builds an official Amazon listing image filename adhering to Seller Central specifications:
+ * - Main hero: `IDENTIFIER.MAIN.jpg`
+ * - Secondary images: `IDENTIFIER.PT01.jpg`, `IDENTIFIER.PT02.jpg`, `IDENTIFIER.PT03.jpg`, etc.
+ * Consecutive numbering is preserved if conditional slots (like slot 5) are skipped.
+ */
+export function getAmazonImageFilename(options: {
+  modelNumber?: string;
+  productName?: string;
+  slotNumber: number;
+  secondaryIndex?: number;
+  format?: 'jpeg' | 'png';
+}): string {
+  const identifier = getAmazonIdentifier(options.modelNumber, options.productName);
+  const ext = options.format === 'png' ? 'png' : 'jpg';
+
+  if (options.slotNumber === 1) {
+    return `${identifier}.MAIN.${ext}`;
+  }
+
+  // Secondary images (PT01 to PT08)
+  const ptNum = options.secondaryIndex !== undefined
+    ? Math.max(1, options.secondaryIndex)
+    : Math.max(1, options.slotNumber - 1);
+  const paddedPt = String(ptNum).padStart(2, '0');
+
+  return `${identifier}.PT${paddedPt}.${ext}`;
+}
+
+/**
+ * Builds an official Amazon A+ Content module filename.
+ */
+export function getAmazonAPlusFilename(options: {
+  modelNumber?: string;
+  productName?: string;
+  aplusType?: string;
+  index?: number;
+  format?: 'jpeg' | 'png';
+}): string {
+  const identifier = getAmazonIdentifier(options.modelNumber, options.productName);
+  const ext = options.format === 'png' ? 'png' : 'jpg';
+  const typeMap: Record<string, string> = {
+    standard_banner_970x300: 'APLUS-BANNER-970x300',
+    premium_banner_1464x600: 'APLUS-PREMIUM-1464x600',
+    triple_card_300x300: `APLUS-CARD-300x300-${options.index ?? 1}`,
+    technical_deepdive_970x600: 'APLUS-TECHNICAL-970x600',
+  };
+  const descriptor = (options.aplusType && typeMap[options.aplusType]) || `APLUS-MODULE-${options.index ?? 1}`;
+  return `${identifier}.${descriptor}.${ext}`;
+}
+
+/**
+ * Builds standard folder name for Amazon listing exports.
+ */
+export function getAmazonFolderName(options: SeoNamingOptions): string {
+  const identifier = getAmazonIdentifier(options.modelNumber, options.productName);
+  return `Amazon-${identifier}-Listing-Images`;
+}
+
+/**
+ * Builds the ZIP archive filename for Amazon listing exports.
+ */
+export function getAmazonZipFilename(options: SeoNamingOptions): string {
+  return `${getAmazonFolderName(options)}.zip`;
+}
+
