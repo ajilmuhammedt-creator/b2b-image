@@ -1,14 +1,33 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ProductInput } from '../components/ProductInput';
-import { ResultsGrid } from '../components/ResultsGrid';
-import { SettingsPanel } from '../components/SettingsPanel';
 import { PlatformSelectModal } from '../components/PlatformSelectModal';
+import { AmazonComplianceModal } from '../components/AmazonComplianceModal';
+import { NoonComplianceModal } from '../components/NoonComplianceModal';
+import {
+  StudioLayout,
+  CatalogueUploadModal,
+  ProductSpecsModal,
+} from '../components/studio';
 import { evaluateAmazonCompliance } from '../lib/amazonCompliance';
 import { evaluateNoonCompliance } from '../lib/noonCompliance';
 import { projectStorage } from '../lib/projectStorage';
 import { fetchApi } from '../lib/apiClient';
+import { convertToWebpBlob, convertToAmazonFormatBlob } from '../lib/imageConversion';
+import {
+  getSeoImageFilename,
+  getSeoFolderName,
+  getSeoZipFilename,
+  getAmazonImageFilename,
+  getAmazonFolderName,
+  getAmazonZipFilename,
+  getAmazonAPlusFilename,
+  getNoonImageFilename,
+  getNoonAPlusFilename,
+  getNoonFolderName,
+  getNoonZipFilename,
+} from '../lib/seoNaming';
+import JSZip from 'jszip';
 import type {
   GenerationItem,
   ProjectData,
@@ -248,43 +267,40 @@ export const DEFAULT_NOON_APLUS_SLOTS: SanfordSlotSpec[] = [
   {
     slot: 4,
     theme: 'noon_aplus_lifestyle',
-    title: 'Noon A+ 04 · Product Lifestyle Story',
+    title: 'Noon A+ 04 · Lifestyle Context Banner',
     headline: '',
-    description: '2400 × 1000 px expansive lifestyle photography showcasing the appliance in an upscale modern residence with minimal benefit statement.',
+    description: '2400 × 1000 px contextual in-room demonstration illustrating authentic product scale and premium daily application.',
     features: [],
     noonAplusType: 'lifestyle_banner_2400x1000',
   },
   {
     slot: 5,
     theme: 'noon_aplus_dimensions',
-    title: 'Noon A+ 05 · Product Dimensions Spec',
+    title: 'Noon A+ 05 · Dimensions & Technical Specs',
     headline: '',
-    description: '2400 × 1200 px clean dimensional diagram with crimson measurement arrows (<----->) in mm/cm. Strictly NO warranty graphics per Noon.',
+    description: '2400 × 1000 px technical schematic diagram with precision dimension arrows and key power ratings.',
     features: [],
     noonAplusType: 'dimensions_2400x1200',
   },
   {
     slot: 6,
     theme: 'noon_aplus_colors',
-    title: 'Noon A+ 06 · Available Colour Finishes',
+    title: 'Noon A+ 06 · Available Color Range',
     headline: '',
-    description: '2400 × 1000 px multi-unit lineup exhibiting verified catalog colour finishes. (Auto-skipped if single colour).',
+    description: '2400 × 1000 px multi-variant showcase showing all verified catalogue color models side-by-side.',
     features: [],
     noonAplusType: 'colors_2400x1000',
   },
 ];
 
 export function Studio() {
-  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const urlProjectId = searchParams.get('project');
+  const { user } = useAuth();
+  const userId = user?.id || 'anonymous';
 
-  const userId = user?.id || '';
-
-  // Project state - starts completely blank until a catalogue is uploaded
-  const [projectId, setProjectId] = useState<string>(() => crypto.randomUUID());
-  const [platform, setPlatform] = useState<EcommercePlatform | null>(null);
-  const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
+  // Project core state
+  const [projectId, setProjectId] = useState<string>(() => urlProjectId || crypto.randomUUID());
   const [productName, setProductName] = useState('');
   const [modelNumber, setModelNumber] = useState('');
   const [brand, setBrand] = useState('Sanford');
@@ -295,13 +311,18 @@ export function Studio() {
   const [weight, setWeight] = useState('');
   const [whatsInTheBox, setWhatsInTheBox] = useState<string[]>([]);
   const [warranty, setWarranty] = useState('');
-  const [sanfordSlots, setSanfordSlots] = useState<SanfordSlotSpec[]>(DEFAULT_SHOPIFY_SLOTS);
-  const [validationAttempted, setValidationAttempted] = useState(false);
 
-  // Colour options detection: Slot 5 (Shopify/Amazon) or Slot 6 (Noon A+) is only applicable if product has multiple colour options
-  const colorList = colors.split(/[,;/]+/).map((c) => c.trim()).filter(Boolean);
-  const hasMultipleColors = colorList.length > 1;
+  // Target Platform state (default null until user selects or catalogue triggers)
+  const [platform, setPlatform] = useState<EcommercePlatform | null>(null);
+  const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
 
+  // Modals state
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isSpecsModalOpen, setIsSpecsModalOpen] = useState(false);
+  const [briefCollapsed, setBriefCollapsed] = useState(false);
+  const [selectedSlotId, setSelectedSlotId] = useState<string | null>('card-1');
+
+  // Source & Catalogue Images
   const [sourceImage, setSourceImage] = useState<{
     file: File | null;
     previewUrl: string;
@@ -313,87 +334,96 @@ export function Studio() {
     fileName?: string;
   }>({ previewUrl: '' });
 
-  // Validation readiness
-  const hasPhoto = Boolean(sourceImage?.previewUrl || sourceImage?.file);
-  const hasName = Boolean(productName.trim());
-  const hasSpecs = Boolean(featuresText.trim());
-  const isReadyToGenerate = hasPhoto && hasName && hasSpecs;
+  // 6 Sanford Slots state
+  const [sanfordSlots, setSanfordSlots] = useState<SanfordSlotSpec[]>(DEFAULT_SHOPIFY_SLOTS);
 
-  const missingFields: string[] = [];
-  if (!hasPhoto) missingFields.push('product photo');
-  if (!hasName) missingFields.push('product name');
-  if (!hasSpecs) missingFields.push('at least one specification');
-
-  // Settings state
-  const [settings, setSettings] = useState<StudioSettings>({
-    model: 'gpt-image-2.5-sunburst',
-    quality: 'medium',
-    featureSize: '1024x1024',
-    posterSize: '1024x1536',
-    accentColor: 'Auto',
-    styleLock: false,
-    imagesPerRun: 6,
-    background: 'white',
-    noonLanguage: 'en',
-  });
-
-  const [makePoster, setMakePoster] = useState(false);
-  const [isGeneratingAll, setIsGeneratingAll] = useState(false);
-  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
-  // Initialize Cards + Poster card
-  const [generations, setGenerations] = useState<GenerationItem[]>(() => {
-    const initial: GenerationItem[] = DEFAULT_SHOPIFY_SLOTS.map((slot) => ({
+  // Generation Cards state
+  const [generations, setGenerations] = useState<GenerationItem[]>(() =>
+    DEFAULT_SHOPIFY_SLOTS.map((slot) => ({
       id: `card-${slot.slot}`,
-      projectId: '',
+      projectId,
       kind: 'feature',
       slot: slot.slot,
       theme: slot.theme,
       slotTitle: slot.title,
       status: 'idle',
-      selected: false,
-      featureGroup: slot.features,
+      selected: true,
       sanfordSlot: slot,
-    }));
+      platform: 'shopify',
+    }))
+  );
 
-    initial.push({
-      id: 'card-poster',
-      projectId: '',
-      kind: 'poster',
-      slot: null,
-      theme: 'poster',
-      slotTitle: 'E-Commerce Poster',
-      status: 'idle',
-      selected: false,
-    });
+  const [makePoster, setMakePoster] = useState(false);
+  const [isGeneratingAll, setIsGeneratingAll] = useState(false);
+  const [isZipping, setIsZipping] = useState(false);
+  const [, setValidationAttempted] = useState(false);
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
-    return initial;
+  // Compliance modal state
+  const [complianceItem, setComplianceItem] = useState<GenerationItem | null>(null);
+  const [isAmazonComplianceOpen, setIsAmazonComplianceOpen] = useState(false);
+  const [noonComplianceItem, setNoonComplianceItem] = useState<GenerationItem | null>(null);
+  const [isNoonComplianceOpen, setIsNoonComplianceOpen] = useState(false);
+
+  // Studio Settings state
+  const [settings, setSettings] = useState<StudioSettings>({
+    model: 'gpt-image-2.5-sunburst',
+    quality: 'medium',
+    featureSize: '1024x1024',
+    posterSize: '1024x1536',
+    accentColor: '#C8281E',
+    styleLock: true,
+    background: 'white',
+    amazonResolution: '2000x2000',
+    amazonFormat: 'jpeg',
+    amazonValidateCategory: 'home_appliances',
+    noonResolution: '2000x2000',
+    noonFormat: 'jpeg',
+    noonLanguage: 'en',
   });
 
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
     setToastMessage({ text, type });
-    setTimeout(() => setToastMessage(null), 5000);
+    setTimeout(() => {
+      setToastMessage((cur) => (cur?.text === text ? null : cur));
+    }, 4000);
   };
 
-  // Switch Platform Handler
+  // Determine whether this product has multiple colors
+  const parsedColors = colors
+    .split(/[,/|]/)
+    .map((c) => c.trim())
+    .filter((c) => c.length > 0);
+  const hasMultipleColors = parsedColors.length > 1;
+
+  // Validation
+  const missingFields: string[] = [];
+  if (!sourceImage.previewUrl && !sourceImage.file) missingFields.push('product photo');
+  if (!productName.trim()) missingFields.push('product name');
+  if (!featuresText.trim()) missingFields.push('at least one specification');
+  const isReadyToGenerate = missingFields.length === 0;
+
+  // Platform selection handler
   const handleSelectPlatform = (newPlatform: EcommercePlatform) => {
     setPlatform(newPlatform);
     setIsPlatformModalOpen(false);
 
-    const templateSlots =
-      newPlatform === 'amazon'
-        ? DEFAULT_AMAZON_SLOTS
-        : newPlatform === 'amazon_aplus'
-        ? DEFAULT_AMAZON_APLUS_SLOTS
-        : newPlatform === 'noon'
-        ? DEFAULT_NOON_SLOTS
-        : newPlatform === 'noon_aplus'
-        ? DEFAULT_NOON_APLUS_SLOTS
-        : DEFAULT_SHOPIFY_SLOTS;
+    let templateSlots: SanfordSlotSpec[];
+    if (newPlatform === 'amazon') {
+      templateSlots = DEFAULT_AMAZON_SLOTS;
+    } else if (newPlatform === 'amazon_aplus') {
+      templateSlots = DEFAULT_AMAZON_APLUS_SLOTS;
+    } else if (newPlatform === 'noon') {
+      templateSlots = DEFAULT_NOON_SLOTS;
+    } else if (newPlatform === 'noon_aplus') {
+      templateSlots = DEFAULT_NOON_APLUS_SLOTS;
+    } else {
+      templateSlots = DEFAULT_SHOPIFY_SLOTS;
+    }
 
     setSanfordSlots((prev) =>
       templateSlots.map((tmpl) => {
-        const existing = prev.find((p) => p.slot === tmpl.slot);
+        const existing = prev.find((s) => s.slot === tmpl.slot);
         return {
           ...tmpl,
           features: existing?.features && existing.features.length > 0 ? existing.features : tmpl.features,
@@ -430,6 +460,7 @@ export function Studio() {
           platform: newPlatform,
           compliance: existing?.compliance,
           noonCompliance: existing?.noonCompliance,
+          isApproved: (existing as any)?.isApproved ?? true,
         };
       });
 
@@ -443,7 +474,7 @@ export function Studio() {
       newPlatform === 'amazon'
         ? 'Amazon Listing Standard selected (2000×2000 px, pure white hero, strict compliance)'
         : newPlatform === 'amazon_aplus'
-        ? 'Amazon A+ Content mode selected (EBC banners and comparison modules)'
+        ? 'Amazon A+ Content mode selected'
         : newPlatform === 'noon'
         ? 'Noon UAE Listing Standard selected (6 dedicated photo angles, JPEG, zero overlays)'
         : newPlatform === 'noon_aplus'
@@ -452,11 +483,13 @@ export function Studio() {
     );
   };
 
-  // Sync Slot 5/6 status when color options change: automatically skip if <= 1 color
+  // Sync Slot 5 status when color options change
   useEffect(() => {
     setGenerations((prev) =>
       prev.map((g) => {
-        const isColorSlot = (platform === 'noon_aplus' && g.slot === 6) || (platform !== 'noon' && platform !== 'noon_aplus' && g.slot === 5);
+        const isColorSlot =
+          (platform === 'noon_aplus' && g.slot === 6) ||
+          (platform !== 'noon' && platform !== 'noon_aplus' && g.slot === 5);
         if (isColorSlot) {
           if (!hasMultipleColors && (g.status === 'idle' || g.status === 'skipped')) {
             return { ...g, status: 'skipped', selected: false };
@@ -469,7 +502,7 @@ export function Studio() {
     );
   }, [hasMultipleColors, platform]);
 
-  // When Catalogue is parsed from ProductInput
+  // When Catalogue is parsed
   const handleCatalogueParsed = (data: CatalogueParsedData) => {
     if (data.brand) setBrand(data.brand);
     if (data.productName && !productName) setProductName(data.productName);
@@ -512,6 +545,7 @@ export function Studio() {
               whatsInTheBox: slot.theme === 'size_warranty' ? undefined : data.whatsInTheBox,
               warranty: data.warranty,
             },
+            isApproved: true,
           };
         });
 
@@ -576,7 +610,6 @@ export function Studio() {
     }
   }, [urlProjectId, user]);
 
-  // Convert File to base64 Data URL helper
   const fileToDataUrl = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -595,7 +628,6 @@ export function Studio() {
     const currentSlot = isPoster ? null : slotOrKind;
     const cardId = isPoster ? 'card-poster' : `card-${currentSlot}`;
 
-    // Mark card as pending
     setGenerations((prev) =>
       prev.map((g) => (g.id === cardId ? { ...g, status: 'pending', error: undefined } : g))
     );
@@ -609,7 +641,6 @@ export function Studio() {
     const slotGroup = targetSlotSpec?.features || fullFeatures;
     const targetPlatform = platform || 'shopify';
 
-    // Get source image base64 if available
     let sourceImageDataUrl = '';
     if (sourceImage.file) {
       try {
@@ -679,9 +710,9 @@ export function Studio() {
         sanfordSlot: targetSlotSpec,
         selected: true,
         platform: targetPlatform,
+        isApproved: true,
       };
 
-      // In Amazon mode, evaluate Amazon listing compliance
       if (targetPlatform === 'amazon') {
         try {
           const comp = await evaluateAmazonCompliance({
@@ -696,7 +727,6 @@ export function Studio() {
         }
       }
 
-      // In Noon mode, evaluate Noon listing compliance
       if (targetPlatform === 'noon') {
         try {
           const noonComp = await evaluateNoonCompliance({
@@ -742,7 +772,8 @@ export function Studio() {
 
     if (!isReadyToGenerate) {
       setValidationAttempted(true);
-      showToast(`Please fill in: ${missingFields.join(', ')}`, 'error');
+      setIsSpecsModalOpen(true);
+      showToast(`Please complete: ${missingFields.join(', ')}`, 'error');
       return;
     }
 
@@ -757,7 +788,6 @@ export function Studio() {
         slotsToRun.sort((a, b) => a - b);
       }
     } else if (platform === 'noon') {
-      // Noon UAE 6 dedicated listing views: Front, Back, Side, 3/4, Detail, Lifestyle
       slotsToRun = [1, 2, 3, 4, 5, 6];
     } else {
       slotsToRun = [1, 2, 3, 4, 6];
@@ -768,7 +798,6 @@ export function Studio() {
     }
 
     const includePoster = makePoster && platform === 'shopify';
-    const totalCalls = includePoster ? slotsToRun.length + 1 : slotsToRun.length;
 
     try {
       if (settings.styleLock) {
@@ -798,7 +827,7 @@ export function Studio() {
             : 'Shopify';
 
         showToast(
-          `Generating ${totalCalls} ${platformName} images in parallel${
+          `Generating all ${slotsToRun.length} ${platformName} images in parallel${
             !hasMultipleColors && platform !== 'noon' && platform !== 'amazon_aplus' && platform !== 'noon_aplus'
               ? ' (Slot 5 skipped: single colour)'
               : ''
@@ -815,20 +844,8 @@ export function Studio() {
         await Promise.allSettled(promises);
       }
 
-      const platformLabel =
-        platform === 'amazon'
-          ? 'Amazon'
-          : platform === 'amazon_aplus'
-          ? 'Amazon A+'
-          : platform === 'noon'
-          ? 'Noon UAE'
-          : platform === 'noon_aplus'
-          ? 'Noon A+'
-          : 'Shopify';
+      showToast(`Generation batch completed! (${slotsToRun.length} images)`);
 
-      showToast(`${platformLabel} generation batch completed! (${slotsToRun.length} images)`);
-
-      // Save project state to projectStorage
       setTimeout(async () => {
         await saveCurrentProject();
       }, 500);
@@ -863,8 +880,8 @@ export function Studio() {
       whats_in_the_box: whatsInTheBox,
       warranty,
       feature_groups: sanfordSlots.map((s) => s.features),
-      source_image_path: sourceImage.storagePath,
       source_image_data_url: previewDataUrl,
+      source_image_path: sourceImage.storagePath,
       catalogue_preview_url: catalogueImage.previewUrl,
       created_at: new Date().toISOString(),
       settings,
@@ -880,21 +897,19 @@ export function Studio() {
   const handleRegenerateSlot = async (slotOrKind: number | 'poster') => {
     if (!platform) {
       setIsPlatformModalOpen(true);
-      showToast('Please select your target platform (Shopify, Amazon, or Noon) first.', 'error');
+      showToast('Please select your target platform first.', 'error');
       return;
     }
 
     if (!isReadyToGenerate) {
       setValidationAttempted(true);
+      setIsSpecsModalOpen(true);
       showToast(`Please fill in: ${missingFields.join(', ')}`, 'error');
       return;
     }
 
     if (slotOrKind === 5 && !hasMultipleColors && platform !== 'noon') {
-      showToast(
-        'Slot 5 (Available Colour Models) cannot be generated because this product has only one colour or no colour options.',
-        'error'
-      );
+      showToast('Slot 5 cannot be generated because this product has only one colour.', 'error');
       return;
     }
 
@@ -914,108 +929,474 @@ export function Studio() {
     }
   };
 
+  // Image Export Blob Helper
+  const isAmazon = platform === 'amazon' || platform === 'amazon_aplus';
+  const isNoon = platform === 'noon' || platform === 'noon_aplus';
+
+  const fetchImageBlob = async (item: GenerationItem): Promise<Blob | null> => {
+    try {
+      let rawBlob: Blob;
+      if (item.b64_json) {
+        const byteCharacters = atob(item.b64_json);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        rawBlob = new Blob([byteArray], { type: 'image/png' });
+      } else if (item.imageUrl) {
+        const res = await fetch(item.imageUrl);
+        rawBlob = await res.blob();
+      } else {
+        return null;
+      }
+
+      if (isAmazon || isNoon) {
+        const format = isNoon ? 'jpeg' : (settings.amazonFormat || 'jpeg');
+        return await convertToAmazonFormatBlob(rawBlob, format, 2000, 0.95);
+      } else {
+        return await convertToWebpBlob(rawBlob);
+      }
+    } catch (e) {
+      console.warn('Could not fetch and convert blob for download:', e);
+    }
+    return null;
+  };
+
+  // Download ZIP
+  const handleDownloadZip = async (onlySelected: boolean = false) => {
+    const targets = generations.filter((g) => {
+      if (g.status !== 'done') return false;
+      if (onlySelected) return g.selected;
+      return true;
+    });
+
+    if (targets.length === 0) {
+      showToast('No generated images available to download', 'error');
+      return;
+    }
+
+    setIsZipping(true);
+    try {
+      const zip = new JSZip();
+      const folderName = isNoon
+        ? getNoonFolderName({ brand, productName, modelNumber, isAPlus: platform === 'noon_aplus' })
+        : isAmazon
+        ? getAmazonFolderName({ brand, productName, modelNumber })
+        : getSeoFolderName({ brand, productName, modelNumber });
+      const zipFileName = isNoon
+        ? getNoonZipFilename({ brand, productName, modelNumber, isAPlus: platform === 'noon_aplus' })
+        : isAmazon
+        ? getAmazonZipFilename({ brand, productName, modelNumber })
+        : getSeoZipFilename({ brand, productName, modelNumber });
+
+      let amazonPtCounter = 1;
+
+      for (let i = 0; i < targets.length; i++) {
+        const item = targets[i];
+        const blob = await fetchImageBlob(item);
+        if (blob) {
+          let fileName: string;
+          if (platform === 'noon') {
+            fileName = getNoonImageFilename({
+              modelNumber,
+              productName,
+              slotNumber: item.slot ?? i + 1,
+              theme: item.theme,
+            });
+          } else if (platform === 'noon_aplus') {
+            fileName = getNoonAPlusFilename({
+              modelNumber,
+              productName,
+              slotNumber: item.slot ?? i + 1,
+              language: item.noonLanguage || 'en',
+            });
+          } else if (platform === 'amazon') {
+            const isMain = item.slot === 1 || item.theme === 'hero';
+            fileName = getAmazonImageFilename({
+              modelNumber,
+              productName,
+              slotNumber: item.slot ?? 1,
+              secondaryIndex: isMain ? undefined : amazonPtCounter++,
+              format: settings.amazonFormat || 'jpeg',
+            });
+          } else if (platform === 'amazon_aplus') {
+            fileName = getAmazonAPlusFilename({
+              modelNumber,
+              productName,
+              aplusType: item.sanfordSlot?.aplusType,
+              index: i + 1,
+              format: settings.amazonFormat || 'jpeg',
+            });
+          } else {
+            fileName = getSeoImageFilename({
+              brand,
+              productName,
+              modelNumber,
+              item,
+              index: i + 1,
+            });
+          }
+          zip.file(`${folderName}/${fileName}`, blob);
+        }
+      }
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const zipUrl = URL.createObjectURL(zipBlob);
+      const link = document.createElement('a');
+      link.href = zipUrl;
+      link.download = zipFileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(zipUrl), 1000);
+      showToast(`ZIP package downloaded successfully!`);
+    } catch (err: any) {
+      console.error('Error generating zip:', err);
+      showToast('Error generating ZIP download', 'error');
+    } finally {
+      setIsZipping(false);
+    }
+  };
+
+  // Share to phone
+  const canShare = typeof navigator !== 'undefined' && !!navigator.share && !!navigator.canShare;
+  const handleShareToPhone = async () => {
+    const targets = generations.filter((g) => g.status === 'done');
+    if (targets.length === 0) return;
+
+    const files: File[] = [];
+    let ptCount = 1;
+
+    for (let i = 0; i < targets.length; i++) {
+      const item = targets[i];
+      const blob = await fetchImageBlob(item);
+      if (blob) {
+        let fileName: string;
+        let mime = 'image/webp';
+        if (platform === 'noon') {
+          fileName = getNoonImageFilename({
+            modelNumber,
+            productName,
+            slotNumber: item.slot ?? 1,
+            theme: item.theme,
+          });
+          mime = 'image/jpeg';
+        } else if (platform === 'noon_aplus') {
+          fileName = getNoonAPlusFilename({
+            modelNumber,
+            productName,
+            slotNumber: item.slot ?? 1,
+            language: item.noonLanguage || 'en',
+          });
+          mime = 'image/jpeg';
+        } else if (isAmazon) {
+          const isMain = item.slot === 1 || item.theme === 'hero';
+          fileName = getAmazonImageFilename({
+            modelNumber,
+            productName,
+            slotNumber: item.slot ?? 1,
+            secondaryIndex: isMain ? undefined : ptCount++,
+            format: settings.amazonFormat || 'jpeg',
+          });
+          mime = settings.amazonFormat === 'png' ? 'image/png' : 'image/jpeg';
+        } else {
+          fileName = getSeoImageFilename({
+            brand,
+            productName,
+            modelNumber,
+            item,
+            index: i + 1,
+          });
+        }
+        files.push(new File([blob], fileName, { type: mime }));
+      }
+    }
+
+    if (files.length > 0 && navigator.canShare({ files })) {
+      try {
+        await navigator.share({
+          files,
+          title: `${productName} Listing Images`,
+        });
+      } catch (err) {
+        console.warn('Share sheet cancelled or failed:', err);
+      }
+    }
+  };
+
+  // Save to folder
+  const canPickDirectory = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
+  const handleSaveToFolder = async () => {
+    const targets = generations.filter((g) => g.status === 'done');
+    if (targets.length === 0) return;
+
+    try {
+      // @ts-ignore
+      const dirHandle = await window.showDirectoryPicker();
+      let ptCounter = 1;
+
+      for (let i = 0; i < targets.length; i++) {
+        const item = targets[i];
+        const blob = await fetchImageBlob(item);
+        if (blob) {
+          let fileName: string;
+          if (platform === 'noon') {
+            fileName = getNoonImageFilename({
+              modelNumber,
+              productName,
+              slotNumber: item.slot ?? 1,
+              theme: item.theme,
+            });
+          } else if (platform === 'noon_aplus') {
+            fileName = getNoonAPlusFilename({
+              modelNumber,
+              productName,
+              slotNumber: item.slot ?? 1,
+              language: item.noonLanguage || 'en',
+            });
+          } else if (isAmazon) {
+            const isMain = item.slot === 1 || item.theme === 'hero';
+            fileName = getAmazonImageFilename({
+              modelNumber,
+              productName,
+              slotNumber: item.slot ?? 1,
+              secondaryIndex: isMain ? undefined : ptCounter++,
+              format: settings.amazonFormat || 'jpeg',
+            });
+          } else {
+            fileName = getSeoImageFilename({
+              brand,
+              productName,
+              modelNumber,
+              item,
+              index: i + 1,
+            });
+          }
+          const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
+          const writable = await fileHandle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+        }
+      }
+      showToast('All listing images saved to chosen local folder!');
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        console.error('Save to folder error:', err);
+        showToast('Error saving to local folder', 'error');
+      }
+    }
+  };
+
+  // Toggle selection checkbox
   const toggleSelectCard = (id: string) => {
     setGenerations((prev) =>
       prev.map((g) => (g.id === id ? { ...g, selected: !g.selected } : g))
     );
   };
 
+  // Approve / Send back handlers
+  const handleApproveItem = (id: string) => {
+    setGenerations((prev) =>
+      prev.map((g) => (g.id === id ? { ...g, isApproved: true } : g))
+    );
+    showToast('Asset marked as approved');
+  };
+
+  const handleSendBackItem = (id: string, note: string) => {
+    setGenerations((prev) =>
+      prev.map((g) => (g.id === id ? { ...g, isApproved: false } : g))
+    );
+    showToast(`Note recorded: "${note}". Click Regenerate to apply updates.`);
+  };
+
+  // Open compliance modal
+  const handleOpenCompliance = (item: GenerationItem) => {
+    if (platform === 'amazon' || platform === 'amazon_aplus') {
+      setComplianceItem(item);
+      setIsAmazonComplianceOpen(true);
+    } else if (platform === 'noon' || platform === 'noon_aplus') {
+      setNoonComplianceItem(item);
+      setIsNoonComplianceOpen(true);
+    }
+  };
+
+  // Calculate status counts & stage index
+  const activeSlots = sanfordSlots.filter(
+    (s) => !(s.slot === 5 && !hasMultipleColors && platform !== 'noon')
+  );
+  const totalCount = activeSlots.length;
+  const approvedCount = generations.filter(
+    (g) => g.status === 'done' && (g as any).isApproved !== false
+  ).length;
+
+  const stageIndex = isGeneratingAll
+    ? 1 // Generating
+    : approvedCount === totalCount && totalCount > 0
+    ? 3 // Deliver
+    : generations.some((g) => g.status === 'done')
+    ? 2 // Review
+    : 0; // Brief
+
+  const formatLabel =
+    platform === 'amazon'
+      ? `${settings.amazonResolution || '2000 × 2000'} ${settings.amazonFormat?.toUpperCase() || 'JPEG'}`
+      : platform === 'noon' || platform === 'noon_aplus'
+      ? '2000 × 2000 JPEG'
+      : '100% WebP';
+
+  const marketplaceName =
+    platform === 'amazon' || platform === 'amazon_aplus'
+      ? 'Amazon'
+      : platform === 'noon' || platform === 'noon_aplus'
+      ? 'Noon'
+      : 'Shopify';
+
+  // Slot status dictionary for brief panel dots
+  const slotStatuses: Record<number, 'draft' | 'pending' | 'review' | 'approved' | 'failed'> = {};
+  sanfordSlots.forEach((slot) => {
+    const gen = generations.find((g) => g.kind === 'feature' && g.slot === slot.slot);
+    if (!gen || gen.status === 'idle') {
+      slotStatuses[slot.slot] = 'draft';
+    } else if (gen.status === 'pending') {
+      slotStatuses[slot.slot] = 'pending';
+    } else if (gen.status === 'failed') {
+      slotStatuses[slot.slot] = 'failed';
+    } else if ((gen as any).isApproved === false) {
+      slotStatuses[slot.slot] = 'review';
+    } else {
+      slotStatuses[slot.slot] = 'approved';
+    }
+  });
+
   return (
-    <div className="min-h-screen bg-[#EEF1F6] dark:bg-[#090B10] text-[#0F172A] dark:text-slate-100 flex flex-col selection:bg-indigo-500/20 selection:text-indigo-200 transition-colors">
+    <>
       {/* Toast Alert */}
       {toastMessage && (
         <div
           className={`fixed top-18 right-6 z-50 py-2.5 px-4 rounded-xl shadow-lg border text-xs font-semibold flex items-center space-x-2 transition-all ${
             toastMessage.type === 'error'
-              ? 'bg-[var(--error-bg)] border-red-200 text-[var(--error)] dark:bg-rose-950/90 dark:border-rose-800/80 dark:text-rose-200'
-              : 'bg-[var(--success-bg)] border-emerald-200 text-[var(--success)] dark:bg-emerald-950/90 dark:border-emerald-800/80 dark:text-emerald-200'
+              ? 'bg-err-bg border-err-fg/20 text-err-fg'
+              : 'bg-ok-bg border-ok-fg/20 text-ok-fg'
           }`}
         >
           {toastMessage.type === 'error' ? (
-            <AlertCircle className="w-4 h-4 text-[var(--error)] dark:text-rose-400 flex-shrink-0" />
+            <AlertCircle className="w-4 h-4 text-err-fg shrink-0" />
           ) : (
-            <CheckCircle2 className="w-4 h-4 text-[var(--success)] dark:text-emerald-400 flex-shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-ok-fg shrink-0" />
           )}
           <span>{toastMessage.text}</span>
         </div>
       )}
 
-      {/* Main Studio 3-Column Layout */}
-      <main className="flex-1 max-w-[1680px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          {/* Column 1 (Left): Catalogue & Product Input (width: 4 / 12) */}
-          <div className="lg:col-span-4 xl:col-span-4">
-            <ProductInput
-              userId={userId}
-              projectId={projectId}
-              productName={productName}
-              setProductName={setProductName}
-              modelNumber={modelNumber}
-              setModelNumber={setModelNumber}
-              tagline={tagline}
-              setTagline={setTagline}
-              featuresText={featuresText}
-              setFeaturesText={setFeaturesText}
-              colors={colors}
-              setColors={setColors}
-              dimensions={dimensions}
-              setDimensions={setDimensions}
-              weight={weight}
-              setWeight={setWeight}
-              whatsInTheBox={whatsInTheBox}
-              setWhatsInTheBox={setWhatsInTheBox}
-              warranty={warranty}
-              setWarranty={setWarranty}
-              sanfordSlots={sanfordSlots}
-              setSanfordSlots={setSanfordSlots}
-              sourceImage={sourceImage}
-              setSourceImage={setSourceImage}
-              catalogueImage={catalogueImage}
-              setCatalogueImage={setCatalogueImage}
-              onCatalogueParsed={handleCatalogueParsed}
-              validationAttempted={validationAttempted}
-              hasMultipleColors={hasMultipleColors}
-            />
-          </div>
-
-          {/* Column 2 (Center): Sanford Results Grid (width: 5.5 / 12) */}
-          <div className="lg:col-span-5 xl:col-span-5">
-            <ResultsGrid
-              productName={productName}
-              modelNumber={modelNumber}
-              brand={brand}
-              generations={generations}
-              makePoster={makePoster}
-              setMakePoster={setMakePoster}
-              isGeneratingAll={isGeneratingAll}
-              onGenerateAll={handleGenerateAll}
-              onRegenerateSlot={handleRegenerateSlot}
-              toggleSelectCard={toggleSelectCard}
-              settings={settings}
-              isReadyToGenerate={isReadyToGenerate}
-              missingFields={missingFields}
-              hasMultipleColors={hasMultipleColors}
-              platform={platform}
-              onSelectPlatform={handleSelectPlatform}
-              onOpenPlatformModal={() => setIsPlatformModalOpen(true)}
-            />
-          </div>
-
-          {/* Column 3 (Right): Settings Panel (width: 2.5 / 12) */}
-          <div className="lg:col-span-3 xl:col-span-3">
-            <SettingsPanel settings={settings} setSettings={setSettings} />
-          </div>
-        </div>
-      </main>
-
-      {/* Platform Select Modal */}
-      <PlatformSelectModal
-        isOpen={isPlatformModalOpen}
-        currentPlatform={platform}
-        onSelectPlatform={handleSelectPlatform}
-        onClose={() => setIsPlatformModalOpen(false)}
+      {/* Main Sanford Studio v3 Layout */}
+      <StudioLayout
         productName={productName}
-      />
-    </div>
+        modelNumber={modelNumber}
+        sourceImageUrl={sourceImage.previewUrl}
+        platform={platform}
+        stageIndex={stageIndex}
+        isGeneratingAll={isGeneratingAll}
+        onGenerateAll={handleGenerateAll}
+        briefCollapsed={briefCollapsed}
+        onToggleBriefCollapse={() => setBriefCollapsed(!briefCollapsed)}
+        onSelectPlatform={handleSelectPlatform}
+        sanfordSlots={sanfordSlots}
+        slotStatuses={slotStatuses}
+        settings={settings}
+        onUpdateSettings={(newSettings) => setSettings((prev) => ({ ...prev, ...newSettings }))}
+        onOpenUploadModal={() => setIsUploadModalOpen(true)}
+        onOpenSpecsModal={() => setIsSpecsModalOpen(true)}
+        items={generations}
+        selectedSlotId={selectedSlotId}
+        onSelectSlot={(id) => setSelectedSlotId(id)}
+        onToggleSelectCheckbox={toggleSelectCard}
+        onApproveItem={handleApproveItem}
+        onSendBackItem={handleSendBackItem}
+        onRetrySlot={handleRegenerateSlot}
+        onOpenComplianceModal={handleOpenCompliance}
+        approvedCount={approvedCount}
+        totalCount={totalCount}
+        formatLabel={formatLabel}
+        isZipping={isZipping}
+        onDownloadZip={() => handleDownloadZip(false)}
+        onPhoneShare={canShare ? handleShareToPhone : undefined}
+        onFolderSave={canPickDirectory ? handleSaveToFolder : undefined}
+        onDeliver={() => {
+          handleDownloadZip(false);
+          showToast(`Delivered all ${approvedCount} assets for ${marketplaceName}!`);
+        }}
+      >
+        {/* Dialogue 1: Catalogue Upload Modal */}
+        <CatalogueUploadModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+          onCatalogueParsed={handleCatalogueParsed}
+          setCatalogueImage={setCatalogueImage}
+          setSourceImage={setSourceImage}
+        />
+
+        {/* Dialogue 2: Product Specifications Edit Modal */}
+        <ProductSpecsModal
+          isOpen={isSpecsModalOpen}
+          onClose={() => setIsSpecsModalOpen(false)}
+          productName={productName}
+          setProductName={setProductName}
+          modelNumber={modelNumber}
+          setModelNumber={setModelNumber}
+          tagline={tagline}
+          setTagline={setTagline}
+          featuresText={featuresText}
+          setFeaturesText={setFeaturesText}
+          colors={colors}
+          setColors={setColors}
+          dimensions={dimensions}
+          setDimensions={setDimensions}
+          warranty={warranty}
+          setWarranty={setWarranty}
+          sourceImage={sourceImage}
+          setSourceImage={setSourceImage}
+        />
+
+        {/* Dialogue 3: Platform Selection Modal */}
+        <PlatformSelectModal
+          isOpen={isPlatformModalOpen}
+          currentPlatform={platform}
+          onSelectPlatform={handleSelectPlatform}
+          onClose={() => setIsPlatformModalOpen(false)}
+          productName={productName}
+        />
+
+        {/* Dialogue 4: Amazon Compliance Audit Modal */}
+        {complianceItem && (
+          <AmazonComplianceModal
+            isOpen={isAmazonComplianceOpen}
+            item={complianceItem}
+            compliance={complianceItem.compliance || null}
+            productName={productName}
+            modelNumber={modelNumber}
+            onClose={() => {
+              setIsAmazonComplianceOpen(false);
+              setComplianceItem(null);
+            }}
+          />
+        )}
+
+        {/* Dialogue 5: Noon Compliance Audit Modal */}
+        {noonComplianceItem && (
+          <NoonComplianceModal
+            isOpen={isNoonComplianceOpen}
+            item={noonComplianceItem}
+            compliance={noonComplianceItem.noonCompliance || null}
+            productName={productName}
+            modelNumber={modelNumber}
+            onClose={() => {
+              setIsNoonComplianceOpen(false);
+              setNoonComplianceItem(null);
+            }}
+          />
+        )}
+      </StudioLayout>
+    </>
   );
 }

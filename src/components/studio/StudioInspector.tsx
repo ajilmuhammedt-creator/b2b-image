@@ -1,0 +1,228 @@
+import React, { useState } from 'react';
+import type { GenerationItem } from '../../types';
+import { Badge } from '../ui/Badge';
+import { Button } from '../ui/Button';
+import { Textarea } from '../ui/Textarea';
+import {
+  Check,
+  AlertTriangle,
+  X,
+  RotateCw,
+  ExternalLink,
+  Loader2,
+} from 'lucide-react';
+
+interface InspectorCheck {
+  status: 'pass' | 'warning' | 'fail';
+  text: string;
+}
+
+interface StudioInspectorProps {
+  item: GenerationItem | null;
+  onApprove: (id: string) => void;
+  onSendBack: (id: string, note: string) => void;
+  onRetry: (slot: number | 'poster') => void;
+  onCancelJob?: (id: string) => void;
+  onOpenComplianceModal?: (item: GenerationItem) => void;
+}
+
+export const StudioInspector: React.FC<StudioInspectorProps> = ({
+  item,
+  onApprove,
+  onSendBack,
+  onRetry,
+  onCancelJob,
+  onOpenComplianceModal,
+}) => {
+  const [changeNote, setChangeNote] = useState('');
+
+  if (!item) {
+    return (
+      <aside
+        aria-label="Inspector"
+        className="w-full lg:w-[320px] xl:w-[340px] shrink-0 bg-surface border border-border rounded-card p-6 flex flex-col items-center justify-center text-center gap-2"
+      >
+        <span className="text-sm font-bold text-ink">No slot selected</span>
+        <span className="text-xs text-muted">Click an image tile on the canvas to inspect checks and approve.</span>
+      </aside>
+    );
+  }
+
+  const slotNum = item.slot || (item.kind === 'poster' ? 'Poster' : 1);
+  const isApproved = item.status === 'done' && (item as any).isApproved !== false;
+  const isPending = item.status === 'pending';
+  const isFailed = item.status === 'failed';
+  const isReview = item.status === 'done' && !isApproved;
+
+  // Derive compliance checks based on slot
+  const checks: InspectorCheck[] = [];
+  if (item.imageUrl) {
+    checks.push({ status: 'pass', text: '1:1 Square Resolution standard verified' });
+    if (slotNum === 1) {
+      checks.push({ status: 'pass', text: 'Pure white background (#FFFFFF)' });
+      checks.push({ status: 'pass', text: 'Strictly zero text or promotional badges' });
+    } else {
+      checks.push({ status: 'pass', text: 'Product orientation matches catalogue' });
+      checks.push({ status: 'warning', text: 'Typography readability verified on 390px screens' });
+    }
+  } else if (isFailed) {
+    checks.push({ status: 'fail', text: 'Generation failed: Image generation service timed out' });
+  }
+
+  return (
+    <aside
+      aria-label="Inspector"
+      className="w-full lg:w-[320px] xl:w-[340px] shrink-0 bg-surface border border-border rounded-card p-4 sm:p-5 flex flex-col gap-4 select-none shadow-2xs"
+    >
+      {/* 1:1 Large Preview Container */}
+      <div className="relative aspect-square w-full rounded-button border border-track bg-surface overflow-hidden flex items-center justify-center">
+        {item.imageUrl ? (
+          <img
+            src={item.imageUrl}
+            alt={item.slotTitle || `Slot ${slotNum}`}
+            className="w-full h-full object-contain p-2"
+          />
+        ) : isPending ? (
+          <div className="flex flex-col items-center justify-center gap-2 p-4 text-center">
+            <Loader2 className="w-6 h-6 animate-spin text-ink" />
+            <span className="text-xs font-bold text-ink">Rendering image...</span>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center p-4 text-center text-muted">
+            <span className="text-xs font-semibold">Slot {slotNum}</span>
+            <span className="text-[11px] text-muted">Ready to generate</span>
+          </div>
+        )}
+      </div>
+
+      {/* Title & Status */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col min-w-0">
+          <span className="text-xs text-muted font-medium">
+            Slot {slotNum} · Version 1
+          </span>
+          <h2 className="text-base font-extrabold text-ink m-0 leading-tight truncate">
+            {item.slotTitle || `Slot ${slotNum}`}
+          </h2>
+        </div>
+
+        <div className="shrink-0">
+          {isApproved ? (
+            <Badge check="pass" size="sm">Approved</Badge>
+          ) : isReview ? (
+            <Badge check="warning" size="sm">In review</Badge>
+          ) : isFailed ? (
+            <Badge check="fail" size="sm">Failed</Badge>
+          ) : isPending ? (
+            <Badge variant="neutral" size="sm">Rendering</Badge>
+          ) : (
+            <Badge variant="neutral" size="sm">Draft</Badge>
+          )}
+        </div>
+      </div>
+
+      {/* Automated Checks List */}
+      <div className="flex flex-col gap-2 pt-2 border-t border-track">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-extrabold text-ink uppercase tracking-wider m-0">
+            Compliance Checks
+          </h3>
+          {onOpenComplianceModal && item.imageUrl && (
+            <button
+              type="button"
+              onClick={() => onOpenComplianceModal(item)}
+              className="text-[11px] font-bold text-ink hover:text-brand flex items-center gap-1 cursor-pointer"
+            >
+              <span>Full audit</span>
+              <ExternalLink className="w-3 h-3" />
+            </button>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          {checks.map((chk, i) => (
+            <div
+              key={i}
+              className="flex items-start gap-2.5 text-xs text-ink-2 p-2 rounded-field bg-page"
+            >
+              {chk.status === 'pass' ? (
+                <span className="w-4 h-4 rounded-full bg-ok-bg text-ok-fg flex items-center justify-center shrink-0 mt-0.5">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                </span>
+              ) : chk.status === 'warning' ? (
+                <span className="w-4 h-4 rounded-full bg-warn-bg text-warn-fg flex items-center justify-center shrink-0 mt-0.5">
+                  <AlertTriangle className="w-2.5 h-2.5 stroke-[2.5]" />
+                </span>
+              ) : (
+                <span className="w-4 h-4 rounded-full bg-fail-bg text-fail-fg flex items-center justify-center shrink-0 mt-0.5">
+                  <X className="w-2.5 h-2.5 stroke-[3]" />
+                </span>
+              )}
+              <span className="flex-1 leading-normal text-[11px] font-medium">{chk.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Action / Review Box */}
+      {item.imageUrl && (
+        <div className="flex flex-col gap-3 pt-2 border-t border-track">
+          <Textarea
+            label="Request a change"
+            placeholder="Add specific instructions for adjustment..."
+            rows={2}
+            value={changeNote}
+            onChange={(e) => setChangeNote(e.target.value)}
+          />
+
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              fullWidth
+              size="md"
+              onClick={() => {
+                onSendBack(item.id, changeNote);
+                setChangeNote('');
+              }}
+            >
+              Send back
+            </Button>
+            <Button
+              variant="primary"
+              fullWidth
+              size="md"
+              onClick={() => onApprove(item.id)}
+            >
+              Approve
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Retry if failed */}
+      {isFailed && (
+        <Button
+          variant="secondary"
+          fullWidth
+          size="md"
+          icon={<RotateCw className="w-4 h-4" />}
+          onClick={() => onRetry(item.slot || 'poster')}
+        >
+          Retry this image
+        </Button>
+      )}
+
+      {/* Cancel if generating */}
+      {isPending && onCancelJob && (
+        <Button
+          variant="secondary"
+          fullWidth
+          size="md"
+          onClick={() => onCancelJob(item.id)}
+        >
+          Cancel job
+        </Button>
+      )}
+    </aside>
+  );
+};

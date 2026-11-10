@@ -151,3 +151,4 @@ export const JobsTray: React.FC<JobsTrayProps> = ({
     </div>
   );
 };
+

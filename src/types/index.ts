@@ -60,15 +60,19 @@ export type NoonAPlusLanguage = 'en' | 'ar' | 'both';
 export interface StudioSettings {
   model: 'gpt-image-2.5-sunburst' | 'gpt-image-2.5-flare';
   quality: 'low' | 'medium' | 'high' | 'xhigh' | 'max';
-  featureSize: '1024x1024' | '2048x2048';
-  posterSize: '1024x1536' | '1536x1024';
-  accentColor: string; // 'Auto' or hex string '#...'
-  styleLock: boolean;
-  imagesPerRun: number; // 1 to 6
-  background: 'white' | 'pale tint';
+  featureSize?: '1024x1024' | '2048x2048';
+  posterSize?: '1024x1536' | '1536x1024';
+  accentColor?: string; // 'Auto' or hex string '#...'
+  styleLock?: boolean;
+  imagesPerRun?: number; // 1 to 6
+  background?: 'white' | 'pale tint';
   platform?: EcommercePlatform | null;
   amazonFormat?: AmazonFormat;
+  amazonResolution?: string;
+  amazonValidateCategory?: string;
+  noonFormat?: 'jpeg' | 'png' | string;
   noonLanguage?: NoonAPlusLanguage;
+  noonResolution?: string;
 }
 
 export type SanfordTheme =
@@ -142,6 +146,7 @@ export interface GenerationItem {
   noonCompliance?: NoonComplianceResult;
   exportFormat?: 'webp' | 'jpeg' | 'png';
   noonLanguage?: 'en' | 'ar';
+  isApproved?: boolean;
 }
 
 export interface CatalogueParsedData {
@@ -172,7 +177,7 @@ export interface ProjectData {
   weight?: string;
   whats_in_the_box?: string[];
   warranty?: string;
-  feature_groups: string[][];
+  feature_groups?: string[][];
   source_image_path?: string;
   source_image_data_url?: string;
   catalogue_preview_url?: string;
