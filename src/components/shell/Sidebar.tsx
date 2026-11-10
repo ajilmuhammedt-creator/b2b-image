@@ -11,6 +11,7 @@ import {
   FileText,
   BookOpen,
   Settings,
+  Clock,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
@@ -122,7 +123,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <div className="h-px bg-track my-1 mx-2" />
 
-        {/* Library & Settings */}
+        {/* History, Library & Settings */}
+        <NavLink to="/history" className={navLinkClass} title={collapsed ? 'History' : undefined}>
+          <Clock className="w-[18px] h-[18px] shrink-0" />
+          {!collapsed && <span>History</span>}
+        </NavLink>
+
         <NavLink to="/library/brand" className={navLinkClass} title={collapsed ? 'Library' : undefined}>
           <BookOpen className="w-[18px] h-[18px] shrink-0" />
           {!collapsed && <span>Library</span>}
