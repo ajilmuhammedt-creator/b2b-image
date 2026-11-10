@@ -1,5 +1,6 @@
 import type { AmazonComplianceResult, GenerationItem } from '../types';
 import { ShieldCheck, AlertTriangle, XCircle, CheckCircle2, X, ExternalLink } from 'lucide-react';
+import { Badge, Button, IconButton } from './ui';
 
 interface AmazonComplianceModalProps {
   isOpen: boolean;
@@ -52,21 +53,22 @@ export function AmazonComplianceModal({
                 <h3 className="text-base font-bold text-white">
                   Amazon Listing Compliance Assessment
                 </h3>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                <Badge
+                  check={
                     compliance.status === 'pass'
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                      ? 'pass'
                       : compliance.status === 'review'
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                      : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
-                  }`}
+                      ? 'warning'
+                      : 'fail'
+                  }
+                  size="sm"
                 >
                   {compliance.status === 'pass'
                     ? '100% Pass'
                     : compliance.status === 'review'
                     ? 'Needs Review'
                     : 'Action Needed'}
-                </span>
+                </Badge>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
                 {isMain ? 'IMAGE 01 — MAIN Product Hero' : `IMAGE 0${slotNum} — Secondary Image`} ·{' '}
@@ -75,14 +77,14 @@ export function AmazonComplianceModal({
             </div>
           </div>
 
-          <button
-            type="button"
+          <IconButton
+            aria-label="Close Amazon compliance assessment"
+            variant="ghost"
+            size="sm"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
-            title="Close"
           >
             <X className="w-5 h-5" />
-          </button>
+          </IconButton>
         </div>
 
         {/* Body content */}
@@ -158,17 +160,16 @@ export function AmazonComplianceModal({
                   <div className="flex-1 space-y-0.5">
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-slate-200">{rule.name}</span>
-                      <span
-                        className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                      <Badge
+                        check={
                           rule.status === 'pass'
-                            ? 'bg-emerald-500/10 text-emerald-400'
+                            ? 'pass'
                             : rule.status === 'warning'
-                            ? 'bg-amber-500/10 text-amber-400'
-                            : 'bg-rose-500/10 text-rose-400'
-                        }`}
-                      >
-                        {rule.status}
-                      </span>
+                            ? 'warning'
+                            : 'fail'
+                        }
+                        size="sm"
+                      />
                     </div>
                     <p className="text-[11px] text-slate-400">{rule.message}</p>
                   </div>
@@ -190,13 +191,13 @@ export function AmazonComplianceModal({
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
 
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={onClose}
-            className="py-1.5 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-medium transition"
           >
             Close Assessment
-          </button>
+          </Button>
         </div>
       </div>
     </div>

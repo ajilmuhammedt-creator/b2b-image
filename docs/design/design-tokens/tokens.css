@@ -1,5 +1,5 @@
 /* Sanford AI Studio — app UI tokens (white & red). Not for packaging artwork. */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+/* Font is loaded at top of index.css / index.html */
 
 :root {
   /* brand */

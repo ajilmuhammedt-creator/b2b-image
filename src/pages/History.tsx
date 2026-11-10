@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Navbar } from '../components/Navbar';
+import { Button, EmptyState } from '../components/ui';
 import { projectStorage } from '../lib/projectStorage';
 import type { ProjectData } from '../types';
 import JSZip from 'jszip';
@@ -197,14 +198,14 @@ export function History() {
               <span className="hidden sm:inline">Refresh</span>
             </button>
 
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              size="sm"
               onClick={() => navigate('/studio')}
-              className="py-2.5 px-4 bg-[#E11D2E] hover:bg-[#C8102E] text-white rounded-[12px] text-xs font-semibold uppercase tracking-wider flex items-center space-x-1.5 transition shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-lg"
+              icon={<Sparkles className="w-4 h-4" />}
             >
-              <Sparkles className="w-4 h-4" />
-              <span>New Studio Run</span>
-            </button>
+              New Studio Run
+            </Button>
           </div>
         </div>
 
@@ -230,22 +231,22 @@ export function History() {
             <span className="text-xs text-[#5B6478] dark:text-slate-400">Loading your project library...</span>
           </div>
         ) : projects.length === 0 ? (
-          <div className="py-24 text-center max-w-md mx-auto space-y-4">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-white dark:bg-slate-900 border border-[#E3E8EF] dark:border-slate-800 text-[#94A3B8] dark:text-slate-500 flex items-center justify-center">
-              <ImageIcon className="w-7 h-7" />
-            </div>
-            <div className="space-y-1">
-              <h2 className="text-base font-semibold text-[#0F172A] dark:text-white">No active projects found</h2>
-              <p className="text-xs text-[#5B6478] dark:text-slate-400">
-                Projects created within the last 10 days appear here. Start a new run in Studio to generate product photos.
-              </p>
-            </div>
-            <button
-              onClick={() => navigate('/studio')}
-              className="mt-2 py-2 px-4 bg-[#E11D2E] hover:bg-[#C8102E] text-white rounded-[12px] text-xs font-semibold transition shadow-sm"
-            >
-              Start First Studio Project
-            </button>
+          <div className="py-16 max-w-md mx-auto">
+            <EmptyState
+              icon={<ImageIcon className="w-7 h-7" />}
+              title="No active projects found"
+              description="Projects created within the last 10 days appear here. Start a new run in Studio to generate product photos."
+              action={
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => navigate('/studio')}
+                  icon={<Sparkles className="w-4 h-4" />}
+                >
+                  Start First Studio Project
+                </Button>
+              }
+            />
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { BrandLogo } from '../components/BrandLogo';
 import { Lock, Eye, EyeOff, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
+import { Button } from '../components/ui';
 
 export function ResetPassword() {
   const { user, updateUserPassword, setIsRecoveryMode } = useAuth();
@@ -101,14 +102,15 @@ export function ResetPassword() {
                 Your password has been successfully reset. You can now access the studio.
               </p>
             </div>
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              fullWidth
               onClick={() => navigate('/studio')}
-              className="w-full py-2.5 px-4 bg-[#E11D2E] hover:bg-[#C8102E] text-white font-medium rounded-lg shadow-md transition duration-150 flex items-center justify-center space-x-2"
+              icon={<ArrowRight className="w-4 h-4" />}
+              iconPosition="right"
             >
-              <span>Go to Studio</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+              Go to Studio
+            </Button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -164,23 +166,16 @@ export function ResetPassword() {
               </div>
             </div>
 
-            <button
+            <Button
               type="submit"
-              disabled={submitting}
-              className="w-full py-2.5 px-4 bg-[#E11D2E] hover:bg-[#C8102E] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-xs rounded-lg shadow-md transition duration-150 flex items-center justify-center space-x-2"
+              variant="primary"
+              fullWidth
+              loading={submitting}
+              icon={<ArrowRight className="w-4 h-4" />}
+              iconPosition="right"
             >
-              {submitting ? (
-                <>
-                  <div className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full" />
-                  <span>Updating password...</span>
-                </>
-              ) : (
-                <>
-                  <span>Update Password</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </>
-              )}
-            </button>
+              Update Password
+            </Button>
 
             <div className="text-center pt-1">
               <Link to="/signin" className="text-xs text-slate-400 hover:text-white underline">

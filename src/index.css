@@ -1,28 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+@import "../docs/design/design-tokens/tokens.css";
+
+@theme {
+  --color-brand: #C8281E;
+  --color-brand-hover: #A8201A;
+  --color-brand-tint: #FDECEA;
+
+  --color-ink: #14161B;
+  --color-ink-2: #2B2F38;
+  --color-ink-muted: #4A505E;
+  --color-ink-subtle: #5F6675;
+
+  --color-muted: #4A505E;
+  --color-subtle: #5F6675;
+
+  --color-page: #F5F6F8;
+  --color-surface: #FFFFFF;
+  --color-track: #EEF0F3;
+  --color-border: #E4E6EB;
+  --color-border-strong: #D5D9E0;
+  --color-line: #E4E6EB;
+  --color-line-strong: #D5D9E0;
+
+  --color-ok-fg: #126C34;
+  --color-ok-bg: #E7F6EC;
+  --color-warn-fg: #7A4F00;
+  --color-warn-bg: #FFF4D6;
+  --color-fail-fg: #FFFFFF;
+  --color-fail-bg: #14161B;
+
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-ui: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-arabic: 'Noto Sans Arabic', sans-serif;
+
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-body: 14px;
+  --text-body--line-height: 20px;
+  --text-section: 16px;
+  --text-section--line-height: 22px;
+  --text-panel: 20px;
+  --text-panel--line-height: 26px;
+  --text-title: 28px;
+  --text-title--line-height: 34px;
+
+  --radius-field: 10px;
+  --radius-button: 12px;
+  --radius-card: 16px;
+  --radius-sheet: 20px;
+
+  --spacing-sidebar: 232px;
+  --spacing-topbar: 56px;
+  --spacing-brief: 260px;
+  --spacing-inspector: 320px;
+  --spacing-tap: 44px;
+}
 
 @custom-variant dark (&:where(.dark, .dark *));
-
-:root {
-  color-scheme: dark;
-  --bg: #090B10;
-  --surface: #0E1118;
-  --border: rgba(255, 255, 255, 0.08);
-  --brand: #E11D2E;
-  --brand-hover: #C8102E;
-}
 
 @layer base {
   * {
     transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-    border-color: rgba(255, 255, 255, 0.08);
   }
 
-  body {
-    background-color: #090B10;
-    color: #F1F5F9;
+  /* Focus ring following design system: 2px solid var(--ink) */
+  *:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
   }
 
-  /* Sleek modern minimalist scrollbar for dark mode */
+  /* Sleek modern minimalist scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -31,20 +79,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(20, 22, 27, 0.15);
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.22);
-  }
-
-  /* Focus ring */
-  *:focus-visible,
-  input:focus,
-  select:focus,
-  textarea:focus {
-    outline: none;
-    border-color: rgba(225, 29, 46, 0.6);
-    box-shadow: 0 0 0 2px rgba(225, 29, 46, 0.2);
+    background: rgba(20, 22, 27, 0.3);
   }
 }
+

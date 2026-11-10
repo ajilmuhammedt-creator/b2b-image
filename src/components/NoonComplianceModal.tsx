@@ -1,6 +1,7 @@
 import type { NoonComplianceResult, GenerationItem } from '../types';
 import { AlertTriangle, XCircle, CheckCircle2, X, ExternalLink } from 'lucide-react';
 import { NoonIcon } from './PlatformIcons';
+import { Badge, Button, IconButton } from './ui';
 
 interface NoonComplianceModalProps {
   isOpen: boolean;
@@ -39,21 +40,22 @@ export function NoonComplianceModal({
                 <h3 className="text-base font-bold text-white">
                   Noon UAE Seller Compliance Assessment
                 </h3>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                <Badge
+                  check={
                     compliance.status === 'pass'
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                      ? 'pass'
                       : compliance.status === 'review'
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                      : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
-                  }`}
+                      ? 'warning'
+                      : 'fail'
+                  }
+                  size="sm"
                 >
                   {compliance.status === 'pass'
                     ? 'Compliant'
                     : compliance.status === 'review'
                     ? 'Needs Review'
                     : 'Action Required'}
-                </span>
+                </Badge>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
                 {item.sanfordSlot?.title || `Slot ${slotNum}`} ·{' '}
@@ -62,14 +64,14 @@ export function NoonComplianceModal({
             </div>
           </div>
 
-          <button
-            type="button"
+          <IconButton
+            aria-label="Close Noon compliance assessment"
+            variant="ghost"
+            size="sm"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
-            title="Close"
           >
             <X className="w-5 h-5" />
-          </button>
+          </IconButton>
         </div>
 
         {/* Score & Summary Banner */}
@@ -140,17 +142,16 @@ export function NoonComplianceModal({
                     <span className="text-xs font-semibold text-white">
                       {rule.name}
                     </span>
-                    <span
-                      className={`text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ${
+                    <Badge
+                      check={
                         rule.status === 'pass'
-                          ? 'text-emerald-400 bg-emerald-500/10'
+                          ? 'pass'
                           : rule.status === 'warning'
-                          ? 'text-amber-400 bg-amber-500/10'
-                          : 'text-rose-400 bg-rose-500/10'
-                      }`}
-                    >
-                      {rule.status}
-                    </span>
+                          ? 'warning'
+                          : 'fail'
+                      }
+                      size="sm"
+                    />
                   </div>
                   <p className="text-xs text-slate-300 mt-1 leading-relaxed">
                     {rule.message}
@@ -166,13 +167,13 @@ export function NoonComplianceModal({
           <span>
             Internal pre-flight check based on official Noon Seller Help Center guidelines.
           </span>
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={onClose}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold transition"
           >
             Dismiss
-          </button>
+          </Button>
         </div>
       </div>
     </div>

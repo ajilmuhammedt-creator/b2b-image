@@ -1,6 +1,7 @@
 import type { EcommercePlatform } from '../types';
 import { Check, ShieldCheck, X } from 'lucide-react';
 import { ShopifyIcon, AmazonIcon, NoonIcon } from './PlatformIcons';
+import { IconButton } from './ui';
 
 interface PlatformSelectModalProps {
   isOpen: boolean;
@@ -41,14 +42,14 @@ export function PlatformSelectModal({
           </div>
 
           {onClose && (
-            <button
-              type="button"
+            <IconButton
+              aria-label="Close platform selection"
+              variant="ghost"
+              size="sm"
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
-              title="Close"
             >
               <X className="w-5 h-5" />
-            </button>
+            </IconButton>
           )}
         </div>
 

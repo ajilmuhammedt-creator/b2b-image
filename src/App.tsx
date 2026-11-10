@@ -7,6 +7,7 @@ import { ResetPassword } from './pages/ResetPassword';
 import { Studio } from './pages/Studio';
 import { History } from './pages/History';
 import { AdminUsers } from './pages/AdminUsers';
+import DevComponents from './pages/DevComponents';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function PasswordRecoveryWatcher() {
@@ -68,6 +69,7 @@ export default function App() {
               }
             />
             <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
+            <Route path="/dev/components" element={<DevComponents />} />
             {/* Catch-all redirect to sign in */}
             <Route path="*" element={<Navigate to="/signin" replace />} />
           </Routes>

@@ -2,6 +2,7 @@ import { useState, type FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { BrandLogo } from '../components/BrandLogo';
+import { Button } from '../components/ui';
 import {
   Mail,
   Lock,
@@ -260,23 +261,16 @@ export function SignIn() {
                 </div>
               </div>
 
-              <button
+              <Button
                 type="submit"
-                disabled={resetSubmitting}
-                className="w-full py-2.5 px-4 bg-[var(--brand)] hover:bg-[var(--brand-hover)] dark:bg-indigo-600 dark:hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-xs rounded-lg shadow-sm dark:shadow-md transition flex items-center justify-center space-x-2"
+                variant="primary"
+                fullWidth
+                loading={resetSubmitting}
+                icon={<ArrowRight className="w-4 h-4" />}
+                iconPosition="right"
               >
-                {resetSubmitting ? (
-                  <>
-                    <div className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full" />
-                    <span>Sending reset link...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Send Reset Instructions</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </>
-                )}
-              </button>
+                Send Reset Instructions
+              </Button>
 
               <div className="text-center pt-1">
                 <button
@@ -444,23 +438,16 @@ export function SignIn() {
                   </div>
                 </div>
 
-                <button
+                <Button
                   type="submit"
-                  disabled={submitting}
-                  className="w-full py-2.5 px-4 bg-[var(--brand)] hover:bg-[var(--brand-hover)] dark:bg-indigo-600 dark:hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-xs rounded-lg shadow-sm dark:shadow-md transition duration-150 flex items-center justify-center space-x-2"
+                  variant="primary"
+                  fullWidth
+                  loading={submitting}
+                  icon={<ArrowRight className="w-4 h-4" />}
+                  iconPosition="right"
                 >
-                  {submitting ? (
-                    <>
-                      <div className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full" />
-                      <span>Signing in...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Sign In</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </>
-                  )}
-                </button>
+                  Sign In
+                </Button>
               </form>
             ) : (
               /* Request Staff Account Form */
@@ -575,23 +562,16 @@ export function SignIn() {
                   </span>
                 </div>
 
-                <button
+                <Button
                   type="submit"
-                  disabled={submitting}
-                  className="w-full py-2.5 px-4 bg-[var(--brand)] hover:bg-[var(--brand-hover)] dark:bg-indigo-600 dark:hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-xs rounded-lg shadow-sm dark:shadow-md transition duration-150 flex items-center justify-center space-x-2"
+                  variant="primary"
+                  fullWidth
+                  loading={submitting}
+                  icon={<ArrowRight className="w-4 h-4" />}
+                  iconPosition="right"
                 >
-                  {submitting ? (
-                    <>
-                      <div className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full" />
-                      <span>Submitting request...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Submit Account Request</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </>
-                  )}
-                </button>
+                  Submit Account Request
+                </Button>
               </form>
             )}
           </div>
