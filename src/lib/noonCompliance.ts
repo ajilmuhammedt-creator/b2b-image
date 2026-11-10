@@ -270,3 +270,4 @@ async function testImageCornerWhite(
     img.src = src;
   });
 }
+

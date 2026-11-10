@@ -1,0 +1,45 @@
+/* Sanford AI Studio — app UI tokens (white & red). Not for packaging artwork. */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* brand */
+  --brand: #C8281E;          /* one primary action per screen; white text 5.6:1 */
+  --brand-hover: #A8201A;
+  --brand-tint: #FDECEA;
+
+  /* ink */
+  --ink: #14161B;
+  --ink-2: #2B2F38;
+  --muted: #4A505E;
+  --subtle: #5F6675;
+
+  /* surfaces */
+  --page: #F5F6F8;
+  --surface: #FFFFFF;
+  --track: #EEF0F3;
+  --border: #E4E6EB;
+  --border-strong: #D5D9E0;
+
+  /* status */
+  --ok-fg: #126C34;   --ok-bg: #E7F6EC;
+  --warn-fg: #7A4F00; --warn-bg: #FFF4D6;
+  --fail-fg: #FFFFFF; --fail-bg: #14161B;
+
+  /* shape */
+  --r-field: 10px; --r-button: 12px; --r-card: 16px; --r-sheet: 20px;
+
+  /* spacing */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-6: 24px; --s-8: 32px;
+
+  /* type */
+  --font-ui: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-ar: 'Noto Sans Arabic', sans-serif;
+  --fs-title: 28px; --fs-panel: 20px; --fs-section: 16px; --fs-body: 14px; --fs-caption: 12px;
+
+  /* layout */
+  --sidebar-w: 232px; --topbar-h: 56px; --brief-w: 260px; --inspector-w: 320px;
+  --tap: 44px;
+}
+
+body { margin: 0; background: var(--page); color: var(--ink); font-family: var(--font-ui); font-size: var(--fs-body); }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }

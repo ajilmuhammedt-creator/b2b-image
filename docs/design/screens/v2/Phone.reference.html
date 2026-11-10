@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Phone approval</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#14161B}a:hover{color:#A8201A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #14161B; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+  <header style="height: 56px; flex: none; padding: 0 6px; display: flex; align-items: center; gap: 4px; background: #FFFFFF; border-bottom: 1px solid #E4E6EB">
+    <button type="button" aria-label="Back" style="width: 44px; height: 44px; border-radius: 10px; border: 0; background: transparent; color: #14161B; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+    <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 800">Approvals</span><span style="font-size: 12px; color: #4A505E">{{counter}}</span></span>
+    <button type="button" aria-label="More options" style="width: 44px; height: 44px; border-radius: 10px; border: 0; background: transparent; color: #14161B; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="19" cy="12" r="1.8"></circle></svg></button>
+  </header>
+
+  <sc-if value="{{hasItem}}" hint-placeholder-val="{{true}}">
+    <main style="flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+      <div style="border-radius: 16px; overflow: hidden; background: #FFFFFF; border: 1px solid #E4E6EB">
+        <img src="{{cur.img}}" alt="{{cur.title}}" style="width: 100%; aspect-ratio: 1 / 1; object-fit: contain; display: block">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 12px; font-weight: 700; color: #4A505E">{{cur.ctx}}</span>
+        <h1 style="margin: 0; font-size: 20px; font-weight: 800">{{cur.title}}</h1>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <span style="height: 28px; padding: 0 10px; border-radius: 14px; background: #E7F6EC; color: #126C34; font-size: 12px; font-weight: 700; display: flex; align-items: center">✓ Size</span>
+        <span style="height: 28px; padding: 0 10px; border-radius: 14px; background: #E7F6EC; color: #126C34; font-size: 12px; font-weight: 700; display: flex; align-items: center">✓ Text matches specs</span>
+        <span style="height: 28px; padding: 0 10px; border-radius: 14px; background: #FFF4D6; color: #7A4F00; font-size: 12px; font-weight: 700; display: flex; align-items: center">! {{cur.warn}}</span>
+      </div>
+      <div style="display: flex; gap: 10px; padding: 12px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E4E6EB">
+        <span style="flex: none; width: 30px; height: 30px; border-radius: 50%; background: #EEF0F3; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center">{{cur.from}}</span>
+        <span style="font-size: 14px; line-height: 1.5">{{cur.comment}}</span>
+      </div>
+    </main>
+    <div style="flex: none; padding: 12px 16px; background: #FFFFFF; border-top: 1px solid #E4E6EB; display: flex; gap: 10px">
+      <button type="button" onClick="{{next}}" style="flex: 1 1 0; height: 52px; border-radius: 14px; border: 1px solid #D5D9E0; background: #FFFFFF; color: #14161B; font: inherit; font-size: 15px; font-weight: 700">Send back</button>
+      <button type="button" onClick="{{next}}" style="flex: 1 1 0; height: 52px; border-radius: 14px; border: 0; background: #C8281E; color: #FFFFFF; font: inherit; font-size: 15px; font-weight: 700">Approve</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{done}}" hint-placeholder-val="{{false}}">
+    <main style="flex: 1 1 auto; padding: 32px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center">
+      <span style="width: 64px; height: 64px; border-radius: 50%; background: #E7F6EC; color: #126C34; display: flex; align-items: center; justify-content: center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></span>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 800">All caught up</h1>
+      <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #4A505E">Nothing is waiting for your approval. We'll notify you when the next item arrives.</p>
+      <button type="button" onClick="{{reset}}" style="margin-top: 8px; height: 44px; padding: 0 18px; border-radius: 12px; border: 1px solid #D5D9E0; background: #FFFFFF; color: #14161B; font: inherit; font-size: 14px; font-weight: 700">Start over (demo)</button>
+    </main>
+  </sc-if>
+
+  <nav aria-label="Main" style="height: 64px; flex: none; background: #FFFFFF; border-top: 1px solid #E4E6EB; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr))">
+    <a href="Home.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 600; color: #4A505E; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21H3z"></path><path d="M9 21v-6h6v6"></path></svg>Home</a>
+    <a href="Work.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 800; color: #14161B; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 13h5l2 3h4l2-3h5"></path><path d="M5.5 5h13L21 13v6H3v-6z"></path></svg>My work</a>
+    <a href="Calendar.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 600; color: #4A505E; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Calendar</a>
+    <a href="Studio.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 600; color: #4A505E; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Studios</a>
+    <a href="#" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 600; color: #4A505E; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="19" cy="12" r="1.8"></circle></svg>More</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { i: 0 }; }
+  renderVals() {
+    const q = [
+      { title: 'Dimensions & warranty', ctx: 'SF935HFN · Amazon set · slot 6', img: '/_blob/8d3c46ba739abd5ecd2179c6e6930620', warn: 'Small labels', from: 'ME', comment: 'Please check the 190 mm label before we send this to Amazon.' },
+      { title: 'Fan demo cover', ctx: 'SF935HFN · TikTok · Nov 14', img: '/_blob/2d94af3f1eac55074a9b6683fa7e51d8', warn: 'TikTok not connected', from: 'GD', comment: 'Cover for the demo video, ready for you.' }
+    ];
+    const i = this.state.i;
+    const hasItem = i < q.length;
+    return {
+      hasItem, done: !hasItem,
+      cur: hasItem ? q[i] : q[0],
+      counter: hasItem ? (i + 1) + ' of ' + q.length + ' waiting' : '0 waiting',
+      next: () => this.setState({ i: i + 1 }),
+      reset: () => this.setState({ i: 0 })
+    };
+  }
+}
+</script>
+</body>
+</html>

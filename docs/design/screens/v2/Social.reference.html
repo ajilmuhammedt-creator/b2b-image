@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Social studio v2</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F6F8}
+a{color:#14161B}a:hover{color:#A8201A}
+</style>
+</helmet>
+<div style="min-height: 1080px; display: flex; flex-wrap: wrap; background: #F5F6F8; color: #14161B; font-family: 'Plus Jakarta Sans', system-ui, sans-serif">
+
+  <aside style="flex: 1 0 232px; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #E4E6EB; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px">
+    <p style="margin: 4px 10px 18px; font-size: 21px; font-weight: 800; letter-spacing: -0.03em">sanford<span style="color: #C8281E">Ai</span></p>
+    <nav aria-label="Main" style="display: flex; flex-direction: column; gap: 2px">
+      <a href="Home.dc.html" style="height: 40px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; color: #2B2F38; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21H3z"></path><path d="M9 21v-6h6v6"></path></svg>Home</a>
+      <a href="Work.dc.html" style="height: 40px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; color: #2B2F38; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 13h5l2 3h4l2-3h5"></path><path d="M5.5 5h13L21 13v6H3v-6z"></path></svg><span style="flex: 1 1 auto">My work</span><span style="min-width: 22px; height: 22px; padding: 0 7px; box-sizing: border-box; border-radius: 11px; background: #14161B; color: #FFFFFF; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center">4</span></a>
+      <a href="Calendar.dc.html" style="height: 40px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; color: #2B2F38; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Calendar</a>
+      <a href="#" style="height: 40px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; color: #2B2F38; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5z"></path><path d="M3 8l9 5 9-5M12 13v8"></path></svg>Products</a>
+      <p style="margin: 16px 12px 6px; font-size: 12px; font-weight: 700; color: #5F6675">Studios</p>
+      <a href="Studio.dc.html" style="height: 40px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; color: #2B2F38; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle><path d="M2 3h3l2.5 12h11.5l2-8H6"></path></svg>E-commerce</a>
+      <a href="Social.dc.html" aria-current="page" style="height: 40px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 700; color: #FFFFFF; background: #14161B; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 5V5L7 10H4a1 1 0 0 0-1 1z"></path><path d="M17 8a5 5 0 0 1 0 8"></path></svg>Social media</a>
+      <a href="Packaging.dc.html" style="height: 40px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; color: #2B2F38; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="14" rx="1"></rect><path d="M3 7l3-4h12l3 4M10 11h4"></path></svg>Packaging</a>
+      <a href="Flyers.dc.html" style="height: 40px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; color: #2B2F38; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h13v16H6a2 2 0 0 1-2-2z"></path><path d="M17 8h3v10a2 2 0 0 1-2 2"></path><path d="M8 8h5M8 12h5M8 16h3"></path></svg>Retail flyers</a>
+      <div style="height: 1px; background: #EEF0F3; margin: 12px 8px"></div>
+      <a href="#" style="height: 40px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; color: #2B2F38; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h4v16H4zM10 4h4v16h-4z"></path><path d="m16 5 4 1-3 14-4-1z"></path></svg>Library</a>
+      <a href="Team.dc.html" style="height: 40px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; color: #2B2F38; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path></svg>Settings</a>
+    </nav>
+    <div style="flex: 1 1 auto"></div>
+    <button type="button" style="height: 40px; padding: 0 12px; border-radius: 10px; border: 0; background: transparent; color: #4A505E; font: inherit; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 12px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>Collapse</button>
+  </aside>
+
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <header style="min-height: 56px; box-sizing: border-box; padding: 8px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; background: #FFFFFF; border-bottom: 1px solid #E4E6EB">
+      <span style="flex: 1 1 140px; font-size: 14px; color: #4A505E"><a href="#" style="text-decoration: none; color: #4A505E">Social media</a> / <strong style="color: #14161B">SF935HFN · Launch posts</strong></span>
+      <button type="button" style="flex: 0 1 360px; height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #E4E6EB; background: #F5F6F8; color: #4A505E; font: inherit; font-size: 14px; display: flex; align-items: center; gap: 10px; text-align: left"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><span style="flex: 1 1 auto">Search</span><span style="font-size: 12px; font-weight: 700; padding: 2px 6px; border-radius: 6px; background: #FFFFFF; border: 1px solid #E4E6EB">Ctrl K</span></button>
+      <div style="flex: 1 1 140px; display: flex; justify-content: flex-end; align-items: center; gap: 8px">
+        <button type="button" aria-label="Notifications" style="width: 40px; height: 40px; border-radius: 20px; border: 1px solid #E4E6EB; background: #FFFFFF; color: #14161B; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10 21h4"></path></svg></button>
+        <button type="button" aria-label="Account menu" style="width: 40px; height: 40px; border-radius: 20px; border: 0; background: #14161B; color: #FFFFFF; font: inherit; font-size: 13px; font-weight: 700">AD</button>
+      </div>
+    </header>
+
+    <div style="padding: 16px 24px; background: #FFFFFF; border-bottom: 1px solid #E4E6EB; display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+      <img src="/_blob/743c06cc51f532b26162b0af47ab601c" alt="" style="width: 44px; height: 44px; object-fit: cover; border-radius: 10px">
+      <div style="flex: 1 1 240px; display: flex; flex-direction: column; gap: 2px">
+        <h1 style="margin: 0; font-size: 20px; font-weight: 800">SF935HFN · Launch posts</h1>
+        <span style="font-size: 13px; color: #4A505E">Campaign <a href="Calendar.dc.html" style="font-weight: 700">SF935HFN launch</a> · owner Graphic designer</span>
+      </div>
+      <ol aria-label="Stages" style="margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+        <li style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #4A505E"><span style="width: 24px; height: 24px; border-radius: 50%; background: #14161B; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></span>Brief</li>
+        <li aria-hidden="true" style="width: 20px; height: 2px; background: #14161B"></li>
+        <li style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #4A505E"><span style="width: 24px; height: 24px; border-radius: 50%; background: #14161B; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></span>Generate</li>
+        <li aria-hidden="true" style="width: 20px; height: 2px; background: #14161B"></li>
+        <li aria-current="step" style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: #14161B"><span style="width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%; border: 2px solid #14161B; display: flex; align-items: center; justify-content: center; font-size: 12px">3</span>Review</li>
+        <li aria-hidden="true" style="width: 20px; height: 2px; background: #E4E6EB"></li>
+        <li style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #5F6675"><span style="width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%; border: 2px solid #D5D9E0; display: flex; align-items: center; justify-content: center; font-size: 12px">4</span>Schedule</li>
+      </ol>
+    </div>
+
+    <div style="flex: 1 1 auto; padding: 20px 24px; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 20px">
+      <section aria-label="Brief" style="flex: 1 1 240px; max-width: 270px; box-sizing: border-box; background: #FFFFFF; border: 1px solid #E4E6EB; border-radius: 16px; display: flex; flex-direction: column">
+        <div style="padding: 14px 16px; border-bottom: 1px solid #EEF0F3"><h2 style="margin: 0; font-size: 14px; font-weight: 800">Brief</h2></div>
+        <div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 12px; font-weight: 700; color: #4A505E">Formats</span>
+          <label style="min-height: 34px; display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #14161B">Instagram post<span style="margin-left: auto; font-size: 12px; font-weight: 500; color: #4A505E">4:5</span></label>
+          <label style="min-height: 34px; display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #14161B">Instagram story<span style="margin-left: auto; font-size: 12px; font-weight: 500; color: #4A505E">9:16</span></label>
+          <label style="min-height: 34px; display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #14161B">WhatsApp status<span style="margin-left: auto; font-size: 12px; font-weight: 500; color: #4A505E">9:16</span></label>
+          <label style="min-height: 34px; display: flex; align-items: center; gap: 10px; font-size: 13px"><input type="checkbox" style="width: 18px; height: 18px; accent-color: #14161B">Facebook post<span style="margin-left: auto; font-size: 12px; color: #4A505E">1.91:1</span></label>
+          <label style="min-height: 34px; display: flex; align-items: center; gap: 10px; font-size: 13px"><input type="checkbox" style="width: 18px; height: 18px; accent-color: #14161B">TikTok cover<span style="margin-left: auto; font-size: 12px; color: #4A505E">9:16</span></label>
+          <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 6px"><label for="so2-h" style="font-size: 12px; font-weight: 700; color: #4A505E">Headline</label><input id="so2-h" value="Rechargeable Hand Fan" style="height: 40px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 1px solid #D5D9E0; font: inherit; font-size: 13px"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="so2-s" style="font-size: 12px; font-weight: 700; color: #4A505E">Supporting line</label><input id="so2-s" value="Type-C charging · 3 speeds" style="height: 40px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 1px solid #D5D9E0; font: inherit; font-size: 13px"></div>
+          <span style="font-size: 12px; font-weight: 700; color: #4A505E; margin-top: 4px">Language</span>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; padding: 3px; border-radius: 10px; background: #EEF0F3">
+            <button type="button" style="height: 32px; border-radius: 8px; border: 0; background: #FFFFFF; color: #14161B; font: inherit; font-size: 12px; font-weight: 700; box-shadow: 0 1px 2px rgba(20,22,27,.14)">English</button>
+            <button type="button" style="height: 32px; border-radius: 8px; border: 0; background: transparent; color: #4A505E; font: inherit; font-size: 12px">Arabic</button>
+            <button type="button" style="height: 32px; border-radius: 8px; border: 0; background: transparent; color: #4A505E; font: inherit; font-size: 12px">Both</button>
+          </div>
+          <button type="button" style="margin-top: 8px; height: 44px; border-radius: 12px; border: 1px solid #D5D9E0; background: #FFFFFF; color: #14161B; font: inherit; font-size: 14px; font-weight: 700">Regenerate all</button>
+        </div>
+      </section>
+
+      <section aria-label="Canvas" style="flex: 999 1 420px; min-width: 0; display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end; align-content: flex-start">
+        <button type="button" onClick="{{pick0}}" aria-label="Instagram post" style="{{tile0}}">
+          <span style="display: flex; flex-direction: column; width: 220px; aspect-ratio: 4 / 5; border-radius: 10px; overflow: hidden; background: #FFFFFF; border: 1px solid #EEF0F3">
+            <img src="/_blob/743c06cc51f532b26162b0af47ab601c" alt="" style="width: 100%; flex: 1 1 auto; min-height: 0; object-fit: cover; display: block">
+            <span style="padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 4px; text-align: left"><span style="font-size: 12px; font-weight: 800; color: #C8281E">sanford</span><span style="font-size: 16px; font-weight: 800; line-height: 1.15">Rechargeable Hand Fan</span><span style="display: flex; justify-content: space-between; align-items: center; gap: 6px"><span style="font-size: 11px; color: #4A505E">Type-C charging · 3 speeds</span><span style="height: 22px; padding: 0 9px; border-radius: 11px; background: #C8281E; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center">Shop now</span></span></span>
+          </span>
+          <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%"><span style="font-size: 13px; font-weight: 700">Instagram post</span><span style="height: 22px; padding: 0 8px; border-radius: 11px; background: #E7F6EC; color: #126C34; font-size: 12px; font-weight: 700; display: flex; align-items: center">Approved</span></span>
+        </button>
+        <button type="button" onClick="{{pick1}}" aria-label="Instagram story" style="{{tile1}}">
+          <span style="display: flex; flex-direction: column; width: 166px; aspect-ratio: 9 / 16; border-radius: 10px; overflow: hidden; background: #C8281E">
+            <span style="padding: 16px 12px 10px; display: flex; flex-direction: column; gap: 4px; color: #FFFFFF; text-align: left"><span style="font-size: 11px; font-weight: 800">sanford</span><span style="font-size: 18px; font-weight: 800; line-height: 1.1">Rechargeable Hand Fan</span></span>
+            <span style="flex: 1 1 auto; margin: 0 10px; border-radius: 10px; background: #FFFFFF; overflow: hidden; min-height: 0; display: block"><img src="/_blob/2d94af3f1eac55074a9b6683fa7e51d8" alt="" style="width: 100%; height: 100%; object-fit: contain; display: block"></span>
+            <span style="padding: 10px 12px 14px; display: flex; justify-content: center"><span style="height: 26px; padding: 0 14px; border-radius: 13px; background: #FFFFFF; color: #A8201A; font-size: 12px; font-weight: 800; display: flex; align-items: center">Shop now</span></span>
+          </span>
+          <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%"><span style="font-size: 13px; font-weight: 700">Story</span><span style="height: 22px; padding: 0 8px; border-radius: 11px; background: #FFF4D6; color: #7A4F00; font-size: 12px; font-weight: 700; display: flex; align-items: center">In review</span></span>
+        </button>
+        <button type="button" onClick="{{pick2}}" aria-label="WhatsApp status" style="{{tile2}}">
+          <span style="display: flex; flex-direction: column; width: 166px; aspect-ratio: 9 / 16; border-radius: 10px; overflow: hidden; background: #FFFFFF; border: 1px solid #EEF0F3">
+            <span style="padding: 16px 12px 4px; display: flex; flex-direction: column; gap: 4px; text-align: left"><span style="font-size: 11px; font-weight: 800; color: #C8281E">sanford</span><span style="font-size: 17px; font-weight: 800; line-height: 1.1">Pick your colour</span></span>
+            <img src="/_blob/89b3044eb1eb119a80b8ec9f4ca7e0e6" alt="" style="width: 100%; flex: 1 1 auto; min-height: 0; object-fit: contain; display: block">
+            <span style="padding: 9px 10px; background: #14161B; color: #FFFFFF; font-size: 11px; font-weight: 700; text-align: center">1 year service warranty</span>
+          </span>
+          <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%"><span style="font-size: 13px; font-weight: 700">WhatsApp</span><span style="height: 22px; padding: 0 8px; border-radius: 11px; background: #E7F6EC; color: #126C34; font-size: 12px; font-weight: 700; display: flex; align-items: center">Approved</span></span>
+        </button>
+      </section>
+
+      <aside aria-label="Inspector" style="flex: 1 1 300px; max-width: 340px; box-sizing: border-box; background: #FFFFFF; border: 1px solid #E4E6EB; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px">
+          <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #4A505E">{{cur.size}}</span><h2 style="margin: 0; font-size: 18px; font-weight: 800">{{cur.name}}</h2></div>
+          <span style="{{cur.badge}}">{{cur.status}}</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><label for="cap" style="font-size: 13px; font-weight: 800">Caption</label><textarea id="cap" rows="3" style="box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid #D5D9E0; font: inherit; font-size: 13px; line-height: 1.5; resize: vertical">{{cur.caption}}</textarea></div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="sd" style="font-size: 12px; font-weight: 700; color: #4A505E">Date</label><input id="sd" value="{{cur.date}}" style="height: 40px; box-sizing: border-box; padding: 0 10px; border-radius: 10px; border: 1px solid #D5D9E0; font: inherit; font-size: 13px; min-width: 0"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label for="st" style="font-size: 12px; font-weight: 700; color: #4A505E">Time</label><input id="st" value="{{cur.time}}" style="height: 40px; box-sizing: border-box; padding: 0 10px; border-radius: 10px; border: 1px solid #D5D9E0; font: inherit; font-size: 13px; min-width: 0"></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 13px; font-weight: 800">Publish to</span>
+          <sc-for list="{{cur.targets}}" as="t" hint-placeholder-count="2"><div style="min-height: 30px; display: flex; align-items: center; gap: 10px; font-size: 13px"><span style="{{t.dot}}"></span><span style="flex: 1 1 auto; font-weight: 600">{{t.name}}</span><span style="font-size: 12px; color: #4A505E">{{t.how}}</span></div></sc-for>
+        </div>
+        <div style="padding: 12px; border-radius: 12px; background: #F5F6F8; display: flex; flex-direction: column; gap: 8px">
+          <label for="ask" style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"></path></svg>Ask the assistant</label>
+          <input id="ask" placeholder="e.g. Make the headline shorter" style="height: 40px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 1px solid #D5D9E0; background: #FFFFFF; font: inherit; font-size: 13px">
+          <div style="display: flex; flex-wrap: wrap; gap: 6px"><button type="button" style="height: 32px; padding: 0 10px; border-radius: 16px; border: 1px solid #D5D9E0; background: #FFFFFF; font: inherit; font-size: 12px; font-weight: 600">Arabic version</button><button type="button" style="height: 32px; padding: 0 10px; border-radius: 16px; border: 1px solid #D5D9E0; background: #FFFFFF; font: inherit; font-size: 12px; font-weight: 600">3 variations</button><button type="button" style="height: 32px; padding: 0 10px; border-radius: 16px; border: 1px solid #D5D9E0; background: #FFFFFF; font: inherit; font-size: 12px; font-weight: 600">Shorter caption</button></div>
+        </div>
+        <sc-if value="{{cur.review}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; gap: 8px">
+            <button type="button" style="flex: 1 1 0; height: 46px; border-radius: 12px; border: 1px solid #D5D9E0; background: #FFFFFF; color: #14161B; font: inherit; font-size: 14px; font-weight: 700">Send back</button>
+            <button type="button" style="flex: 1 1 0; height: 46px; border-radius: 12px; border: 0; background: #C8281E; color: #FFFFFF; font: inherit; font-size: 14px; font-weight: 700">Approve</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{cur.approved}}" hint-placeholder-val="{{false}}"><p style="margin: 0; font-size: 13px; color: #4A505E">Approved by Reviewer · {{cur.after}}</p></sc-if>
+      </aside>
+    </div>
+
+    <footer style="padding: 12px 24px; background: #FFFFFF; border-top: 1px solid #E4E6EB; display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+      <span style="font-size: 14px; font-weight: 700">2 of 3 approved</span>
+      <span aria-hidden="true" style="flex: 0 1 220px; height: 6px; border-radius: 3px; background: #E4E6EB; overflow: hidden; display: block"><span style="display: block; width: 67%; height: 100%; background: #14161B"></span></span>
+      <span style="flex: 1 1 auto; font-size: 13px; color: #4A505E">Approved posts go onto the campaign calendar automatically</span>
+      <a href="Calendar.dc.html" style="height: 44px; padding: 0 18px; border-radius: 12px; border: 1px solid #D5D9E0; color: #14161B; font-size: 14px; font-weight: 700; display: flex; align-items: center; text-decoration: none">Open calendar</a>
+    </footer>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1080}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sel: 1 }; }
+  renderVals() {
+    const sel = this.state.sel;
+    const tile = (i) => 'padding: 10px; border-radius: 16px; background: #FFFFFF; font: inherit; color: #14161B; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; ' + (i === sel ? 'border: 2px solid #14161B; box-shadow: 0 0 0 3px #E4E6EB' : 'border: 2px solid #E4E6EB');
+    const dot = (on) => 'flex: none; width: 8px; height: 8px; border-radius: 50%; background: ' + (on ? '#16A34A' : '#C9CDD5');
+    const badge = (bg, fg) => 'flex: none; height: 24px; padding: 0 9px; border-radius: 12px; font-size: 12px; font-weight: 700; display: flex; align-items: center; background: ' + bg + '; color: ' + fg;
+    const F = [
+      { name: 'Instagram post', size: '1080 × 1350 · 4:5', status: 'Approved', badge: badge('#E7F6EC', '#126C34'), date: 'Nov 10', time: '18:30', after: 'scheduled for Nov 10, 18:30', caption: 'Rechargeable Hand Fan. Type-C charging, 3 speeds, in green, pink and blue.', targets: [{ name: 'Instagram', how: 'Auto-publish', dot: dot(true) }, { name: 'Facebook', how: 'Auto-publish', dot: dot(true) }] },
+      { name: 'Instagram story', size: '1080 × 1920 · 9:16', status: 'In review', badge: badge('#FFF4D6', '#7A4F00'), date: 'Nov 10', time: '20:00', after: '', caption: 'Stay cool anywhere. Tap to shop.', targets: [{ name: 'Instagram', how: 'Auto-publish', dot: dot(true) }] },
+      { name: 'WhatsApp status', size: '1080 × 1920 · 9:16', status: 'Approved', badge: badge('#E7F6EC', '#126C34'), date: 'Nov 12', time: '12:00', after: 'reminder set for Nov 12, 12:00', caption: 'Pick your colour: green, pink or blue.', targets: [{ name: 'WhatsApp', how: 'Reminder to post by hand', dot: dot(false) }] }
+    ];
+    const c = F[sel];
+    return {
+      tile0: tile(0), tile1: tile(1), tile2: tile(2),
+      pick0: () => this.setState({ sel: 0 }), pick1: () => this.setState({ sel: 1 }), pick2: () => this.setState({ sel: 2 }),
+      cur: Object.assign({}, c, { review: c.status === 'In review', approved: c.status === 'Approved' })
+    };
+  }
+}
+</script>
+</body>
+</html>

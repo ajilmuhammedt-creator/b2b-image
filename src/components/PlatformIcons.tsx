@@ -86,3 +86,4 @@ export function NoonIcon({ className = 'w-4 h-4', size }: IconProps) {
     </svg>
   );
 }
+

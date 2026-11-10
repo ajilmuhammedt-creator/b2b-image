@@ -1,0 +1,122 @@
+{
+  "source": "Sanford-Brand-Packaging-Kit.pdf",
+  "edition": "November 2026",
+  "market": "GCC / UAE, English + Arabic",
+  "use": "Packaging artwork only (gift box, master carton, rating label, user manual). Never for app UI.",
+  "note": "Hex values are RGB from exported PDFs. Take CMYK/Pantone from the Illustrator master swatches before print.",
+
+  "category_tokens": {
+    "grooming":       { "hex": "#2170B4", "tint": "#ADC8E8", "deep": "#111B25", "white_text": "5.2:1 ok", "products": ["SF9709HC"] },
+    "kitchen":        { "hex": "#0A8141", "deep": "#073E25", "white_text": "5.0:1 ok", "products": ["SF5901GM", "SF5905GM C"] },
+    "cooling":        { "hex": "#1C82C3", "navy": "#214083", "deep": "#0C202F", "white_text": "4.17:1 — only 24 pt+ or bold 19 pt+", "products": ["SF965RTF"] },
+    "lighting":       { "hex": "#5C2E8E", "deep": "#350555", "white_text": "9.4:1 ok", "products": ["SF453EL"] },
+    "aircooler-gold": { "hex": "#D4AC68", "white_text": "2.1:1 FAILS — set text in ink", "frame": false, "products": ["SF8112PAC"] }
+  },
+  "category_token_drives": ["frame", "model pill", "icon circles", "size tab", "title bars", "caption bars"],
+
+  "accents": {
+    "power-yellow": "#FFF000",
+    "rpm-orange": "#F68725",
+    "rpm-red": "#E71D28",
+    "warranty-blue": "#1C75BC",
+    "warranty-red": "#ED1F24",
+    "group-blue": "#4C92CF",
+    "group-green": "#8DBF3F"
+  },
+  "neutrals": {
+    "ink": "#000000",
+    "ink-muted": "#3E3E3E",
+    "surface": "#FFFFFF",
+    "paper": "#FFFFFF",
+    "closure-black": "#000000"
+  },
+
+  "typography": [
+    { "role": "sans",            "print_face": "Sharp Sans",    "screen_stand_in": "Montserrat",       "use": "names, features, specs, manuals, labels" },
+    { "role": "legal",           "print_face": "Century Gothic","screen_stand_in": "Montserrat",       "use": "legal paragraph, QR notes", "min_pt": 5.5 },
+    { "role": "speed",           "print_face": "HighSpeed",     "screen_stand_in": "Racing Sans One",  "use": "wattage and RPM numerals" },
+    { "role": "condensed",       "print_face": "Bebas Neue",    "screen_stand_in": "Bebas Neue",       "use": "SANFORD WARRANTY & SERVICE" },
+    { "role": "arabic",          "print_face": "GE SS Text",    "screen_stand_in": "Noto Kufi Arabic", "use": "Arabic bullets and manuals", "min_pt": 6.5 },
+    { "role": "arabic-display",  "print_face": "AraHamah 1964", "screen_stand_in": "Noto Kufi Arabic", "use": "Arabic product names" }
+  ],
+  "fonts_note": "Fonts are licensed and not stored in the kit. Production files must use the real faces.",
+
+  "spacing_mm": {
+    "bleed": 3,
+    "safe_zone": 3,
+    "card_inset":  { "front_under_100mm": 3, "front_100_to_250mm": 6, "front_over_250mm": 13 },
+    "card_radius": { "front_under_100mm": 3, "front_100_to_250mm": 6, "front_over_250mm": 13 },
+    "pill_radius": 2,
+    "label_radius": 2,
+    "manual_page": 120,
+    "manual_margin": 7
+  },
+
+  "minimum_sizes_pt": {
+    "legal": 5.5,
+    "arabic_anywhere": 6.5,
+    "rating_label": 7,
+    "flexo_corrugated_positive": 8,
+    "flexo_corrugated_reversed": 10
+  },
+
+  "gift_box": {
+    "panel_sequence": {
+      "tall_box_rule": "front width / length (W/L) <= 0.65",
+      "tall": ["FRONT_LIGHT", "SPEC_SIDE_EN", "FRONT_DARK", "ARABIC_SIDE"],
+      "near_square": ["FRONT_LIGHT", "BACK_BILINGUAL", "FRONT_DARK", "SIDE_LIFESTYLE"],
+      "glue_flap": "outer edge of the Arabic side",
+      "lid": "mini front rotated 180 degrees, or AVAILABLE COLORS strip for variants",
+      "closures": "closure-black; bottom carries disclaimer + copyright in white"
+    },
+    "front_order": ["wordmark top-left 55-60% of card width", "Superbrands seal top-right ~12%", "size tab hanging from top edge", "model pill + descriptor + product name", "feature list 4-7 items", "power badge + RPM gauge (max one each per face)", "hero product cut-out 55-70% of card height", "tagline"],
+    "faces": { "light": "black wordmark, light gradient or lifestyle photo", "dark": "white wordmark, black to category-deep gradient" }
+  },
+
+  "components": [
+    { "name": "Wordmark",        "inputs": ["face colour"], "rule": "supplied SVG only, never retyped; min width 12 mm; clear space = height of 's'" },
+    { "name": "CategoryFrame",   "inputs": ["category", "face", "front width"] },
+    { "name": "ModelPill",       "inputs": ["model", "descriptor", "product name", "category"] },
+    { "name": "FeatureList",     "inputs": ["items {icon, value, label}", "category", "face"], "rule": "4-7 items, lead with number + unit" },
+    { "name": "SizeTab",         "inputs": ["value", "second line"] },
+    { "name": "PowerBadge",      "inputs": ["watts", "bar word", "sub line", "rpm"], "rule": "one badge and one gauge per face; real rated power only" },
+    { "name": "SpecHeader",      "inputs": ["model EN + AR", "names EN + AR", "category"] },
+    { "name": "WarrantyBlock",   "inputs": ["QR URL", "warranty period"], "rule": "omit when no warranty" },
+    { "name": "InfoStrip",       "inputs": ["unit size + weight", "package size + weight", "rating", "marks", "EAN-13", "manufacturer", "importer", "origin EN + AR", "batch format"] },
+    { "name": "LegalBlock",      "inputs": [], "rule": "fixed copy, 5.5 pt minimum" },
+    { "name": "CartonMainPanel", "inputs": ["model", "name caps", "quantity", "carton size", "net + gross weight", "line drawing"] },
+    { "name": "RatingLabel",     "inputs": ["model", "name", "rating", "marks", "origin", "party", "batch", "label size"], "rule": "7 pt minimum, no AI" },
+    { "name": "ManualCover",     "inputs": ["title", "product name", "model", "line drawing", "QR", "marks", "rating", "batch", "origin"] }
+  ],
+
+  "compliance_rules": [
+    { "code": "CAT_COLOUR",   "rule": "Pack uses only its own category colour",                         "blocking": true },
+    { "code": "MIN_LEGAL",    "rule": "Legal text and disclaimers >= 5.5 pt",                           "blocking": true },
+    { "code": "MIN_ARABIC",   "rule": "Arabic text >= 6.5 pt",                                          "blocking": true },
+    { "code": "MIN_RATING",   "rule": "Rating label text >= 7 pt",                                      "blocking": true },
+    { "code": "MIN_FLEXO",    "rule": "Corrugated flexo >= 8 pt positive, 10 pt reversed",              "blocking": true },
+    { "code": "PARTIES",      "rule": "Manufacturer and importer/distributor both named",               "blocking": true },
+    { "code": "ORIGIN",       "rule": "Country of origin in English and Arabic",                        "blocking": true },
+    { "code": "BARCODE",      "rule": "EAN-13 100% black on white box, 80-120%, full quiet zones",      "blocking": true },
+    { "code": "METRIC",       "rule": "Metric units only (inches optional in brackets)",                "blocking": true },
+    { "code": "FOOTNOTE",     "rule": "Asterisked claim has its footnote on the same face",             "blocking": true },
+    { "code": "ONE_BADGE",    "rule": "Max one power badge and one RPM gauge per face",                 "blocking": false },
+    { "code": "MODEL_4X",     "rule": "Model code on front, spec side, Arabic side and lid",            "blocking": false },
+    { "code": "SEAL_LICENCE", "rule": "Superbrands seal licence current",                               "blocking": false },
+    { "code": "AR_PROOF",     "rule": "Arabic proofed by a native speaker",                             "blocking": false }
+  ],
+
+  "fixed_copy": {
+    "disclaimer": "All pictures shown are for illustration purpose only. Actual product may vary due to product enhancement.",
+    "contact": "Visit us @ www.sanfordjapan.com | If you have any queries please write us to info@sanfordworld.com",
+    "tagline_en": "TOUCHING YOUR LIFE EVERYDAY"
+  },
+
+  "open_decisions_sf5905gmc": [
+    "Wordmark width: kit 55-60% of card width vs SF5905GM C prompt 30-32% (CF-01)",
+    "Frame on a 310 mm front: kit 13 mm vs prompt 6 mm",
+    "Side panel: Arabic side (kit, tall box) vs lifestyle side (prompt)",
+    "Approved GR01 photo needed: uploaded photo is yellow with 4 jars; brief says green with 2 jars",
+    "Brief gaps: rating, origin, manufacturer + importer, warranty, marks, plug, EAN-13, Superbrands licence"
+  ]
+}
