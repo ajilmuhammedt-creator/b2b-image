@@ -269,19 +269,9 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    // 3. Optional Style Reference for Style Lock
-    let styleRefBuffer: Buffer | null = null;
-    if (settings.styleLock && slot > 1 && styleRefPath) {
-      try {
-        const { data: styleData } = await supabaseAdmin.storage
-          .from('generated-images')
-          .download(styleRefPath);
-        if (styleData) {
-          styleRefBuffer = Buffer.from(await styleData.arrayBuffer());
-        }
-      } catch (styleErr) {
-        console.warn('Style ref download failed:', styleErr);
-      }
+    // 3. Style Lock Prompt Guidance
+    if (settings.styleLock && slot > 1) {
+      prompt += '\n\nSTYLE CONSISTENCY MANDATE: Match the exact studio lighting, perspective, realism, color temperature, and clean studio aesthetic of the approved Slot 1 hero image. Maintain identical product material textures and finish.';
     }
 
     // 4. Call OpenAI Images Edit API with retry
@@ -291,11 +281,6 @@ export default async function handler(req: any, res: any) {
       const form = new FormData();
       const imageBlob = new Blob([imageBuffer!], { type: 'image/png' });
       form.append('image', imageBlob, 'product.png');
-
-      if (styleRefBuffer) {
-        const styleBlob = new Blob([styleRefBuffer], { type: 'image/png' });
-        form.append('image', styleBlob, 'style_reference.png');
-      }
 
       form.append('model', selectedModel);
       form.append('prompt', prompt);
