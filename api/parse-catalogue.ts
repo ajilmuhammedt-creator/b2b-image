@@ -31,16 +31,18 @@ export default async function handler(req: any, res: any) {
       }
     }
 
-    const { catalogueImage, extractedText = '', fileName = 'catalogue.pdf' } = body || {};
+    const catalogueImage = body?.catalogueImage || body?.imageDataUrl || body?.image || '';
+    const extractedText = body?.extractedText || '';
+    const fileName = body?.fileName || 'catalogue.pdf';
 
     if (!catalogueImage && !extractedText) {
       return res.status(400).json({ error: 'Catalogue image or text is required.' });
     }
 
-    const openaiApiKey = process.env.OPENAI_API_KEY;
+    const openaiApiKey = process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
     if (!openaiApiKey) {
       return res.status(500).json({
-        error: 'OPENAI_API_KEY is not configured on Vercel. Please add OPENAI_API_KEY in Vercel Project Settings > Environment Variables and redeploy.',
+        error: 'OPENAI_API_KEY is not configured. Please add OPENAI_API_KEY in your environment variables.',
       });
     }
 
@@ -130,14 +132,20 @@ Output MUST be valid JSON matching this schema:
     const contentPayload: any[] = [
       {
         type: 'text',
-        text: `Analyze this catalogue document (${fileName}):\n${extractedText ? `\nExtracted Text:\n${extractedText}\n` : ''}`,
+        text: `Analyze this catalogue document (${fileName}) and return structured product information in JSON format:\n${extractedText ? `\nExtracted Text:\n${extractedText}\n` : ''}`,
       },
     ];
 
-    if (catalogueImage && catalogueImage.startsWith('data:image/')) {
+    if (catalogueImage) {
+      const url =
+        catalogueImage.startsWith('http://') ||
+        catalogueImage.startsWith('https://') ||
+        catalogueImage.startsWith('data:image/')
+          ? catalogueImage
+          : `data:image/jpeg;base64,${catalogueImage}`;
       contentPayload.push({
         type: 'image_url',
-        image_url: { url: catalogueImage },
+        image_url: { url },
       });
     }
 
@@ -166,8 +174,38 @@ Output MUST be valid JSON matching this schema:
     const completion = await response.json();
     const resultJson = JSON.parse(completion.choices?.[0]?.message?.content || '{}');
 
+    // Normalize keys in case model returned snake_case
+    const rawProductName = resultJson.productName || resultJson.product_name || resultJson.title || '';
+    const rawModelNumber = resultJson.modelNumber || resultJson.model_number || resultJson.sku || resultJson.model || '';
+    const rawBrand = resultJson.brand || 'Sanford';
+    const rawTagline = resultJson.tagline || resultJson.slogan || '';
+    const rawDimensions = resultJson.dimensions || resultJson.dimension || '';
+    const rawWeight = resultJson.weight || '';
+    const rawWarranty = resultJson.warranty || '';
+    const rawColors = resultJson.colors || resultJson.color || '';
+    const rawWhatsInTheBox = Array.isArray(resultJson.whatsInTheBox)
+      ? resultJson.whatsInTheBox
+      : Array.isArray(resultJson.whats_in_the_box)
+      ? resultJson.whats_in_the_box
+      : [];
+    const fullFeatures: string[] = Array.isArray(resultJson.fullFeatures)
+      ? resultJson.fullFeatures
+      : Array.isArray(resultJson.features)
+      ? resultJson.features
+      : [];
+
+    resultJson.productName = rawProductName;
+    resultJson.modelNumber = rawModelNumber;
+    resultJson.brand = rawBrand;
+    resultJson.tagline = rawTagline;
+    resultJson.dimensions = rawDimensions;
+    resultJson.weight = rawWeight;
+    resultJson.warranty = rawWarranty;
+    resultJson.colors = rawColors;
+    resultJson.whatsInTheBox = rawWhatsInTheBox;
+    resultJson.fullFeatures = fullFeatures;
+
     // Post-process to strictly enforce BuySanford 6-image rule compliance
-    const fullFeatures: string[] = Array.isArray(resultJson.fullFeatures) ? resultJson.fullFeatures : [];
 
     const cleanBrandModel = (t?: string): string => {
       if (!t) return '';

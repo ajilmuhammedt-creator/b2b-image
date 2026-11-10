@@ -4,7 +4,7 @@ import { Button } from '../ui/Button';
 import { Field } from '../ui/Field';
 import { Textarea } from '../ui/Textarea';
 import { resizeImageToMax2048, validateUploadFile } from '../../lib/imageProcessing';
-import { Image as ImageIcon } from 'lucide-react';
+import { Image as ImageIcon, Check } from 'lucide-react';
 
 interface ProductSpecsModalProps {
   isOpen: boolean;
@@ -78,10 +78,18 @@ export const ProductSpecsModal: React.FC<ProductSpecsModalProps> = ({
       description="Review and customize product details before generating marketplace images. All specifications must match physical catalogue data."
       maxWidth="lg"
       footer={
-        <div className="flex items-center justify-end gap-3 w-full">
-          <Button variant="secondary" onClick={onClose}>
-            Done
-          </Button>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
+          <span className="text-xs text-muted">
+            All specifications verified against physical catalogue data.
+          </span>
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            <Button variant="secondary" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={onClose} icon={<Check className="w-4 h-4" />}>
+              Verify & Continue
+            </Button>
+          </div>
         </div>
       }
     >

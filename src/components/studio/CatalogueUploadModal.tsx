@@ -66,8 +66,10 @@ export const CatalogueUploadModal: React.FC<CatalogueUploadModalProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          catalogueImage: catalogueDataUrl,
           imageDataUrl: catalogueDataUrl,
           extractedText: extractedText || undefined,
+          fileName: file.name,
         }),
       });
 
@@ -100,19 +102,8 @@ export const CatalogueUploadModal: React.FC<CatalogueUploadModalProps> = ({
   const handlePhotoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    try {
-      validateUploadFile(file, 'photo');
-      const processed = await resizeImageToMax2048(file);
-      const previewUrl = URL.createObjectURL(processed);
-      setSourceImage({
-        file: processed,
-        previewUrl,
-      });
-      onClose();
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Invalid product photo');
-    }
+    // Process through the full vision extraction pipeline so specifications are extracted!
+    await handleFileUpload(file);
   };
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {

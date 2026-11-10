@@ -319,6 +319,7 @@ export function Studio() {
   // Modals state
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isSpecsModalOpen, setIsSpecsModalOpen] = useState(false);
+  const [pendingSpecsVerification, setPendingSpecsVerification] = useState(false);
   const [briefCollapsed, setBriefCollapsed] = useState(false);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>('card-1');
 
@@ -481,6 +482,12 @@ export function Studio() {
         ? 'Noon UAE A+ Content selected (2400px banners, English & Arabic support)'
         : 'Shopify BuySanford mode selected (6-slot pattern with WebP SEO export)'
     );
+
+    // If specs verification is pending after catalogue parse, open the Product Specifications review modal
+    if (pendingSpecsVerification) {
+      setIsSpecsModalOpen(true);
+      setPendingSpecsVerification(false);
+    }
   };
 
   // Sync Slot 5 status when color options change
@@ -505,17 +512,17 @@ export function Studio() {
   // When Catalogue is parsed
   const handleCatalogueParsed = (data: CatalogueParsedData) => {
     if (data.brand) setBrand(data.brand);
-    if (data.productName && !productName) setProductName(data.productName);
-    if (data.modelNumber && !modelNumber) setModelNumber(data.modelNumber);
-    if (data.tagline && !tagline) setTagline(data.tagline);
-    if (data.fullFeatures && data.fullFeatures.length > 0 && !featuresText) {
+    if (data.productName) setProductName(data.productName);
+    if (data.modelNumber) setModelNumber(data.modelNumber);
+    if (data.tagline) setTagline(data.tagline);
+    if (data.fullFeatures && data.fullFeatures.length > 0) {
       setFeaturesText(data.fullFeatures.join('\n'));
     }
-    if (data.colors && !colors) setColors(data.colors);
-    if (data.dimensions && !dimensions) setDimensions(data.dimensions);
-    if (data.weight && !weight) setWeight(data.weight);
-    if (data.warranty && !warranty) setWarranty(data.warranty);
-    if (data.whatsInTheBox && data.whatsInTheBox.length > 0 && whatsInTheBox.length === 0) {
+    if (data.colors) setColors(data.colors);
+    if (data.dimensions) setDimensions(data.dimensions);
+    if (data.weight) setWeight(data.weight);
+    if (data.warranty) setWarranty(data.warranty);
+    if (data.whatsInTheBox && data.whatsInTheBox.length > 0) {
       setWhatsInTheBox(data.whatsInTheBox);
     }
 
@@ -554,12 +561,16 @@ export function Studio() {
         }
         return newSlots;
       });
-      showToast(`Catalogue parsed: specifications extracted for ${data.productName}`);
+      showToast(`Specifications extracted for ${data.productName || data.modelNumber || 'product'}`);
     }
 
-    // Automatically prompt user to choose platform if not yet chosen
+    setPendingSpecsVerification(true);
+
+    // If platform is not chosen yet, ask which platform first; otherwise open specifications verification modal immediately
     if (!platform) {
       setIsPlatformModalOpen(true);
+    } else {
+      setIsSpecsModalOpen(true);
     }
   };
 
