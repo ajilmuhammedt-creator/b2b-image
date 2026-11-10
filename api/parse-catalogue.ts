@@ -250,8 +250,8 @@ Output MUST be valid JSON matching this schema:
         slot: 2,
         theme: 'lifestyle',
         title: 'Lifestyle In-Use (No Specs)',
-        headline: cleanBrandModel(resultJson.tagline) || 'Refreshing Airflow In Every Spin!',
-        description: 'Exact BuySanford lifestyle template: Person at desk with fan, top-right solid red corner badge with rounded corner containing white Sharp Sans text. Strictly NO floating text and NO specs.',
+        headline: cleanBrandModel(resultJson.tagline) || 'Built to Be Your Ultimate Companion.',
+        description: 'Exact BuySanford store template: Real person in-use scene, top-left solid red corner card with rounded bottom-right corner, top-right white product category typography.',
         features: [],
       },
       {

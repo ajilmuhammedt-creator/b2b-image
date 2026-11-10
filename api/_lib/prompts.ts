@@ -148,55 +148,103 @@ export function buildSanfordSlotPrompt(params: {
       break;
 
     case 'lifestyle': {
-      let redBadgeSection = '';
-      if (cleanHeadline) {
-        const words = cleanHeadline.split(' ').filter(Boolean);
-        let badgeTextLines: string;
-        if (words.length <= 3) {
-          badgeTextLines = words.join('\n');
-        } else if (words.length <= 6) {
-          const mid = Math.ceil(words.length / 2);
-          badgeTextLines = `${words.slice(0, mid).join(' ')}\n${words.slice(mid).join(' ')}`;
+      // 1. Prepare Top-Left Red Badge Tagline (e.g. "Built to Be\nYour Ultimate\nNight\nCompanion.")
+      let rawTagline = cleanHeadline;
+      if (!rawTagline || isDuplicateOrTechnicalSpec(rawTagline, cleanedFeatures)) {
+        const baseName = cleanProductTitle.replace(/\b(sanford|sf\d+[a-z0-9]*)\b/gi, '').trim();
+        if (/fan|cooling|air|ventilator/i.test(baseName)) {
+          rawTagline = 'Built to Be Your Ultimate Cooling Companion.';
+        } else if (/lantern|light|torch|lamp|emergency/i.test(baseName)) {
+          rawTagline = 'Built to Be Your Ultimate Night Companion.';
+        } else if (/grinder|mixer|blender|juicer|chopper/i.test(baseName)) {
+          rawTagline = 'Built to Be Your Ultimate Kitchen Companion.';
+        } else if (/kettle|cooker|oven|fryer|toaster|stove/i.test(baseName)) {
+          rawTagline = 'Built to Be Your Ultimate Cooking Companion.';
+        } else if (/iron|steamer/i.test(baseName)) {
+          rawTagline = 'Built to Be Your Ultimate Wardrobe Companion.';
         } else {
-          badgeTextLines = `${words.slice(0, 3).join(' ')}\n${words.slice(3, 6).join(' ')}\n${words.slice(6).join(' ')}`;
+          rawTagline = `Built to Be Your Ultimate ${baseName || 'Everyday'} Companion.`;
         }
+      }
 
-        redBadgeSection = `- MANDATORY TOP-RIGHT SOLID RED CORNER BADGE (EXACT BUYSANFORD BRAND TEMPLATE):
-  * Positioned directly in the TOP-RIGHT corner of the image canvas, flush against the top edge and right edge (top: 0, right: 0).
-  * Shape: Solid vibrant RED rectangular card (#E53935 / #D32F2F).
-  * The bottom-left corner of this red card is gracefully rounded (border-bottom-left-radius: 32px / rounded-bl-3xl). The top and right edges hug the image boundary.
-  * Inside this solid red card: 2 to 3 lines of bold, clean, pure WHITE typography strictly in "Sharp Sans Bold" font:
-"${badgeTextLines}"
-  * All lettering inside this red card must be crisp, high-contrast, pure white text in the "Sharp Sans" font family.
-
-- STRICT ZERO FLOATING TEXT MANDATE:
-  * ABSOLUTELY NO floating dark, black, or grey text anywhere across the image.
-  * NO text floating above the product, NO text in the center, NO text over the person or desk.
-  * The ONLY text permitted on this entire image is the white Sharp Sans text INSIDE the top-right solid red corner card.`;
+      // Format tagline into 2 to 4 clean, punchy lines for the top-left red rounded card
+      const words = rawTagline.split(' ').filter(Boolean);
+      let badgeTextLines: string;
+      if (words.length <= 4) {
+        badgeTextLines = words.join('\n');
+      } else if (words.length <= 7) {
+        const mid = Math.ceil(words.length / 2);
+        badgeTextLines = `${words.slice(0, mid).join(' ')}\n${words.slice(mid).join(' ')}`;
       } else {
-        redBadgeSection = `- STRICT ZERO FLOATING TEXT MANDATE:
-  * ABSOLUTELY NO floating dark, black, or grey text anywhere across the image.
-  * Flawless commercial lifestyle photograph. Strictly NO text unless explicitly specified.`;
+        const p1 = Math.ceil(words.length / 3);
+        const p2 = Math.ceil((2 * words.length) / 3);
+        badgeTextLines = `${words.slice(0, p1).join(' ')}\n${words.slice(p1, p2).join(' ')}\n${words.slice(p2).join(' ')}`;
+      }
+
+      // 2. Prepare Top-Right Floating Product Category Text (e.g. "Rechargeable\nEmergency Lantern")
+      const cleanCategory = cleanProductTitle
+        .replace(/\b(sanford|sf\d+[a-z0-9]*)\b/gi, '')
+        .replace(/["']/g, '')
+        .trim();
+      const catWords = cleanCategory.split(' ').filter(Boolean);
+      let categoryLines: string;
+      if (catWords.length <= 3) {
+        categoryLines = catWords.join('\n');
+      } else {
+        const mid = Math.ceil(catWords.length / 2);
+        categoryLines = `${catWords.slice(0, mid).join(' ')}\n${catWords.slice(mid).join(' ')}`;
+      }
+
+      // 3. Dynamic lifestyle scene setting based on product category
+      let sceneEnvironment = '';
+      if (/lantern|light|torch|lamp|emergency/i.test(cleanProductTitle)) {
+        sceneEnvironment = 'Outdoor evening campsite with lit tent and pine trees, or warm atmospheric room during evening. A person in outdoor jacket or casual wear holding or placing the glowing lantern, with warm luminous light illuminating their face and surroundings.';
+      } else if (/fan|cooling|air|ventilator/i.test(cleanProductTitle)) {
+        sceneEnvironment = 'Bright, clean, modern indoor living room or study desk with laptop and notebook. A relaxed, smiling person comfortably sitting at the desk or sofa, enjoying refreshing cooling breeze from the running fan placed near them.';
+      } else if (/grinder|mixer|blender|juicer|kettle|cooker|oven|fryer/i.test(cleanProductTitle)) {
+        sceneEnvironment = 'Sleek, bright modern kitchen countertop with fresh ingredients nearby. A smiling home cook actively using or preparing food/drinks with the appliance in realistic action.';
+      } else {
+        sceneEnvironment = 'Bright, authentic contemporary living space. A person actively and naturally interacting with the product in its everyday context.';
       }
 
       const modelLine = modelNumber
         ? `  * Do NOT write "${modelNumber}" or any model code anywhere on the picture.`
         : `  * Do NOT write any model code or model number anywhere on the picture.`;
 
-      specificStyle = `SLOT 2: LIFESTYLE & IN-USE SCENE (EXACT BUYSANFORD TEMPLATE - ZERO FLOATING TEXT)
-- SCENE & COMPOSITION (EXACT BUYSANFORD WEBSITE TEMPLATE):
-  * Realistic, clean indoor setting (e.g. bright modern workspace, desk with laptop, notebook, pen).
-  * A relaxed, smiling person (e.g. young woman with or without glasses) comfortably sitting at the desk, studying or working, enjoying the refreshing cooling breeze.
-  * The product fan is placed upright on the desk in front of or beside the person, facing towards them.
-  * Crisp ambient daylight, natural shadows, sharp focus on the product matching the reference photograph.
+      specificStyle = `SLOT 2: LIFESTYLE & IN-USE SCENE (EXACT BUYSANFORD STORE REFERENCE TEMPLATE)
+- MANDATORY TWO-CORNER BUYSANFORD BRAND TEMPLATE:
+  1. TOP-LEFT SOLID RED CORNER BADGE (BRAND LIFESTYLE HEADLINE):
+     * Position: Pinned directly to the TOP-LEFT corner of the image canvas (top: 0, left: 0), flush with the top and left edges.
+     * Shape: Solid vibrant RED rectangular card (#C8281E / #E52414 / Sanford Crimson Red).
+     * Distinct Corner Geometry: The bottom-right corner of this red card is prominently rounded (border-bottom-right-radius: ~36px / rounded-br-3xl). The top edge, left edge, and top-right corner are rectangular and flush with the frame.
+     * Typography: Crisp, high-contrast, bold pure WHITE text (#FFFFFF) strictly in "Sharp Sans Bold" font:
+"${badgeTextLines}"
+     * Formatting: Left-aligned with comfortable padding inside the red card, 2 to 4 clean lines, ending with a period.
 
-${redBadgeSection}
+  2. TOP-RIGHT PRODUCT CATEGORY / TITLE (CLEAN WHITE FLOATING TYPOGRAPHY):
+     * Position: Upper-right area of the canvas.
+     * Style: Clean, elegant, pure WHITE text (#FFFFFF) rendered directly over the scene (NO background box, NO container).
+     * Font: Crisp "Sharp Sans Bold" or "Sharp Sans Semibold" with clear legibility against the ambient scene lighting.
+     * Typography: Product category / title in 1 or 2 lines:
+"${categoryLines}"
+     * STRICT RULE: Absolutely NO brand name ("Sanford") and NO model code here. Only the generic product category/title.
 
-- STRICT NEGATIVE CONSTRAINT (CRITICAL - DO NOT VIOLATE):
-  * STRICTLY NO technical product specifications, NO feature lists, NO numbers/specs text, NO battery/power specs, NO wattage.
-  * ABSOLUTELY NO BRAND NAME AND NO MODEL NUMBER TEXT ON THE IMAGE.
-  * Do NOT write "Sanford" or any brand name anywhere on the picture.
-${modelLine}`;
+- SCENE & COMPOSITION (PHOTOREALISTIC COMMERCIAL LIFESTYLE IN-USE):
+  * Setting: ${sceneEnvironment}
+  * Model: A real, natural human model actively using, holding, or enjoying the product in realistic everyday context.
+  * Active Product State: The product must be turned on and operational (lantern glowing with luminous light, fan blowing air, blender active).
+  * Product Fidelity: The product must accurately match the uploaded source reference photograph in shape, proportions, materials, colors, and components.
+  * Photographic Quality: Commercial lifestyle advertising standard, cinematic depth of field, authentic environment, sharp focus on the product and person.
+
+- STRICT NEGATIVE CONSTRAINTS (CRITICAL):
+  * ABSOLUTELY NO technical specification callouts, NO bullet points, NO circular badges, NO battery/power numbers, NO dimension arrows.
+  * ABSOLUTELY NO BRAND NAME ("Sanford") written on the canvas.
+  * ABSOLUTELY NO MODEL NUMBER (${modelNumber || 'SF...'}) written on the canvas.
+${modelLine}
+  * The ONLY text permitted on the entire image is:
+    (a) The white Sharp Sans text INSIDE the top-left solid red corner card.
+    (b) The clean white Sharp Sans product category text in the top-right corner.
+  * NO other floating text anywhere else on the image.`;
       break;
     }
 

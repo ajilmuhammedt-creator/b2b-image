@@ -28,41 +28,25 @@ export function getSlotDescriptor(item: {
   sanfordSlot?: { title?: string; theme?: string };
 }): string {
   if (item.kind === 'poster') {
-    return 'catalogue-marketing-poster';
+    return '07-marketing-poster';
   }
 
   const slotNum = item.slot ?? 1;
 
   // Check if slot has a specific theme/title
   const theme = item.sanfordSlot?.theme;
-  if (theme === 'hero') return 'hero-studio-view';
-  if (theme === 'lifestyle') return 'lifestyle-in-use';
-  if (theme === 'specs_part_1') return 'specifications-part-1';
-  if (theme === 'specs_part_2') return 'specifications-part-2';
-  if (theme === 'color_focus') return 'single-colour-focus-parts';
-  if (theme === 'box_dimensions') return 'whats-in-the-box-dimensions';
+  if (theme === 'hero' || slotNum === 1) return '01-hero-studio-view';
+  if (theme === 'lifestyle' || slotNum === 2) return '02-lifestyle-in-use';
+  if (theme === 'specs_part_1' || slotNum === 3) return '03-specifications-features';
+  if (theme === 'specs_part_2' || slotNum === 4) return '04-technical-specifications';
+  if (theme === 'color_focus' || theme === 'colors' || slotNum === 5) return '05-available-colour-models';
+  if (theme === 'box_dimensions' || theme === 'size_warranty' || slotNum === 6) return '06-unit-dimension-warranty';
 
-  // Standard slot mapping
-  switch (slotNum) {
-    case 1:
-      return 'hero-studio-view';
-    case 2:
-      return 'lifestyle-in-use';
-    case 3:
-      return 'specifications-part-1';
-    case 4:
-      return 'specifications-part-2';
-    case 5:
-      return 'single-colour-focus-parts';
-    case 6:
-      return 'whats-in-the-box-dimensions';
-    default:
-      if (item.sanfordSlot?.title || item.slotTitle) {
-        const titleSlug = slugify(item.sanfordSlot?.title || item.slotTitle || '');
-        if (titleSlug) return titleSlug.slice(0, 30);
-      }
-      return `feature-view-${slotNum}`;
+  if (item.sanfordSlot?.title || item.slotTitle) {
+    const titleSlug = slugify(item.sanfordSlot?.title || item.slotTitle || '');
+    if (titleSlug) return `0${slotNum}-${titleSlug.slice(0, 30)}`;
   }
+  return `0${slotNum}-feature-view`;
 }
 
 export interface SeoNamingOptions {
@@ -85,40 +69,61 @@ export interface SeoImageNamingOptions extends SeoNamingOptions {
  * Builds an SEO-optimized filename for Shopify image uploads.
  * Always ends strictly in `.webp`.
  *
- * Example: `sanford-rechargeable-flashlight-sf6123fl-slot-01-hero-studio-view.webp`
+ * Example: `sanford-sf6671hfn-16-rechargeable-table-fan-01-hero-studio-view.webp`
  */
 export function getSeoImageFilename(options: SeoImageNamingOptions): string {
   const brandSlug = slugify(options.brand || 'sanford') || 'sanford';
-  const productSlug = slugify(options.productName || 'product') || 'product';
+  let productSlug = slugify(options.productName || 'product') || 'product';
   const modelSlug = slugify(options.modelNumber || '');
 
-  const isPoster = options.item.kind === 'poster';
-  const slotNum = isPoster ? (options.index ?? 7) : (options.item.slot ?? 1);
-  const paddedSlot = `slot-${String(slotNum).padStart(2, '0')}`;
-  const descriptor = getSlotDescriptor(options.item);
+  // Deduplicate brand if already present at start of productSlug
+  if (productSlug.startsWith(`${brandSlug}-`)) {
+    productSlug = productSlug.slice(brandSlug.length + 1);
+  }
 
-  const parts = [brandSlug, productSlug, modelSlug, paddedSlot, descriptor].filter(Boolean);
+  // Deduplicate model if already present inside productSlug
+  if (modelSlug) {
+    if (productSlug.startsWith(`${modelSlug}-`)) {
+      productSlug = productSlug.slice(modelSlug.length + 1);
+    } else if (productSlug.endsWith(`-${modelSlug}`)) {
+      productSlug = productSlug.slice(0, -(modelSlug.length + 1));
+    }
+  }
+
+  const descriptor = getSlotDescriptor(options.item);
+  const parts = [brandSlug, modelSlug, productSlug, descriptor].filter(Boolean);
   return `${parts.join('-')}.webp`;
 }
 
 /**
  * Builds an SEO-optimized folder name for saving images to disk or unzipping for Shopify upload.
  *
- * Example: `sanford-rechargeable-flashlight-sf6123fl-shopify-images`
+ * Example: `sanford-sf6671hfn-16-rechargeable-table-fan-shopify-seo-images`
  */
 export function getSeoFolderName(options: SeoNamingOptions): string {
   const brandSlug = slugify(options.brand || 'sanford') || 'sanford';
-  const productSlug = slugify(options.productName || 'product') || 'product';
+  let productSlug = slugify(options.productName || 'product') || 'product';
   const modelSlug = slugify(options.modelNumber || '');
 
-  const parts = [brandSlug, productSlug, modelSlug, 'shopify-images'].filter(Boolean);
+  if (productSlug.startsWith(`${brandSlug}-`)) {
+    productSlug = productSlug.slice(brandSlug.length + 1);
+  }
+  if (modelSlug) {
+    if (productSlug.startsWith(`${modelSlug}-`)) {
+      productSlug = productSlug.slice(modelSlug.length + 1);
+    } else if (productSlug.endsWith(`-${modelSlug}`)) {
+      productSlug = productSlug.slice(0, -(modelSlug.length + 1));
+    }
+  }
+
+  const parts = [brandSlug, modelSlug, productSlug, 'shopify-seo-images'].filter(Boolean);
   return parts.join('-');
 }
 
 /**
  * Builds the ZIP archive filename matching the SEO folder name.
  *
- * Example: `sanford-rechargeable-flashlight-sf6123fl-shopify-images.zip`
+ * Example: `sanford-sf6671hfn-16-rechargeable-table-fan-shopify-seo-images.zip`
  */
 export function getSeoZipFilename(options: SeoNamingOptions): string {
   return `${getSeoFolderName(options)}.zip`;

@@ -44,6 +44,7 @@ export interface StudioLayoutProps {
   onRetrySlot: (slot: number | 'poster', customInstructions?: string) => void;
   onCancelJob?: (id: string) => void;
   onOpenComplianceModal?: (item: GenerationItem) => void;
+  onDownloadItem?: (item: GenerationItem) => void;
 
   // Delivery Footer
   approvedCount: number;
@@ -91,6 +92,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   onRetrySlot,
   onCancelJob,
   onOpenComplianceModal,
+  onDownloadItem,
   approvedCount,
   totalCount,
   formatLabel,
@@ -180,6 +182,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           onRetry={onRetrySlot}
           onCancelJob={onCancelJob}
           onOpenComplianceModal={onOpenComplianceModal}
+          onDownloadItem={onDownloadItem}
         />
       </div>
 

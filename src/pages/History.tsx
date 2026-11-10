@@ -7,7 +7,7 @@ import { projectStorage } from '../lib/projectStorage';
 import type { ProjectData, EcommercePlatform } from '../types';
 import JSZip from 'jszip';
 import { convertToWebpBlob } from '../lib/imageConversion';
-import { getSeoImageFilename, getSeoFolderName, getSeoZipFilename } from '../lib/seoNaming';
+import { getSeoImageFilename, getSeoZipFilename } from '../lib/seoNaming';
 import { ShopifyIcon, AmazonIcon, NoonIcon } from '../components/PlatformIcons';
 import {
   Search,
@@ -101,11 +101,6 @@ export function History() {
     setDownloadingProjectId(project.id);
     try {
       const zip = new JSZip();
-      const seoFolder = getSeoFolderName({
-        brand: 'Sanford',
-        productName: project.product_name,
-        modelNumber: project.model_number,
-      });
       const zipFileName = getSeoZipFilename({
         brand: 'Sanford',
         productName: project.product_name,
@@ -130,7 +125,7 @@ export function History() {
               },
               index: idx + 1,
             });
-            zip.file(`${seoFolder}/${fileName}`, webpBlob);
+            zip.file(fileName, webpBlob);
           } catch (fetchErr) {
             console.error(`Failed to download WebP image for slot ${gen.slot}:`, fetchErr);
           }

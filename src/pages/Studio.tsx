@@ -16,15 +16,12 @@ import { fetchApi } from '../lib/apiClient';
 import { convertToWebpBlob, convertToAmazonFormatBlob } from '../lib/imageConversion';
 import {
   getSeoImageFilename,
-  getSeoFolderName,
   getSeoZipFilename,
   getAmazonImageFilename,
-  getAmazonFolderName,
   getAmazonZipFilename,
   getAmazonAPlusFilename,
   getNoonImageFilename,
   getNoonAPlusFilename,
-  getNoonFolderName,
   getNoonZipFilename,
 } from '../lib/seoNaming';
 import JSZip from 'jszip';
@@ -51,8 +48,8 @@ export const DEFAULT_SHOPIFY_SLOTS: SanfordSlotSpec[] = [
     slot: 2,
     theme: 'lifestyle',
     title: 'Lifestyle In-Use (No Specs)',
-    headline: '',
-    description: 'Exact BuySanford lifestyle template: Person at desk with fan, top-right solid red corner badge with rounded corner containing white Sharp Sans text. Strictly NO floating text and NO specs.',
+    headline: 'Built to Be Your Ultimate Companion.',
+    description: 'Exact BuySanford store template: Top-left solid red corner card with rounded bottom-right corner and bold white Sharp Sans slogan, top-right clean floating white product category title, real person in authentic in-use setting. Strictly zero specs or floating text.',
     features: [],
   },
   {
@@ -694,6 +691,10 @@ export function Studio() {
           sanfordSlot: targetSlotSpec
             ? {
                 ...targetSlotSpec,
+                headline:
+                  targetSlotSpec.headline ||
+                  (targetSlotSpec.theme === 'lifestyle' && tagline.trim() ? tagline.trim() : undefined) ||
+                  targetSlotSpec.headline,
                 dimensions,
                 weight: targetSlotSpec.theme === 'size_warranty' ? undefined : weight,
                 whatsInTheBox: targetSlotSpec.theme === 'size_warranty' ? undefined : whatsInTheBox,
@@ -1088,11 +1089,6 @@ export function Studio() {
     setIsZipping(true);
     try {
       const zip = new JSZip();
-      const folderName = isNoon
-        ? getNoonFolderName({ brand, productName, modelNumber, isAPlus: platform === 'noon_aplus' })
-        : isAmazon
-        ? getAmazonFolderName({ brand, productName, modelNumber })
-        : getSeoFolderName({ brand, productName, modelNumber });
       const zipFileName = isNoon
         ? getNoonZipFilename({ brand, productName, modelNumber, isAPlus: platform === 'noon_aplus' })
         : isAmazon
@@ -1146,7 +1142,7 @@ export function Studio() {
               index: i + 1,
             });
           }
-          zip.file(`${folderName}/${fileName}`, blob);
+          zip.file(fileName, blob);
         }
       }
 
@@ -1166,6 +1162,58 @@ export function Studio() {
     } finally {
       setIsZipping(false);
     }
+  };
+
+  // Single image download with SEO filename
+  const handleDownloadSingleItem = async (item: GenerationItem) => {
+    const blob = await fetchImageBlob(item);
+    if (!blob) {
+      showToast('Could not load image data for export', 'error');
+      return;
+    }
+
+    let fileName: string;
+    if (platform === 'noon') {
+      fileName = getNoonImageFilename({
+        modelNumber,
+        productName,
+        slotNumber: item.slot ?? 1,
+        theme: item.theme,
+      });
+    } else if (platform === 'noon_aplus') {
+      fileName = getNoonAPlusFilename({
+        modelNumber,
+        productName,
+        slotNumber: item.slot ?? 1,
+        language: item.noonLanguage || 'en',
+      });
+    } else if (isAmazon) {
+      const isMain = item.slot === 1 || item.theme === 'hero';
+      fileName = getAmazonImageFilename({
+        modelNumber,
+        productName,
+        slotNumber: item.slot ?? 1,
+        secondaryIndex: isMain ? undefined : 1,
+        format: settings.amazonFormat || 'jpeg',
+      });
+    } else {
+      fileName = getSeoImageFilename({
+        brand,
+        productName,
+        modelNumber,
+        item,
+      });
+    }
+
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    showToast(`Exported ${fileName}`);
   };
 
   // Share to phone
@@ -1428,6 +1476,7 @@ export function Studio() {
         onSendBackItem={handleSendBackItem}
         onRetrySlot={handleRegenerateSlot}
         onOpenComplianceModal={handleOpenCompliance}
+        onDownloadItem={handleDownloadSingleItem}
         approvedCount={approvedCount}
         totalCount={totalCount}
         formatLabel={formatLabel}

@@ -12,6 +12,7 @@ import {
   Loader2,
   History,
   Sparkles,
+  Download,
 } from 'lucide-react';
 
 interface InspectorCheck {
@@ -26,6 +27,7 @@ interface StudioInspectorProps {
   onRetry: (slot: number | 'poster', customInstructions?: string) => void;
   onCancelJob?: (id: string) => void;
   onOpenComplianceModal?: (item: GenerationItem) => void;
+  onDownloadItem?: (item: GenerationItem) => void;
 }
 
 export const StudioInspector: React.FC<StudioInspectorProps> = ({
@@ -35,6 +37,7 @@ export const StudioInspector: React.FC<StudioInspectorProps> = ({
   onRetry,
   onCancelJob,
   onOpenComplianceModal,
+  onDownloadItem,
 }) => {
   const [changeNote, setChangeNote] = useState('');
 
@@ -86,13 +89,26 @@ export const StudioInspector: React.FC<StudioInspectorProps> = ({
       className="w-full lg:w-[320px] xl:w-[340px] shrink-0 bg-surface border border-border rounded-card p-4 sm:p-5 flex flex-col gap-4 select-none shadow-2xs"
     >
       {/* 1:1 Large Preview Container */}
-      <div className="relative aspect-square w-full rounded-button border border-track bg-surface overflow-hidden flex items-center justify-center">
+      <div className="relative aspect-square w-full rounded-button border border-track bg-surface overflow-hidden flex items-center justify-center group">
         {item.imageUrl ? (
-          <img
-            src={item.imageUrl}
-            alt={item.slotTitle || `Slot ${slotNum}`}
-            className="w-full h-full object-contain p-2"
-          />
+          <>
+            <img
+              src={item.imageUrl}
+              alt={item.slotTitle || `Slot ${slotNum}`}
+              className="w-full h-full object-contain p-2"
+            />
+            {onDownloadItem && (
+              <button
+                type="button"
+                onClick={() => onDownloadItem(item)}
+                title="Download SEO Image file"
+                className="absolute top-2.5 right-2.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-surface/95 backdrop-blur-xs border border-border px-2.5 py-1 rounded-md text-[11px] font-bold text-ink hover:text-brand shadow-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>SEO Export</span>
+              </button>
+            )}
+          </>
         ) : isPending ? (
           <div className="flex flex-col items-center justify-center gap-2 p-4 text-center">
             <Loader2 className="w-6 h-6 animate-spin text-ink" />
