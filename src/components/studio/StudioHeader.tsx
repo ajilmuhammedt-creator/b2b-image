@@ -80,3 +80,4 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
     </div>
   );
 };
+

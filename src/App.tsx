@@ -13,6 +13,10 @@ import { MyWork } from './pages/MyWork';
 import { CampaignCalendar } from './pages/CampaignCalendar';
 import { ProductsList } from './pages/ProductsList';
 import { BrandKitLibrary } from './pages/BrandKitLibrary';
+import { SocialStudio } from './pages/SocialStudio';
+import { FlyersStudio } from './pages/FlyersStudio';
+import { GiftBoxStudio } from './pages/GiftBoxStudio';
+import { ProductBrief } from './pages/ProductBrief';
 import DevComponents from './pages/DevComponents';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -74,9 +78,36 @@ export default function App() {
               }
             />
             <Route path="/studio/ecommerce" element={<Navigate to="/studio" replace />} />
-            <Route path="/studio/social" element={<Navigate to="/studio" replace />} />
-            <Route path="/studio/packaging" element={<Navigate to="/studio" replace />} />
-            <Route path="/studio/flyers" element={<Navigate to="/studio" replace />} />
+            <Route
+              path="/studio/social"
+              element={
+                <ProtectedRoute>
+                  <AppLayout breadcrumbs={[{ label: 'Studios', href: '/' }, { label: 'Social Media' }]}>
+                    <SocialStudio />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/studio/packaging"
+              element={
+                <ProtectedRoute>
+                  <AppLayout breadcrumbs={[{ label: 'Studios', href: '/' }, { label: 'Packaging & Gift Box' }]}>
+                    <GiftBoxStudio />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/studio/flyers"
+              element={
+                <ProtectedRoute>
+                  <AppLayout breadcrumbs={[{ label: 'Studios', href: '/' }, { label: 'Retail Flyers' }]}>
+                    <FlyersStudio />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
 
             {/* History Route */}
             <Route
@@ -117,6 +148,26 @@ export default function App() {
                 <ProtectedRoute>
                   <AppLayout title="Products & SKUs">
                     <ProductsList />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/products/brief"
+              element={
+                <ProtectedRoute>
+                  <AppLayout breadcrumbs={[{ label: 'Products', href: '/products' }, { label: 'Product Brief' }]}>
+                    <ProductBrief />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/products/:id"
+              element={
+                <ProtectedRoute>
+                  <AppLayout breadcrumbs={[{ label: 'Products', href: '/products' }, { label: 'Product Brief' }]}>
+                    <ProductBrief />
                   </AppLayout>
                 </ProtectedRoute>
               }
