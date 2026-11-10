@@ -50,6 +50,7 @@ export interface StudioLayoutProps {
   onPhoneShare?: () => void;
   onFolderSave?: () => void;
   onDeliver: () => void;
+  onOpenPlatformModal?: () => void;
 
   // Modals & Extras
   children?: ReactNode;
@@ -90,18 +91,21 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   onPhoneShare,
   onFolderSave,
   onDeliver,
+  onOpenPlatformModal,
   children,
 }) => {
   const platformLabel =
     platform === 'amazon'
-      ? 'Amazon Seller Central'
+      ? 'Amazon'
       : platform === 'amazon_aplus'
-      ? 'Amazon A+ Content'
+      ? 'Amazon A+'
       : platform === 'noon'
-      ? 'Noon UAE Listing'
+      ? 'Noon'
       : platform === 'noon_aplus'
-      ? 'Noon UAE A+ Content'
-      : 'Shopify / BuySanford';
+      ? 'Noon A+'
+      : platform === 'shopify'
+      ? 'Shopify'
+      : 'Select Platform';
 
   const marketplaceName =
     platform === 'amazon' || platform === 'amazon_aplus'
@@ -119,12 +123,14 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
         productName={productName}
         modelNumber={modelNumber}
         sourceImageUrl={sourceImageUrl}
+        platform={platform}
         platformLabel={platformLabel}
         stageIndex={stageIndex}
         onStepClick={onStepClick}
         primaryActionLabel="Generate set"
         isGenerating={isGeneratingAll}
         onPrimaryAction={onGenerateAll}
+        onOpenPlatformModal={onOpenPlatformModal}
       />
 
       {/* 3-Column Studio Workspace */}

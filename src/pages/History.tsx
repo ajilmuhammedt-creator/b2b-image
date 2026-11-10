@@ -1,25 +1,24 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Button, EmptyState } from '../components/ui';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
 import { projectStorage } from '../lib/projectStorage';
-import type { ProjectData } from '../types';
+import type { ProjectData, EcommercePlatform } from '../types';
 import JSZip from 'jszip';
 import { convertToWebpBlob } from '../lib/imageConversion';
 import { getSeoImageFilename, getSeoFolderName, getSeoZipFilename } from '../lib/seoNaming';
+import { ShopifyIcon, AmazonIcon, NoonIcon } from '../components/PlatformIcons';
 import {
-  History as HistoryIcon,
-  Calendar,
-  Layers,
+  Search,
+  Plus,
+  RefreshCw,
+  Download,
   ExternalLink,
   Trash2,
-  Sparkles,
-  Image as ImageIcon,
   Clock,
-  Download,
-  Loader2,
-  RefreshCw,
-  AlertCircle,
+  Sparkles,
+  ShoppingBag,
 } from 'lucide-react';
 
 export function History() {
@@ -27,8 +26,8 @@ export function History() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [failedThumbnails, setFailedThumbnails] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [platformFilter, setPlatformFilter] = useState<'all' | EcommercePlatform>('all');
   const [downloadingProjectId, setDownloadingProjectId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -47,22 +46,9 @@ export function History() {
       return;
     }
     setLoading(true);
-    setErrorMsg(null);
-
-    // Timeout safety: 10s max so the user never gets an infinite spinner
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(
-        () => reject(new Error('Loading timed out. Please check your internet connection and try again.')),
-        10000
-      )
-    );
 
     try {
-      const data = await Promise.race([
-        projectStorage.getProjects(user.id),
-        timeoutPromise,
-      ]);
-
+      const data = await projectStorage.getProjects(user.id);
       // Ensure only projects within the last 10 days are displayed
       const now = Date.now();
       const tenDaysMs = 10 * 24 * 60 * 60 * 1000;
@@ -75,7 +61,6 @@ export function History() {
       setProjects(valid);
     } catch (err: any) {
       console.error('Error loading history:', err);
-      setErrorMsg(err?.message || 'Failed to load project history. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -96,7 +81,7 @@ export function History() {
   const handleDeleteProject = async (e: React.MouseEvent, projectId: string) => {
     e.stopPropagation();
     if (!user?.id) return;
-    if (confirm('Are you sure you want to permanently delete this project and its images?')) {
+    if (confirm('Are you sure you want to permanently delete this project and its generated assets?')) {
       await projectStorage.deleteProject(projectId, user.id);
       setProjects((prev) => prev.filter((p) => p.id !== projectId));
     }
@@ -169,217 +154,314 @@ export function History() {
     }
   };
 
+  // Filtered projects
+  const filteredProjects = projects.filter((p) => {
+    const matchesSearch =
+      (p.product_name && p.product_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (p.model_number && p.model_number.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      ((p as any).brand && (p as any).brand.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const matchesPlatform =
+      platformFilter === 'all' ||
+      (platformFilter === 'shopify' && (!p.platform || p.platform === 'shopify')) ||
+      (platformFilter === 'amazon' && (p.platform === 'amazon' || p.platform === 'amazon_aplus')) ||
+      (platformFilter === 'noon' && (p.platform === 'noon' || p.platform === 'noon_aplus'));
+
+    return matchesSearch && matchesPlatform;
+  });
+
   return (
-    <div className="min-h-screen bg-page text-ink flex flex-col transition-colors">
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-[#E3E8EF] dark:border-slate-800 gap-4">
-          <div>
-            <h1 className="text-xl font-bold text-[#0F172A] dark:text-white flex items-center space-x-2.5">
-              <HistoryIcon className="w-5 h-5 text-[#E11D2E] dark:text-indigo-400" />
-              <span>Project History (10-Day Retention)</span>
+    <div className="min-h-full flex flex-col bg-background text-ink">
+      <div className="max-w-[1240px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex flex-col gap-6">
+        {/* Header Title & New Run Button */}
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-ink m-0">
+              Project History
             </h1>
-            <p className="text-xs text-[#5B6478] dark:text-slate-400 mt-1">
-              Generated assets are automatically retained for 10 days before deletion. Reopen any project to continue editing.
+            <p className="text-sm text-muted m-0">
+              High-resolution assets are retained for 10 days. Reopen any run to inspect or re-download.
             </p>
           </div>
 
-          <div className="flex items-center space-x-2 self-start sm:self-auto">
-            <button
-              type="button"
+          <div className="flex items-center gap-3">
+            <Button
+              variant="secondary"
+              size="md"
               onClick={loadProjects}
-              disabled={loading}
-              className="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 rounded-[12px] text-xs font-semibold flex items-center space-x-1.5 transition disabled:opacity-50"
-              title="Refresh project list"
+              loading={loading}
+              icon={<RefreshCw className="w-4 h-4" />}
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-            </button>
-
+              Refresh
+            </Button>
             <Button
               variant="primary"
-              size="sm"
+              size="md"
               onClick={() => navigate('/studio')}
-              icon={<Sparkles className="w-4 h-4" />}
+              icon={<Plus className="w-4 h-4" />}
             >
               New Studio Run
             </Button>
           </div>
         </div>
 
-        {errorMsg && (
-          <div className="mt-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>{errorMsg}</span>
+        {/* 10-Day Retention Notice Banner */}
+        <div className="p-4 rounded-card bg-surface border border-border flex items-center justify-between gap-3 text-xs shadow-2xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-7 h-7 rounded-full bg-track text-ink flex items-center justify-center shrink-0">
+              <Clock className="w-3.5 h-3.5" />
             </div>
+            <span className="text-muted truncate">
+              <strong className="text-ink">Automated 10-Day Retention:</strong> Generated images and SEO folders are stored in high resolution for 10 days after generation.
+            </span>
+          </div>
+
+          <span className="text-[11px] font-bold text-muted bg-track px-2 py-0.5 rounded-full shrink-0">
+            {projects.length} saved run{projects.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+
+        {/* Filter Controls Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* Platform Segmented Tabs */}
+          <div className="inline-flex items-center p-1 bg-track rounded-field gap-1 select-none">
             <button
               type="button"
-              onClick={loadProjects}
-              className="px-3 py-1 bg-red-600/30 hover:bg-red-600/50 text-red-200 rounded-lg font-medium text-xs transition"
+              onClick={() => setPlatformFilter('all')}
+              className={`h-8 px-3 rounded-[8px] text-xs font-bold transition-all cursor-pointer ${
+                platformFilter === 'all'
+                  ? 'bg-surface text-ink shadow-[0_1px_2px_rgba(20,22,27,0.14)]'
+                  : 'text-muted hover:text-ink'
+              }`}
             >
-              Try Again
+              All Runs
+            </button>
+            <button
+              type="button"
+              onClick={() => setPlatformFilter('shopify')}
+              className={`h-8 px-3 rounded-[8px] text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                platformFilter === 'shopify'
+                  ? 'bg-surface text-ink shadow-[0_1px_2px_rgba(20,22,27,0.14)]'
+                  : 'text-muted hover:text-ink'
+              }`}
+            >
+              <ShopifyIcon className="w-3.5 h-3.5 shrink-0" />
+              <span>Shopify</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPlatformFilter('amazon')}
+              className={`h-8 px-3 rounded-[8px] text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                platformFilter === 'amazon'
+                  ? 'bg-surface text-ink shadow-[0_1px_2px_rgba(20,22,27,0.14)]'
+                  : 'text-muted hover:text-ink'
+              }`}
+            >
+              <AmazonIcon className="w-3.5 h-3.5 shrink-0" />
+              <span>Amazon</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPlatformFilter('noon')}
+              className={`h-8 px-3 rounded-[8px] text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                platformFilter === 'noon'
+                  ? 'bg-surface text-ink shadow-[0_1px_2px_rgba(20,22,27,0.14)]'
+                  : 'text-muted hover:text-ink'
+              }`}
+            >
+              <NoonIcon className="w-3.5 h-3.5 shrink-0" />
+              <span>Noon</span>
             </button>
           </div>
-        )}
 
-        {loading ? (
-          <div className="py-24 flex flex-col items-center justify-center space-y-3">
-            <div className="animate-spin h-7 w-7 border-2 border-[#E11D2E] dark:border-indigo-500 border-t-transparent rounded-full" />
-            <span className="text-xs text-[#5B6478] dark:text-slate-400">Loading your project library...</span>
-          </div>
-        ) : projects.length === 0 ? (
-          <div className="py-16 max-w-md mx-auto">
-            <EmptyState
-              icon={<ImageIcon className="w-7 h-7" />}
-              title="No active projects found"
-              description="Projects created within the last 10 days appear here. Start a new run in Studio to generate product photos."
-              action={
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => navigate('/studio')}
-                  icon={<Sparkles className="w-4 h-4" />}
-                >
-                  Start First Studio Project
-                </Button>
-              }
+          {/* Search Box */}
+          <div className="relative w-full sm:w-64">
+            <Search className="w-3.5 h-3.5 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search by SKU or model..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-9 pl-8 pr-3 w-full text-xs bg-surface border border-border focus:border-border-strong rounded-field text-ink placeholder-muted focus:outline-none"
             />
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
-            {projects.map((project) => {
-              const completedImages =
-                project.generations?.filter((g) => g.status === 'done' && g.imageUrl) || [];
-              const hasFailed = failedThumbnails[project.id];
-              const rawThumb =
-                completedImages[0]?.imageUrl || project.source_image_data_url;
-              const thumbnail = !hasFailed && rawThumb ? rawThumb : null;
-              const daysLeft = calculateDaysRemaining(project.created_at);
-              const isDownloading = downloadingProjectId === project.id;
+        </div>
 
-              return (
-                <div
-                  key={project.id}
-                  onClick={() => handleOpenProject(project.id)}
-                  className="bg-[#FFFFFF] dark:bg-slate-900/90 border border-[#E3E8EF] dark:border-slate-800/80 hover:border-[#E11D2E] dark:hover:border-indigo-500/60 rounded-[16px] overflow-hidden cursor-pointer shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-xl transition-all duration-200 group flex flex-col relative"
-                >
-                  {/* Thumbnail Banner */}
-                  <div className="h-48 bg-[var(--subtle)] dark:bg-slate-950 relative flex items-center justify-center overflow-hidden border-b border-[var(--border)] dark:border-slate-800/80">
-                    {thumbnail ? (
-                      <img
-                        src={thumbnail}
-                        alt={project.product_name}
-                        onError={() => setFailedThumbnails((prev) => ({ ...prev, [project.id]: true }))}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 space-y-1">
-                        <ImageIcon className="w-8 h-8" />
-                        <span className="text-[11px]">No preview</span>
-                      </div>
-                    )}
+        {/* Projects Data Table */}
+        <section
+          aria-label="History table"
+          className="bg-surface border border-border rounded-card overflow-hidden shadow-2xs"
+        >
+          <div className="overflow-x-auto">
+            <div role="table" aria-label="Projects" className="min-w-[800px] text-sm">
+              {/* Table Header */}
+              <div
+                role="row"
+                className="grid grid-cols-[2.8fr_1.3fr_1.5fr_1.2fr_180px] items-center bg-track/60 text-xs font-bold text-muted border-b border-border"
+              >
+                <span role="columnheader" className="py-2.5 px-4 sm:px-6">
+                  Product
+                </span>
+                <span role="columnheader" className="py-2.5 px-3">
+                  Target Platform
+                </span>
+                <span role="columnheader" className="py-2.5 px-3">
+                  Created & Retention
+                </span>
+                <span role="columnheader" className="py-2.5 px-3">
+                  Assets
+                </span>
+                <span role="columnheader" className="py-2.5 px-4 text-right">
+                  Actions
+                </span>
+              </div>
 
-                    {/* Retention countdown badge */}
-                    <div className="absolute top-3 left-3">
-                      <span
-                        className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md border flex items-center space-x-1.5 shadow-sm ${
-                          daysLeft <= 2
-                            ? 'bg-[var(--error-bg)] text-[var(--error)] border-red-200 dark:bg-rose-950/85 dark:text-rose-300 dark:border-rose-800/60'
-                            : daysLeft <= 4
-                            ? 'bg-[var(--warn-bg)] text-[var(--warn)] border-amber-200 dark:bg-amber-950/85 dark:text-amber-300 dark:border-amber-800/60'
-                            : 'bg-white/90 text-slate-700 border-slate-200 dark:bg-slate-900/85 dark:text-slate-300 dark:border-slate-800'
-                        }`}
-                      >
-                        <Clock className="w-3 h-3" />
-                        <span>
-                          {daysLeft === 1 ? 'Deletes in 1 day' : `Deletes in ${daysLeft} days`}
+              {/* Table Body */}
+              {loading ? (
+                <div className="p-12 text-center text-xs text-muted flex items-center justify-center gap-2">
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Loading project history...</span>
+                </div>
+              ) : filteredProjects.length === 0 ? (
+                <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-track text-muted flex items-center justify-center">
+                    <Sparkles className="w-6 h-6" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="font-bold text-sm text-ink">No projects found</span>
+                    <span className="text-xs text-muted max-w-xs">
+                      {searchQuery
+                        ? 'Try modifying your search or platform filter.'
+                        : 'Generate your first listing image set in the E-commerce Studio.'}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                filteredProjects.map((project) => {
+                  const completedGens = (project.generations || []).filter((g) => g.status === 'done');
+                  const thumbnail =
+                    completedGens[0]?.imageUrl || project.source_image_data_url || undefined;
+                  const daysLeft = calculateDaysRemaining(project.created_at);
+                  const createdDate = new Date(project.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  });
+
+                  const platform = project.platform || 'shopify';
+
+                  return (
+                    <div
+                      key={project.id}
+                      role="row"
+                      onClick={() => handleOpenProject(project.id)}
+                      className="grid grid-cols-[2.8fr_1.3fr_1.5fr_1.2fr_180px] items-center border-b border-border hover:bg-track/30 transition-colors cursor-pointer"
+                    >
+                      {/* Product Thumbnail & Names */}
+                      <span role="cell" className="py-3 px-4 sm:px-6 flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-field bg-track border border-track overflow-hidden shrink-0 flex items-center justify-center">
+                          {thumbnail ? (
+                            <img
+                              src={thumbnail}
+                              alt=""
+                              className="w-full h-full object-contain p-0.5"
+                            />
+                          ) : (
+                            <ShoppingBag className="w-4 h-4 text-muted" />
+                          )}
+                        </div>
+
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-bold text-ink truncate">
+                            {project.model_number ? `${project.model_number} · ` : ''}
+                            {project.product_name}
+                          </span>
+                          <span className="text-xs text-muted truncate">
+                            {(project as any).brand || 'Sanford'} · {project.model_number || 'Standard SKU'}
+                          </span>
+                        </div>
+                      </span>
+
+                      {/* Target Platform */}
+                      <span role="cell" className="py-3 px-3">
+                        {platform === 'amazon' || platform === 'amazon_aplus' ? (
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-bold bg-[#FF9900]/10 text-[#FF9900]">
+                            <AmazonIcon className="w-3.5 h-3.5 shrink-0" />
+                            <span>Amazon</span>
+                          </span>
+                        ) : platform === 'noon' || platform === 'noon_aplus' ? (
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-bold bg-[#FEEE00]/20 text-ink">
+                            <NoonIcon className="w-3.5 h-3.5 shrink-0" />
+                            <span>Noon</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+                            <ShopifyIcon className="w-3.5 h-3.5 shrink-0" />
+                            <span>Shopify</span>
+                          </span>
+                        )}
+                      </span>
+
+                      {/* Created Date & Retention */}
+                      <span role="cell" className="py-3 px-3 flex flex-col min-w-0">
+                        <span className="text-xs font-medium text-ink">{createdDate}</span>
+                        <span className="text-[11px] text-muted">
+                          {daysLeft > 1 ? (
+                            <Badge variant="ok">{daysLeft} days left</Badge>
+                          ) : (
+                            <Badge variant="warn">1 day left</Badge>
+                          )}
                         </span>
                       </span>
-                    </div>
 
-                    {/* Image count pill */}
-                    <div className="absolute top-3 right-3 bg-white/90 dark:bg-slate-900/85 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] font-semibold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 flex items-center space-x-1 shadow-sm">
-                      <Layers className="w-3 h-3 text-[var(--brand)] dark:text-indigo-400" />
-                      <span>{completedImages.length} images</span>
-                    </div>
-                  </div>
+                      {/* Assets Count */}
+                      <span role="cell" className="py-3 px-3 text-xs text-muted font-medium">
+                        {completedGens.length} / {project.generations?.length || 6} generated
+                      </span>
 
-                  {/* Details */}
-                  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                    <div className="space-y-1">
-                      <h3 className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-[var(--brand)] dark:group-hover:text-indigo-400 transition-colors line-clamp-1">
-                        {project.product_name || 'Untitled Product'}
-                      </h3>
-                      {project.model_number && (
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
-                          Model: {project.model_number}
-                        </p>
-                      )}
-                      <p className="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-2">
-                        {project.features?.join(' • ') || 'No features list'}
-                      </p>
-                    </div>
+                      {/* Actions */}
+                      <span
+                        role="cell"
+                        className="py-3 px-4 flex items-center justify-end gap-1.5"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          type="button"
+                          onClick={(e) => handleDownloadAllZip(e, project)}
+                          disabled={downloadingProjectId === project.id || completedGens.length === 0}
+                          title="Download high-resolution ZIP"
+                          className="w-8 h-8 rounded-field border border-border bg-surface hover:bg-track text-ink disabled:opacity-30 flex items-center justify-center cursor-pointer transition"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
 
-                    <div className="pt-3 border-t border-[var(--border)] dark:border-slate-800/80 flex flex-col space-y-2.5">
-                      <div className="flex items-center justify-between text-[11px] text-slate-500">
-                        <span className="flex items-center space-x-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                          <span>
-                            {new Date(project.created_at).toLocaleDateString(undefined, {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
-                          </span>
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenProject(project.id)}
+                          title="Reopen in Studio"
+                          className="h-8 px-2.5 rounded-field bg-ink hover:bg-ink-hover text-white text-xs font-bold flex items-center gap-1 cursor-pointer transition"
+                        >
+                          <span>Open</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </button>
 
                         <button
                           type="button"
                           onClick={(e) => handleDeleteProject(e, project.id)}
-                          className="p-1 text-slate-400 hover:text-[var(--error)] dark:hover:text-rose-400 transition"
                           title="Delete project"
+                          className="w-8 h-8 rounded-field text-muted hover:text-fail-fg hover:bg-fail-bg/20 flex items-center justify-center cursor-pointer transition"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
-                      </div>
-
-                      {/* Action buttons: Open & Download all (ZIP) */}
-                      <div className="flex items-center space-x-2 pt-1">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenProject(project.id);
-                          }}
-                          className="flex-1 py-1.5 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 dark:border-transparent dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center justify-center space-x-1.5 transition"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5 text-[var(--brand)] dark:text-indigo-400" />
-                          <span>Open</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          disabled={completedImages.length === 0 || isDownloading}
-                          onClick={(e) => handleDownloadAllZip(e, project)}
-                          className="flex-1 py-1.5 px-3 rounded-lg bg-[var(--brand-tint)] hover:bg-[var(--brand-tint)]/80 text-[var(--brand-ink)] border border-[var(--brand)]/30 dark:bg-indigo-600/20 dark:hover:bg-indigo-600/30 dark:text-indigo-300 dark:border-indigo-500/30 text-xs font-semibold flex items-center justify-center space-x-1.5 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                          title="Download all generated images as SEO WebP ZIP"
-                        >
-                          {isDownloading ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--brand)] dark:text-indigo-400" />
-                          ) : (
-                            <Download className="w-3.5 h-3.5 text-[var(--brand)] dark:text-indigo-400" />
-                          )}
-                          <span>{isDownloading ? 'Archiving WebP...' : 'Download (WebP ZIP)'}</span>
-                        </button>
-                      </div>
+                      </span>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })
+              )}
+            </div>
           </div>
-        )}
-      </main>
+        </section>
+      </div>
     </div>
   );
 }

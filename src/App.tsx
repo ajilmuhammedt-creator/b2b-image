@@ -9,6 +9,8 @@ import { Home } from './pages/Home';
 import { Studio } from './pages/Studio';
 import { History } from './pages/History';
 import { AdminUsers } from './pages/AdminUsers';
+import { Connections } from './pages/Connections';
+import { PhoneApproval } from './pages/PhoneApproval';
 import { MyWork } from './pages/MyWork';
 import { CampaignCalendar } from './pages/CampaignCalendar';
 import { ProductsList } from './pages/ProductsList';
@@ -196,7 +198,36 @@ export default function App() {
             />
             <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
             <Route path="/settings/team" element={<Navigate to="/admin/users" replace />} />
+            <Route
+              path="/settings/connections"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AppLayout breadcrumbs={[{ label: 'Settings', href: '/admin' }, { label: 'Connections and agent' }]}>
+                    <Connections />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/connections" element={<Navigate to="/settings/connections" replace />} />
             <Route path="/settings" element={<Navigate to="/admin/users" replace />} />
+
+            {/* Mobile Approval Route (Matching Phone.reference.html) */}
+            <Route
+              path="/approval"
+              element={
+                <ProtectedRoute>
+                  <PhoneApproval />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/approval/:id"
+              element={
+                <ProtectedRoute>
+                  <PhoneApproval />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Dev Component Showcase */}
             <Route path="/dev/components" element={<DevComponents />} />

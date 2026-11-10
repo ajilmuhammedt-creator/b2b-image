@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import type { EcommercePlatform, SanfordSlotSpec, StudioSettings } from '../../types';
-import { Segmented } from '../ui/Segmented';
 import { Button } from '../ui/Button';
+import { Segmented } from '../ui/Segmented';
 import { Switch } from '../ui/Switch';
+import { ShopifyIcon, AmazonIcon, NoonIcon } from '../PlatformIcons';
 import {
   ChevronDown,
   ChevronUp,
@@ -45,13 +46,15 @@ export const StudioBriefPanel: React.FC<StudioBriefPanelProps> = ({
 }) => {
   const [moreSettingsOpen, setMoreSettingsOpen] = useState(false);
 
-  // Simplified marketplace value
-  const marketplaceValue =
+  // Target platform value
+  const activePlatform =
     platform === 'amazon' || platform === 'amazon_aplus'
       ? 'amazon'
       : platform === 'noon' || platform === 'noon_aplus'
       ? 'noon'
-      : 'shopify';
+      : platform === 'shopify'
+      ? 'shopify'
+      : null;
 
   const dotColor = (status?: string) => {
     switch (status) {
@@ -105,25 +108,61 @@ export const StudioBriefPanel: React.FC<StudioBriefPanelProps> = ({
       </div>
 
       <div className="p-3.5 sm:p-4 flex flex-col gap-4 overflow-y-auto max-h-[calc(100vh-220px)] no-scrollbar">
-        {/* Marketplace Selection */}
+        {/* Target Platform Selection */}
         <div className="flex flex-col gap-1.5">
-          <span className="text-xs font-bold text-muted uppercase tracking-wider">
-            Marketplace
-          </span>
-          <Segmented
-            size="sm"
-            value={marketplaceValue}
-            onChange={(val) => {
-              if (val === 'amazon') onSelectPlatform('amazon');
-              else if (val === 'noon') onSelectPlatform('noon');
-              else onSelectPlatform('shopify');
-            }}
-            options={[
-              { value: 'amazon', label: 'Amazon' },
-              { value: 'noon', label: 'noon' },
-              { value: 'shopify', label: 'Shopify' },
-            ]}
-          />
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-muted uppercase tracking-wider">
+              Target Platform
+            </span>
+            {!platform && (
+              <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 px-1.5 py-0.2 rounded-full">
+                Select
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-3 gap-1 bg-track p-1 rounded-field">
+            {/* Shopify */}
+            <button
+              type="button"
+              onClick={() => onSelectPlatform('shopify')}
+              className={`h-8 px-1.5 rounded-[8px] text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                activePlatform === 'shopify'
+                  ? 'bg-surface text-ink shadow-[0_1px_2px_rgba(20,22,27,0.14)] ring-1 ring-border-strong font-extrabold'
+                  : 'text-muted hover:text-ink hover:bg-surface/50'
+              }`}
+            >
+              <ShopifyIcon className="w-3.5 h-3.5 shrink-0" />
+              <span>Shopify</span>
+            </button>
+
+            {/* Amazon */}
+            <button
+              type="button"
+              onClick={() => onSelectPlatform('amazon')}
+              className={`h-8 px-1.5 rounded-[8px] text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                activePlatform === 'amazon'
+                  ? 'bg-surface text-ink shadow-[0_1px_2px_rgba(20,22,27,0.14)] ring-1 ring-border-strong font-extrabold'
+                  : 'text-muted hover:text-ink hover:bg-surface/50'
+              }`}
+            >
+              <AmazonIcon className="w-3.5 h-3.5 shrink-0" />
+              <span>Amazon</span>
+            </button>
+
+            {/* Noon */}
+            <button
+              type="button"
+              onClick={() => onSelectPlatform('noon')}
+              className={`h-8 px-1.5 rounded-[8px] text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                activePlatform === 'noon'
+                  ? 'bg-surface text-ink shadow-[0_1px_2px_rgba(20,22,27,0.14)] ring-1 ring-border-strong font-extrabold'
+                  : 'text-muted hover:text-ink hover:bg-surface/50'
+              }`}
+            >
+              <NoonIcon className="w-3.5 h-3.5 shrink-0" />
+              <span>Noon</span>
+            </button>
+          </div>
         </div>
 
         {/* Catalogue Upload & Specs Action buttons */}

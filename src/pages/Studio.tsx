@@ -1322,6 +1322,7 @@ export function Studio() {
         onDownloadZip={() => handleDownloadZip(false)}
         onPhoneShare={canShare ? handleShareToPhone : undefined}
         onFolderSave={canPickDirectory ? handleSaveToFolder : undefined}
+        onOpenPlatformModal={() => setIsPlatformModalOpen(true)}
         onDeliver={() => {
           handleDownloadZip(false);
           showToast(`Delivered all ${approvedCount} assets for ${marketplaceName}!`);

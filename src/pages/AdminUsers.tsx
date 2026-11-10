@@ -1,21 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Badge, Button, Segmented } from '../components/ui';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
 import type { UserProfile, UserStatus, CreditStats } from '../types';
 import {
-  Users,
-  Clock,
-  CheckCircle2,
-  XCircle,
   Shield,
   Search,
   RefreshCw,
   Copy,
   Check,
+  CheckCircle2,
   AlertCircle,
+  Plus,
   Zap,
-  BarChart3,
-  Calendar,
+  MoreVertical,
 } from 'lucide-react';
 
 export function AdminUsers() {
@@ -27,9 +26,9 @@ export function AdminUsers() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | UserStatus>('all');
-
-  // Processing state for individual user buttons
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
   // Success / error banner
   const [notification, setNotification] = useState<{
@@ -37,7 +36,6 @@ export function AdminUsers() {
     message: string;
     loginUrl?: string;
   } | null>(null);
-  const [copiedLink, setCopiedLink] = useState(false);
 
   const parseResponseSafe = async (res: Response) => {
     const text = await res.text();
@@ -112,7 +110,6 @@ export function AdminUsers() {
         loginUrl: data.loginUrl,
       });
 
-      // Update local state immediately
       setUsers((prev) =>
         prev.map((u) =>
           u.id === userId
@@ -155,7 +152,6 @@ export function AdminUsers() {
         message: `Access request for ${userEmail} was declined.`,
       });
 
-      // Update local state immediately
       setUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, status: 'rejected' } : u))
       );
@@ -175,489 +171,465 @@ export function AdminUsers() {
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
-  // Metrics
   const pendingUsers = users.filter((u) => u.status === 'pending');
-  const approvedUsers = users.filter((u) => u.status === 'approved' && u.role === 'staff');
+  const firstPending = pendingUsers[0] || null;
 
-  // Filtered list
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (user.full_name && user.full_name.toLowerCase().includes(searchQuery.toLowerCase()));
-
     const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
-
     return matchesSearch && matchesStatus;
   });
 
+  const getInitials = (name?: string, email?: string) => {
+    if (name) {
+      const parts = name.trim().split(/\s+/);
+      if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+      if (parts[0]) return parts[0].slice(0, 2).toUpperCase();
+    }
+    if (email) return email.slice(0, 2).toUpperCase();
+    return 'U';
+  };
+
+  // Role permissions matrix specification from Team.reference.html
+  const roles = ['Admin', 'Reviewer', 'Designer', 'Marketplace exec', 'Content writer', 'Viewer'];
+  const permissionsGrid = [
+    { name: 'Generate images in assigned studios', matrix: [true, true, true, true, true, false] },
+    { name: 'Approve or send back work', matrix: [true, true, false, false, false, false] },
+    { name: 'Deliver to Shopify, Amazon, Noon', matrix: [true, true, false, true, false, false] },
+    { name: 'Schedule and publish social posts', matrix: [true, true, false, false, true, false] },
+    { name: 'Verify product specs', matrix: [true, true, false, false, false, false] },
+    { name: 'Edit templates and brand kit', matrix: [true, false, false, false, false, false] },
+    { name: 'Manage connections and AI keys', matrix: [true, false, false, false, false, false] },
+    { name: 'See AI costs', matrix: [true, false, false, false, false, false] },
+    { name: 'Manage team and roles', matrix: [true, false, false, false, false, false] },
+  ];
+
   return (
-    <div className="min-h-screen bg-page text-ink flex flex-col font-sans transition-colors">
-      <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-[#E3E8EF] dark:border-white/[0.06]">
-          <div>
-            <div className="flex items-center space-x-2 text-[#0F1B3D] dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-1">
-              <Shield className="w-3.5 h-3.5" />
-              <span>Admin Dashboard</span>
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#0F172A] dark:text-white">
-              Staff Access & Daily Credit Usage
+    <div className="min-h-full flex flex-col bg-background text-ink">
+      <div className="max-w-[1240px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex flex-col gap-6">
+        {/* Page Title & Invite People Primary Button */}
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-ink m-0">
+              Settings
             </h1>
-            <p className="text-xs text-[#5B6478] dark:text-slate-400 mt-1">
-              Monitor daily image credit consumption, approve staff accounts, and manage permissions.
+            <p className="text-sm text-muted m-0">
+              Only admins see this area. Manage roles, access requests, and team permissions.
             </p>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-3">
             <Button
               variant="secondary"
-              size="sm"
+              size="md"
               onClick={handleRefresh}
               loading={refreshing}
-              icon={<RefreshCw className="w-3.5 h-3.5" />}
+              icon={<RefreshCw className="w-4 h-4" />}
             >
-              Refresh Telemetry
+              Refresh
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => setInviteModalOpen(true)}
+              icon={<Plus className="w-4 h-4" />}
+            >
+              Invite people
             </Button>
           </div>
         </div>
 
+        {/* Settings Navigation Tabs */}
+        <nav
+          aria-label="Settings"
+          className="flex flex-wrap items-center gap-6 border-b border-border pb-px text-sm"
+        >
+          <span className="h-10 flex items-center font-extrabold text-ink border-b-2 border-ink cursor-default">
+            Team and roles
+          </span>
+          <Link
+            to="/settings/connections"
+            className="h-10 flex items-center font-medium text-muted hover:text-ink transition-colors"
+          >
+            Connections and agent
+          </Link>
+          <span className="h-10 flex items-center font-medium text-muted/60 cursor-not-allowed">
+            AI usage
+          </span>
+          <span className="h-10 flex items-center font-medium text-muted/60 cursor-not-allowed">
+            Audit log
+          </span>
+        </nav>
+
+        {/* Access Request Alert Banner (Matching Team.reference.html) */}
+        {firstPending && (
+          <div className="p-4 rounded-card bg-[#FFF4D6] border border-[#F3DF95] flex flex-wrap items-center justify-between gap-3 text-sm text-[#5C3D00]">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="font-extrabold text-[#7A4F00]">
+                {pendingUsers.length} access request{pendingUsers.length > 1 ? 's' : ''}:
+              </span>
+              <span className="truncate">
+                <strong>{firstPending.full_name || firstPending.email}</strong> requested to join as {firstPending.role || 'Staff'}.
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => handleReject(firstPending.id, firstPending.email)}
+                disabled={actionInProgress === firstPending.id}
+              >
+                Decline
+              </Button>
+              <button
+                type="button"
+                onClick={() => handleApprove(firstPending.id, firstPending.email)}
+                disabled={actionInProgress === firstPending.id}
+                className="h-8 px-3.5 rounded-[8px] bg-ink hover:bg-ink-hover text-white text-xs font-bold transition cursor-pointer"
+              >
+                Approve access
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Notification Banner */}
         {notification && (
           <div
-            className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+            className={`p-4 rounded-card border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm ${
               notification.type === 'success'
-                ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300'
-                : 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800/60 text-rose-800 dark:text-rose-300'
+                ? 'bg-ok-bg border-ok-border text-ok-fg'
+                : 'bg-fail-bg border-fail-border text-fail-fg'
             }`}
           >
-            <div className="flex items-start sm:items-center space-x-2.5">
+            <div className="flex items-center gap-2.5">
               {notification.type === 'success' ? (
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                <CheckCircle2 className="w-5 h-5 shrink-0" />
               ) : (
-                <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0" />
+                <AlertCircle className="w-5 h-5 shrink-0" />
               )}
-              <div className="text-xs font-medium">{notification.message}</div>
+              <span className="font-medium">{notification.message}</span>
             </div>
 
             {notification.loginUrl && (
-              <div className="flex items-center space-x-2">
-                <button
-                  type="button"
-                  onClick={() => copyLoginLink(notification.loginUrl!)}
-                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium shadow transition flex items-center space-x-1.5"
-                >
-                  {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedLink ? 'Copied Link!' : 'Copy Direct Access Link'}</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => copyLoginLink(notification.loginUrl!)}
+                className="px-3 py-1.5 bg-ok-fg hover:opacity-90 text-white rounded-field text-xs font-bold transition flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+              >
+                {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedLink ? 'Copied link!' : 'Copy direct link'}</span>
+              </button>
             )}
           </div>
         )}
 
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Credits Used Today */}
-          <div className="p-4 rounded-[16px] bg-[#FFFFFF] dark:from-[#111624] dark:to-[#0E1118] border border-[#E3E8EF] dark:border-indigo-500/30 shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-sm backdrop-blur-xl space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[#0F1B3D] dark:text-indigo-300 font-semibold uppercase tracking-wider">
+        {/* Telemetry Strip */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-surface border border-border rounded-card p-4 flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold text-muted uppercase tracking-wider">
                 Credits Used Today
               </span>
-              <div className="w-7 h-7 rounded-lg bg-[#E8EDF7] dark:bg-indigo-500/20 text-[#0F1B3D] dark:text-indigo-400 flex items-center justify-center">
-                <Zap className="w-4 h-4 fill-current" />
+              <div className="text-2xl font-extrabold text-ink mt-1 font-mono">
+                {creditStats?.creditsToday ?? 0}
               </div>
+              <span className="text-[11px] text-muted">
+                {creditStats?.creditsYesterday ?? 0} yesterday · {creditStats?.creditsTotal ?? 0} all-time
+              </span>
             </div>
-            <div className="text-3xl font-extrabold text-[#0F1B3D] dark:text-indigo-400 font-mono">
-              {creditStats?.creditsToday ?? 0}
+            <div className="w-9 h-9 rounded-field bg-track text-ink flex items-center justify-center">
+              <Zap className="w-4 h-4 fill-current" />
             </div>
-            <p className="text-[11px] text-[#5B6478] dark:text-slate-400">
-              {creditStats?.creditsYesterday ?? 0} yesterday &bull; {creditStats?.creditsTotal ?? 0} total all-time
-            </p>
           </div>
 
-          {/* Card 2: Pending Requests */}
-          <div className="p-4 rounded-[16px] bg-[#FFFFFF] dark:bg-[#0E1118]/80 border border-[#E3E8EF] dark:border-amber-500/20 shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-sm backdrop-blur-xl space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-amber-700 dark:text-amber-300/80 font-medium">Pending Requests</span>
-              <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400">
-                <Clock className="w-4 h-4" />
+          <div className="bg-surface border border-border rounded-card p-4 flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold text-muted uppercase tracking-wider">
+                Pending Requests
+              </span>
+              <div className="text-2xl font-extrabold text-ink mt-1 font-mono">
+                {pendingUsers.length}
               </div>
+              <span className="text-[11px] text-muted">Awaiting administrator approval</span>
             </div>
-            <div className="text-3xl font-bold text-amber-600 dark:text-amber-400 font-mono">
-              {pendingUsers.length}
+            <div className="w-9 h-9 rounded-field bg-track text-ink flex items-center justify-center">
+              <Shield className="w-4 h-4" />
             </div>
-            <p className="text-[11px] text-[#5B6478] dark:text-slate-400">Awaiting your approval</p>
           </div>
 
-          {/* Card 3: Active Staff */}
-          <div className="p-4 rounded-[16px] bg-[#FFFFFF] dark:bg-[#0E1118]/80 border border-[#E3E8EF] dark:border-emerald-500/20 shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-sm backdrop-blur-xl space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-emerald-700 dark:text-emerald-300/80 font-medium">Active Staff</span>
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                <CheckCircle2 className="w-4 h-4" />
+          <div className="bg-surface border border-border rounded-card p-4 flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold text-muted uppercase tracking-wider">
+                Total Team Members
+              </span>
+              <div className="text-2xl font-extrabold text-ink mt-1 font-mono">
+                {users.length}
               </div>
+              <span className="text-[11px] text-muted">Active across all studios</span>
             </div>
-            <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
-              {approvedUsers.length}
+            <div className="w-9 h-9 rounded-field bg-track text-ink flex items-center justify-center">
+              <CheckCircle2 className="w-4 h-4" />
             </div>
-            <p className="text-[11px] text-[#5B6478] dark:text-slate-400">Authorized staff members</p>
-          </div>
-
-          {/* Card 4: Total Registered Accounts */}
-          <div className="p-4 rounded-[16px] bg-[#FFFFFF] dark:bg-[#0E1118]/80 border border-[#E3E8EF] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-sm backdrop-blur-xl space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[#5B6478] dark:text-slate-400 font-medium">Total Accounts</span>
-              <div className="w-7 h-7 rounded-lg bg-[#F4F7FC] dark:bg-white/[0.04] flex items-center justify-center text-[#5B6478] dark:text-slate-400">
-                <Users className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-[#0F172A] dark:text-white font-mono">{users.length}</div>
-            <p className="text-[11px] text-[#5B6478] dark:text-slate-400">Total registered in database</p>
           </div>
         </div>
 
-        {/* Daily Credit Consumption Timeline (Past 7 Days) */}
-        {creditStats && creditStats.dailyBreakdown && creditStats.dailyBreakdown.length > 0 && (
-          <div className="p-5 rounded-[16px] bg-[#FFFFFF] dark:bg-[#0E1118]/80 border border-[#E3E8EF] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-sm backdrop-blur-xl space-y-3.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <BarChart3 className="w-4 h-4 text-[#0F1B3D] dark:text-indigo-400" />
-                <h2 className="text-xs font-bold text-[#0F172A] dark:text-white uppercase tracking-wider">
-                  Daily Credit Consumption (Past 7 Days)
-                </h2>
-              </div>
-              <span className="text-[11px] text-[#5B6478] dark:text-slate-400">
-                1 image generated = 1 credit
-              </span>
-            </div>
+        {/* Section 1: Members Data Table */}
+        <section
+          aria-labelledby="members-heading"
+          className="bg-surface border border-border rounded-card overflow-hidden shadow-2xs"
+        >
+          <div className="p-4 sm:px-5 border-b border-border flex flex-wrap items-center justify-between gap-3">
+            <h2 id="members-heading" className="text-base font-extrabold text-ink m-0">
+              Members
+            </h2>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2.5">
-              {creditStats.dailyBreakdown.map((day, idx) => {
-                const isToday = idx === 0;
-                return (
-                  <div
-                    key={day.date}
-                    className={`p-3 rounded-xl border text-center transition flex flex-col justify-between space-y-1.5 ${
-                      isToday
-                        ? 'bg-[#E8EDF7] dark:bg-indigo-950/30 border-[#DCE4F2] dark:border-indigo-500/40 shadow-sm'
-                        : 'bg-[#F4F7FC] dark:bg-white/[0.02] border-[#E3E8EF] dark:border-white/[0.05]'
-                    }`}
-                  >
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-[#5B6478] dark:text-slate-400 flex items-center justify-center space-x-1">
-                      <Calendar className="w-2.5 h-2.5" />
-                      <span>{day.label}</span>
-                    </div>
-
-                    <div className={`text-xl font-bold font-mono ${isToday ? 'text-[#0F1B3D] dark:text-white' : 'text-[#0F172A] dark:text-white'}`}>
-                      {day.credits}
-                    </div>
-
-                    <div className="text-[10px] text-[#5B6478] dark:text-slate-400">
-                      {day.credits === 1 ? '1 credit' : `${day.credits} credits`}
-                      {day.activeUsers > 0 && ` (${day.activeUsers} user${day.activeUsers > 1 ? 's' : ''})`}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Priority Section: Pending Requests */}
-        {pendingUsers.length > 0 && (
-          <div className="p-6 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-500/30 shadow-sm backdrop-blur-xl space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
-                <h2 className="text-sm font-bold text-amber-900 dark:text-white uppercase tracking-wider">
-                  Pending Approvals ({pendingUsers.length})
-                </h2>
-              </div>
-              <span className="text-[11px] text-amber-700 dark:text-amber-300/80 font-medium">
-                Action required to grant studio access
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {pendingUsers.map((user) => {
-                const isCurrentProcessing = actionInProgress === user.id;
-                const requestedDate = user.requested_at
-                  ? new Date(user.requested_at).toLocaleDateString(undefined, {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })
-                  : 'Recently';
-
-                return (
-                  <div
-                    key={user.id}
-                    className="p-4 rounded-xl bg-white dark:bg-[#0E1118]/90 border border-amber-300 dark:border-amber-500/30 shadow-sm flex flex-col justify-between space-y-4 hover:border-amber-400 dark:hover:border-amber-500/50 transition"
-                  >
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                          {user.full_name || 'Staff Member'}
-                        </span>
-                        <Badge lifecycle="in_review" size="sm">
-                          Pending
-                        </Badge>
-                      </div>
-                      <p className="text-xs font-mono text-slate-600 dark:text-slate-300 truncate">{user.email}</p>
-                      <p className="text-[11px] text-slate-400">Requested: {requestedDate}</p>
-                    </div>
-
-                    <div className="flex items-center space-x-2 pt-2 border-t border-slate-100 dark:border-white/[0.06]">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleApprove(user.id, user.email)}
-                        loading={isCurrentProcessing}
-                        className="flex-1"
-                        icon={<Check className="w-3.5 h-3.5" />}
-                      >
-                        Approve & Notify
-                      </Button>
-
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleReject(user.id, user.email)}
-                        disabled={isCurrentProcessing}
-                        icon={<XCircle className="w-3.5 h-3.5" />}
-                        title="Decline request"
-                      >
-                        Decline
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Directory Controls & Table */}
-        <div className="p-6 rounded-[16px] bg-[#FFFFFF] dark:bg-[#0E1118]/80 border border-[#E3E8EF] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(15,27,61,0.06)] dark:shadow-sm backdrop-blur-xl space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h2 className="text-base font-bold text-[#0F172A] dark:text-white">Staff Directory & Usage</h2>
-              <p className="text-xs text-[#5B6478] dark:text-slate-400">
-                All registered users with role, approval status, and daily credit usage.
-              </p>
-            </div>
-
-            {/* Search & Status Filters */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+            <div className="flex items-center gap-3">
               <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] dark:text-slate-500" />
+                <Search className="w-3.5 h-3.5 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
-                  placeholder="Search by name or email..."
+                  placeholder="Filter members..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-3 py-1.5 bg-[#FFFFFF] dark:bg-slate-950 border border-[#E3E8EF] dark:border-slate-700/80 rounded-lg text-xs text-[#0F172A] dark:text-slate-200 placeholder-[#94A3B8] dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500 w-full sm:w-60"
+                  className="h-8 pl-8 pr-3 text-xs bg-track border border-transparent focus:border-border rounded-field text-ink placeholder-muted focus:outline-none"
                 />
               </div>
 
-              <div className="w-full sm:w-auto">
-                <Segmented
-                  size="sm"
-                  fullWidth={false}
-                  value={statusFilter}
-                  onChange={(val) => setStatusFilter(val as any)}
-                  options={[
-                    { value: 'all', label: 'All' },
-                    { value: 'pending', label: 'Pending' },
-                    { value: 'approved', label: 'Approved' },
-                    { value: 'rejected', label: 'Rejected' },
-                  ]}
-                />
-              </div>
+              <select
+                aria-label="Filter by status"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="h-8 px-2.5 text-xs bg-track border border-transparent focus:border-border rounded-field text-ink focus:outline-none font-medium cursor-pointer"
+              >
+                <option value="all">All statuses</option>
+                <option value="approved">Active</option>
+                <option value="pending">Pending</option>
+                <option value="rejected">Declined</option>
+              </select>
             </div>
           </div>
 
-          {/* Table */}
-          {loading ? (
-            <div className="py-12 flex items-center justify-center space-x-3 text-slate-400">
-              <div className="animate-spin h-5 w-5 border-2 border-indigo-500 border-t-transparent rounded-full" />
-              <span className="text-xs">Loading staff accounts...</span>
-            </div>
-          ) : filteredUsers.length === 0 ? (
-            <div className="py-12 text-center text-slate-500 dark:text-slate-400 text-xs">
-              No accounts match the current filter.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-200 dark:border-white/[0.06] text-slate-500 dark:text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
-                    <th className="pb-3 pl-2">User / Email</th>
-                    <th className="pb-3">Role</th>
-                    <th className="pb-3">Status</th>
-                    <th className="pb-3">Credits (Today / Total)</th>
-                    <th className="pb-3">Requested At</th>
-                    <th className="pb-3">Approved At</th>
-                    <th className="pb-3 pr-2 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
-                  {filteredUsers.map((user) => {
-                    const isProcessing = actionInProgress === user.id;
-                    const isSelf = user.id === currentAdmin?.id;
+          <div className="overflow-x-auto">
+            <div role="table" aria-label="Members" className="min-w-[760px] text-sm">
+              <div
+                role="row"
+                className="grid grid-cols-[2.2fr_1.4fr_1.4fr_1fr_60px] items-center bg-track/60 text-xs font-bold text-muted border-b border-border"
+              >
+                <span role="columnheader" className="py-2.5 px-4 sm:px-6">
+                  Person
+                </span>
+                <span role="columnheader" className="py-2.5 px-3">
+                  Role
+                </span>
+                <span role="columnheader" className="py-2.5 px-3">
+                  Studios
+                </span>
+                <span role="columnheader" className="py-2.5 px-3">
+                  Status
+                </span>
+                <span role="columnheader" className="py-2.5 px-3 text-right"></span>
+              </div>
 
-                    return (
-                      <tr key={user.id} className="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
-                        <td className="py-3.5 pl-2">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 text-white font-bold flex items-center justify-center text-xs flex-shrink-0">
-                              {(user.full_name || user.email)[0].toUpperCase()}
-                            </div>
-                            <div className="truncate max-w-[240px]">
-                              <div className="font-medium text-slate-900 dark:text-white truncate">
-                                {user.full_name || 'Staff Member'}
-                                {isSelf && (
-                                  <span className="ml-2 text-[10px] text-indigo-600 dark:text-indigo-400 font-mono">
-                                    (You)
-                                  </span>
-                                )}
-                              </div>
-                              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono truncate">
-                                {user.email}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
+              {loading ? (
+                <div className="p-8 text-center text-xs text-muted">Loading team members...</div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="p-8 text-center text-xs text-muted">No members match your search criteria.</div>
+              ) : (
+                filteredUsers.map((user) => {
+                  const isCurrent = user.id === currentAdmin?.id;
+                  const initials = getInitials(user.full_name, user.email);
+                  const studios =
+                    user.role === 'admin'
+                      ? 'All'
+                      : (user.role as string) === 'designer'
+                      ? 'Social, Retail flyers'
+                      : 'E-commerce, Retail flyers';
 
-                        <td className="py-3.5">
-                          {user.role === 'admin' ? (
-                            <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-500/15 border border-indigo-200 dark:border-indigo-500/30 text-indigo-700 dark:text-indigo-300 text-[10px] font-semibold uppercase tracking-wider">
-                              <Shield className="w-3 h-3" />
-                              <span>Admin</span>
-                            </span>
-                          ) : (
-                            <span className="inline-block px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-medium border border-slate-200 dark:border-white/[0.06]">
-                              Staff
-                            </span>
-                          )}
-                        </td>
+                  return (
+                    <div
+                      key={user.id}
+                      role="row"
+                      className="grid grid-cols-[2.2fr_1.4fr_1.4fr_1fr_60px] items-center border-b border-border hover:bg-track/30 transition-colors"
+                    >
+                      {/* Person */}
+                      <span role="cell" className="py-3 px-4 sm:px-6 flex items-center gap-3 min-w-0">
+                        <span className="w-8 h-8 rounded-full bg-track font-bold text-xs flex items-center justify-center shrink-0 text-ink">
+                          {initials}
+                        </span>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-bold text-ink truncate flex items-center gap-1.5">
+                            <span>{user.full_name || user.email.split('@')[0]}</span>
+                            {isCurrent && (
+                              <span className="text-[10px] text-muted font-normal">(you)</span>
+                            )}
+                          </span>
+                          <span className="text-xs text-muted truncate">{user.email}</span>
+                        </div>
+                      </span>
 
-                        <td className="py-3.5">
-                          {user.status === 'approved' && (
-                            <Badge lifecycle="approved" size="sm" />
-                          )}
-                          {user.status === 'pending' && (
-                            <Badge lifecycle="in_review" size="sm">
-                              Pending
-                            </Badge>
-                          )}
-                          {user.status === 'rejected' && (
-                            <Badge check="fail" size="sm">
-                              Declined
-                            </Badge>
-                          )}
-                        </td>
+                      {/* Role Selector */}
+                      <span role="cell" className="py-3 px-3">
+                        <select
+                          aria-label={`Role for ${user.email}`}
+                          defaultValue={user.role || 'staff'}
+                          disabled={isCurrent}
+                          className="h-8 w-full max-w-[160px] px-2 text-xs bg-surface border border-border rounded-field text-ink focus:outline-none font-medium cursor-pointer disabled:opacity-60"
+                        >
+                          <option value="admin">Admin</option>
+                          <option value="reviewer">Reviewer</option>
+                          <option value="designer">Designer</option>
+                          <option value="marketplace">Marketplace executive</option>
+                          <option value="writer">Content writer</option>
+                          <option value="viewer">Viewer</option>
+                        </select>
+                      </span>
 
-                        {/* Credits Used Today & Total */}
-                        <td className="py-3.5">
-                          <div className="flex items-center space-x-2">
-                            <span
-                              className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-md text-[11px] font-mono font-medium ${
-                                (user.creditsToday || 0) > 0
-                                  ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 font-bold'
-                                  : 'bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-slate-400'
-                              }`}
+                      {/* Studios */}
+                      <span role="cell" className="py-3 px-3 text-xs text-muted truncate">
+                        {studios}
+                      </span>
+
+                      {/* Status */}
+                      <span role="cell" className="py-3 px-3">
+                        {user.status === 'approved' ? (
+                          <Badge variant="ok">Active</Badge>
+                        ) : user.status === 'pending' ? (
+                          <Badge variant="warn">Pending</Badge>
+                        ) : (
+                          <Badge variant="fail">Declined</Badge>
+                        )}
+                      </span>
+
+                      {/* Actions */}
+                      <span role="cell" className="py-3 px-3 text-right">
+                        {user.status === 'pending' ? (
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleApprove(user.id, user.email)}
+                              title="Approve access"
+                              className="w-7 h-7 rounded-field bg-ok-bg text-ok-fg hover:opacity-80 flex items-center justify-center cursor-pointer"
                             >
-                              <Zap className="w-3 h-3 text-amber-500" />
-                              <span>{user.creditsToday || 0} today</span>
-                            </span>
-                            <span className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">
-                              / {user.creditsTotal || 0} total
-                            </span>
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
                           </div>
-                        </td>
-
-                        <td className="py-3.5 text-slate-500 dark:text-slate-400 text-[11px]">
-                          {user.requested_at
-                            ? new Date(user.requested_at).toLocaleDateString(undefined, {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                              })
-                            : '—'}
-                        </td>
-
-                        <td className="py-3.5 text-slate-500 dark:text-slate-400 text-[11px]">
-                          {user.approved_at
-                            ? new Date(user.approved_at).toLocaleDateString(undefined, {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                              })
-                            : '—'}
-                        </td>
-
-                        <td className="py-3.5 pr-2 text-right">
-                          {isSelf ? (
-                            <span className="text-[11px] text-slate-400 italic">Primary Admin</span>
-                          ) : (
-                            <div className="flex items-center justify-end space-x-2">
-                              {user.status === 'pending' && (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleApprove(user.id, user.email)}
-                                    disabled={isProcessing}
-                                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-[11px] font-medium rounded-md transition flex items-center space-x-1"
-                                  >
-                                    <Check className="w-3 h-3" />
-                                    <span>Approve</span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleReject(user.id, user.email)}
-                                    disabled={isProcessing}
-                                    className="px-2.5 py-1 bg-slate-100 dark:bg-white/[0.04] hover:bg-rose-100 dark:hover:bg-rose-500/20 text-slate-700 dark:text-slate-400 hover:text-rose-700 dark:hover:text-rose-300 text-[11px] font-medium rounded-md border border-slate-200 dark:border-white/[0.06] transition"
-                                  >
-                                    Decline
-                                  </button>
-                                </>
-                              )}
-
-                              {user.status === 'approved' && user.role !== 'admin' && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleReject(user.id, user.email)}
-                                  disabled={isProcessing}
-                                  className="px-2.5 py-1 bg-slate-100 dark:bg-white/[0.04] hover:bg-rose-100 dark:hover:bg-rose-500/20 text-slate-700 dark:text-slate-400 hover:text-rose-700 dark:hover:text-rose-300 text-[11px] font-medium rounded-md border border-slate-200 dark:border-white/[0.06] transition"
-                                >
-                                  Revoke Access
-                                </button>
-                              )}
-
-                              {user.status === 'rejected' && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleApprove(user.id, user.email)}
-                                  disabled={isProcessing}
-                                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-[11px] font-medium rounded-md transition flex items-center space-x-1"
-                                >
-                                  <Check className="w-3 h-3" />
-                                  <span>Re-approve</span>
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        ) : (
+                          <button
+                            type="button"
+                            aria-label={`Actions for ${user.email}`}
+                            className="w-7 h-7 rounded-field text-muted hover:text-ink hover:bg-track flex items-center justify-center ml-auto cursor-pointer"
+                          >
+                            <MoreVertical className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })
+              )}
             </div>
-          )}
+          </div>
+        </section>
+
+        {/* Section 2: Role Permissions Matrix */}
+        <section
+          aria-labelledby="perms-heading"
+          className="bg-surface border border-border rounded-card overflow-hidden shadow-2xs"
+        >
+          <div className="p-4 sm:px-5 border-b border-border flex flex-col gap-1">
+            <h2 id="perms-heading" className="text-base font-extrabold text-ink m-0">
+              What each role can do
+            </h2>
+            <span className="text-xs text-muted">
+              Enforced in the database, not just hidden in the app. Nobody can approve their own work.
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <div role="table" aria-label="Permissions by role" className="min-w-[760px] text-xs">
+              <div
+                role="row"
+                className="grid grid-cols-[2.4fr_repeat(6,1fr)] items-center bg-track/60 font-bold text-muted border-b border-border"
+              >
+                <span role="columnheader" className="py-2.5 px-4 sm:px-6">
+                  Permission
+                </span>
+                {roles.map((r) => (
+                  <span key={r} role="columnheader" className="py-2.5 px-2 text-center truncate">
+                    {r}
+                  </span>
+                ))}
+              </div>
+
+              {permissionsGrid.map((p) => (
+                <div
+                  key={p.name}
+                  role="row"
+                  className="grid grid-cols-[2.4fr_repeat(6,1fr)] items-center border-b border-border hover:bg-track/30 transition-colors"
+                >
+                  <span role="rowheader" className="py-3 px-4 sm:px-6 font-semibold text-ink">
+                    {p.name}
+                  </span>
+                  {p.matrix.map((allowed, idx) => (
+                    <span key={idx} role="cell" className="py-3 px-2 flex justify-center">
+                      {allowed ? (
+                        <span
+                          role="img"
+                          aria-label="Allowed"
+                          className="w-5 h-5 rounded-full bg-ink text-white flex items-center justify-center shrink-0"
+                        >
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        </span>
+                      ) : (
+                        <span
+                          role="img"
+                          aria-label="Not allowed"
+                          className="w-3 h-0.5 bg-border-strong rounded-full inline-block"
+                        />
+                      )}
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* Invite Member Simple Modal */}
+      {inviteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-surface border border-border rounded-modal p-6 max-w-md w-full shadow-2xl flex flex-col gap-4">
+            <h3 className="text-lg font-extrabold text-ink m-0">Invite team member</h3>
+            <p className="text-xs text-muted m-0">
+              New team members register at the sign-in page. Their request will appear in your Pending Requests list for immediate approval.
+            </p>
+            <div className="p-3 bg-track rounded-field flex items-center justify-between text-xs font-mono text-ink">
+              <span>{window.location.origin}/auth</span>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}/auth`);
+                  setCopiedLink(true);
+                  setTimeout(() => setCopiedLink(false), 2000);
+                }}
+                className="text-xs font-bold text-ink hover:underline cursor-pointer"
+              >
+                {copiedLink ? 'Copied!' : 'Copy Link'}
+              </button>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="secondary" size="sm" onClick={() => setInviteModalOpen(false)}>
+                Close
+              </Button>
+            </div>
+          </div>
         </div>
-      </main>
+      )}
     </div>
   );
 }
