@@ -2,11 +2,17 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { AppLayout } from './components/shell';
 import { SignIn } from './pages/SignIn';
 import { ResetPassword } from './pages/ResetPassword';
+import { Home } from './pages/Home';
 import { Studio } from './pages/Studio';
 import { History } from './pages/History';
 import { AdminUsers } from './pages/AdminUsers';
+import { MyWork } from './pages/MyWork';
+import { CampaignCalendar } from './pages/CampaignCalendar';
+import { ProductsList } from './pages/ProductsList';
+import { BrandKitLibrary } from './pages/BrandKitLibrary';
 import DevComponents from './pages/DevComponents';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -26,7 +32,6 @@ function PasswordRecoveryWatcher() {
       search.includes('code=');
 
     if (hasRecoverySignal && location.pathname !== '/reset-password') {
-      // Direct immediately to /reset-password preserving query and hash parameters
       navigate('/reset-password' + location.search + location.hash, { replace: true });
     }
   }, [isRecoveryMode, location.pathname, location.search, location.hash, navigate]);
@@ -41,37 +46,112 @@ export default function App() {
         <BrowserRouter>
           <PasswordRecoveryWatcher />
           <Routes>
+            {/* Public Auth Routes */}
             <Route path="/signin" element={<SignIn />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/" element={<Navigate to="/signin" replace />} />
+
+            {/* Home Route */}
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <AppLayout title="Home">
+                    <Home />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Studio Route */}
             <Route
               path="/studio"
               element={
                 <ProtectedRoute>
-                  <Studio />
+                  <AppLayout breadcrumbs={[{ label: 'Studios', href: '/' }, { label: 'E-commerce' }]}>
+                    <Studio />
+                  </AppLayout>
                 </ProtectedRoute>
               }
             />
+            <Route path="/studio/ecommerce" element={<Navigate to="/studio" replace />} />
+            <Route path="/studio/social" element={<Navigate to="/studio" replace />} />
+            <Route path="/studio/packaging" element={<Navigate to="/studio" replace />} />
+            <Route path="/studio/flyers" element={<Navigate to="/studio" replace />} />
+
+            {/* History Route */}
             <Route
               path="/history"
               element={
                 <ProtectedRoute>
-                  <History />
+                  <AppLayout breadcrumbs={[{ label: 'Projects', href: '/' }, { label: 'History' }]}>
+                    <History />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Team Screens */}
+            <Route
+              path="/work"
+              element={
+                <ProtectedRoute>
+                  <AppLayout title="My Work">
+                    <MyWork />
+                  </AppLayout>
                 </ProtectedRoute>
               }
             />
             <Route
+              path="/calendar"
+              element={
+                <ProtectedRoute>
+                  <AppLayout title="Campaign Calendar">
+                    <CampaignCalendar />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/products"
+              element={
+                <ProtectedRoute>
+                  <AppLayout title="Products & SKUs">
+                    <ProductsList />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/library/brand"
+              element={
+                <ProtectedRoute>
+                  <AppLayout breadcrumbs={[{ label: 'Library', href: '/' }, { label: 'Brand Kit' }]}>
+                    <BrandKitLibrary />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Admin Route */}
+            <Route
               path="/admin/users"
               element={
                 <ProtectedRoute requireAdmin>
-                  <AdminUsers />
+                  <AppLayout breadcrumbs={[{ label: 'Settings', href: '/' }, { label: 'Team & Staff Access' }]}>
+                    <AdminUsers />
+                  </AppLayout>
                 </ProtectedRoute>
               }
             />
             <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
+            <Route path="/settings/team" element={<Navigate to="/admin/users" replace />} />
+            <Route path="/settings" element={<Navigate to="/admin/users" replace />} />
+
+            {/* Dev Component Showcase */}
             <Route path="/dev/components" element={<DevComponents />} />
-            {/* Catch-all redirect to sign in */}
-            <Route path="*" element={<Navigate to="/signin" replace />} />
+
+            {/* Catch-all redirect */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

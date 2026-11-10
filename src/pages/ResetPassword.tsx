@@ -2,9 +2,9 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { BrandLogo } from '../components/BrandLogo';
 import { Lock, Eye, EyeOff, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
-import { Button } from '../components/ui';
+import { Button } from '../components/ui/Button';
+import { Field } from '../components/ui/Field';
 
 export function ResetPassword() {
   const { user, updateUserPassword, setIsRecoveryMode } = useAuth();
@@ -18,7 +18,7 @@ export function ResetPassword() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    // 1. Check for error description in hash or query params (e.g. expired link)
+    // 1. Check for error description in hash or query params
     const hash = window.location.hash || '';
     const search = window.location.search || '';
     const hashParams = new URLSearchParams(hash.replace(/^#/, ''));
@@ -72,19 +72,16 @@ export function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#090B10] px-4 py-12 relative overflow-hidden text-slate-100">
-      {/* Subtle background glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] bg-red-600/5 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="w-full max-w-md space-y-6 bg-[#0E1118]/85 p-8 rounded-2xl border border-white/[0.08] shadow-2xl backdrop-blur-xl relative z-10">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center mb-1">
-            <BrandLogo heightClass="h-10" />
-          </div>
-          <h1 className="text-xl font-bold tracking-tight text-white">Reset Password</h1>
-          <p className="text-xs text-slate-400">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-page text-ink font-sans px-4 py-12 select-none">
+      <div className="w-full max-w-md bg-surface p-8 sm:p-10 rounded-sheet border border-border shadow-lg flex flex-col gap-6">
+        <div className="text-center flex flex-col items-center gap-1">
+          <p className="m-0 text-3xl font-extrabold tracking-tight text-ink">
+            sanford<span className="text-brand">Ai</span>
+          </p>
+          <h1 className="text-base font-extrabold text-ink m-0">Reset Password</h1>
+          <p className="text-xs text-muted m-0">
             {user?.email ? (
-              <>Choose a new password for <span className="font-semibold text-white">{user.email}</span></>
+              <>Set a new password for <strong className="text-ink">{user.email}</strong></>
             ) : (
               'Enter a new secure password for your account'
             )}
@@ -92,13 +89,13 @@ export function ResetPassword() {
         </div>
 
         {success ? (
-          <div className="rounded-xl bg-emerald-950/40 border border-emerald-500/30 p-6 text-center space-y-4">
-            <div className="w-12 h-12 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-              <CheckCircle2 className="w-6 h-6" />
+          <div className="rounded-card bg-ok-bg border border-ok-fg/20 p-6 text-center flex flex-col items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-white text-ok-fg flex items-center justify-center shadow-xs">
+              <CheckCircle2 className="w-8 h-8 stroke-[2.5]" />
             </div>
-            <div className="space-y-1">
-              <h2 className="text-base font-semibold text-white">Password Updated!</h2>
-              <p className="text-xs text-slate-300">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-base font-extrabold text-ink m-0">Password Updated!</h2>
+              <p className="text-xs text-muted m-0">
                 Your password has been successfully reset. You can now access the studio.
               </p>
             </div>
@@ -113,58 +110,43 @@ export function ResetPassword() {
             </Button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {errorMessage && (
-              <div className="rounded-lg bg-rose-950/60 border border-rose-800/60 p-3 text-xs text-rose-300 flex items-start space-x-2">
-                <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
-                <span>{errorMessage}</span>
+              <div className="rounded-field bg-brand-tint border border-brand/20 p-3 text-xs text-brand flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span className="font-semibold">{errorMessage}</span>
               </div>
             )}
 
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                New Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-                  <Lock className="w-4 h-4" />
-                </div>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                  className="w-full pl-10 pr-10 py-2.5 bg-white/[0.04] border border-white/[0.12] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition"
-                />
+            <Field
+              label="New Password"
+              required
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Minimum 6 characters"
+              prefixIcon={<Lock className="w-4 h-4" />}
+              suffixIcon={
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-white"
+                  className="text-muted hover:text-ink cursor-pointer"
+                  tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
-              </div>
-            </div>
+              }
+            />
 
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-                  <Lock className="w-4 h-4" />
-                </div>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Re-enter password"
-                  className="w-full pl-10 pr-10 py-2.5 bg-white/[0.04] border border-white/[0.12] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition"
-                />
-              </div>
-            </div>
+            <Field
+              label="Confirm Password"
+              required
+              type={showPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Re-enter password"
+              prefixIcon={<Lock className="w-4 h-4" />}
+            />
 
             <Button
               type="submit"
@@ -173,12 +155,13 @@ export function ResetPassword() {
               loading={submitting}
               icon={<ArrowRight className="w-4 h-4" />}
               iconPosition="right"
+              className="mt-1"
             >
               Update Password
             </Button>
 
             <div className="text-center pt-1">
-              <Link to="/signin" className="text-xs text-slate-400 hover:text-white underline">
+              <Link to="/signin" className="text-xs text-muted hover:text-ink font-semibold underline">
                 Back to Sign In
               </Link>
             </div>
@@ -188,4 +171,3 @@ export function ResetPassword() {
     </div>
   );
 }
-

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Navbar } from '../components/Navbar';
 import { Button, EmptyState } from '../components/ui';
 import { projectStorage } from '../lib/projectStorage';
 import type { ProjectData } from '../types';
@@ -171,9 +170,7 @@ export function History() {
   };
 
   return (
-    <div className="min-h-screen bg-[#EEF1F6] dark:bg-[#090B10] text-[#0F172A] dark:text-slate-100 flex flex-col selection:bg-indigo-500/20 selection:text-indigo-200 transition-colors">
-      <Navbar />
-
+    <div className="min-h-screen bg-page text-ink flex flex-col transition-colors">
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-[#E3E8EF] dark:border-slate-800 gap-4">
           <div>

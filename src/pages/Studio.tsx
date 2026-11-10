@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Navbar } from '../components/Navbar';
 import { ProductInput } from '../components/ProductInput';
 import { ResultsGrid } from '../components/ResultsGrid';
 import { SettingsPanel } from '../components/SettingsPanel';
@@ -923,8 +922,6 @@ export function Studio() {
 
   return (
     <div className="min-h-screen bg-[#EEF1F6] dark:bg-[#090B10] text-[#0F172A] dark:text-slate-100 flex flex-col selection:bg-indigo-500/20 selection:text-indigo-200 transition-colors">
-      <Navbar />
-
       {/* Toast Alert */}
       {toastMessage && (
         <div

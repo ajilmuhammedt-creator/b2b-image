@@ -1,8 +1,6 @@
 import { useState, type FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { BrandLogo } from '../components/BrandLogo';
-import { Button } from '../components/ui';
 import {
   Mail,
   Lock,
@@ -13,15 +11,18 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  UserPlus,
   LogIn,
+  UserPlus,
 } from 'lucide-react';
+import { Button } from '../components/ui/Button';
+import { Field } from '../components/ui/Field';
+import { Segmented } from '../components/ui/Segmented';
 
 export function SignIn() {
   const { user, profile, loading, isRecoveryMode, signInWithPassword, signUpWithPassword, resetPasswordForEmail } = useAuth();
   const navigate = useNavigate();
 
-  // Mode: 'signin' | 'signup' | 'forgot'
+  // Mode: 'signin' | 'signup'
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
 
@@ -54,7 +55,7 @@ export function SignIn() {
 
     if (!loading && user) {
       if (profile?.status === 'approved' || profile?.status === 'pending') {
-        navigate('/studio', { replace: true });
+        navigate('/', { replace: true });
       }
     }
   }, [user, profile, loading, isRecoveryMode, navigate]);
@@ -87,7 +88,7 @@ export function SignIn() {
           }),
         }).catch((err) => console.warn('Admin notification error:', err));
 
-        navigate('/studio', { replace: true });
+        navigate('/', { replace: true });
       }
     } catch (err: unknown) {
       setErrorMessage(
@@ -177,89 +178,80 @@ export function SignIn() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#090B10] text-slate-800 dark:text-slate-200">
-        <div className="flex items-center space-x-3 bg-white dark:bg-white/[0.03] px-5 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] shadow-sm">
-          <div className="animate-spin h-5 w-5 border-2 border-indigo-500 border-t-transparent rounded-full" />
-          <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Checking session...</span>
+      <div className="min-h-screen flex items-center justify-center bg-page text-ink font-sans">
+        <div className="flex items-center gap-3 bg-surface px-6 py-4 rounded-card border border-border shadow-xs">
+          <div className="animate-spin h-5 w-5 border-2 border-brand border-t-transparent rounded-full" />
+          <span className="text-sm font-semibold text-ink">Verifying credentials...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#090B10] px-4 py-12 relative overflow-hidden text-slate-100">
-      {/* Subtle background glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] bg-red-600/5 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="w-full max-w-md bg-[#0E1118]/85 p-8 rounded-2xl border border-white/[0.08] shadow-2xl backdrop-blur-xl relative z-10 space-y-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-page text-ink font-sans px-4 py-12 select-none">
+      {/* Brand card */}
+      <div className="w-full max-w-md bg-surface p-8 sm:p-10 rounded-sheet border border-border shadow-lg flex flex-col gap-6">
         {/* Brand header */}
-        <div className="text-center space-y-1.5">
-          <div className="inline-flex items-center justify-center mb-1">
-            <BrandLogo heightClass="h-10" />
-          </div>
-          <p className="text-xs font-semibold tracking-wider uppercase text-[#5B6478] dark:text-slate-400 font-sans">
-            Image Studio
+        <div className="text-center flex flex-col items-center gap-1">
+          <p className="m-0 text-3xl font-extrabold tracking-tight text-ink">
+            sanford<span className="text-brand">Ai</span>
           </p>
+          <span className="text-xs font-bold text-muted uppercase tracking-wider">
+            Studio Suite
+          </span>
         </div>
 
         {/* Forgot password mode */}
         {forgotPasswordMode ? (
           resetEmailSent ? (
-            <div className="rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/50 p-6 text-center space-y-4">
-              <div className="w-12 h-12 mx-auto rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+            <div className="rounded-card bg-ok-bg border border-ok-fg/20 p-6 text-center flex flex-col items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-white text-ok-fg flex items-center justify-center shadow-xs">
+                <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
               </div>
-              <div className="space-y-1">
-                <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Reset Link Sent</h2>
-                <p className="text-xs text-slate-600 dark:text-slate-300">
-                  We sent password reset instructions to:
+              <div className="flex flex-col gap-1">
+                <h2 className="text-base font-extrabold text-ink m-0">Reset Link Sent</h2>
+                <p className="text-xs text-muted m-0">
+                  Password reset instructions have been sent to:
                 </p>
-                <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 break-all">{email.trim()}</p>
+                <p className="text-xs font-bold text-ink break-all m-0">{email.trim()}</p>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-2 border-t border-indigo-100 dark:border-indigo-900/50">
-                Click the link in the email to set a new password.
-              </p>
-              <button
-                type="button"
+              <Button
+                variant="secondary"
+                size="sm"
+                fullWidth
                 onClick={() => {
                   setForgotPasswordMode(false);
                   setResetEmailSent(false);
                 }}
-                className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-xs text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-white/[0.08] transition"
               >
                 Back to Sign In
-              </button>
+              </Button>
             </div>
           ) : (
-            <form onSubmit={handleForgotPassword} className="space-y-4">
+            <form onSubmit={handleForgotPassword} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <h2 className="text-lg font-extrabold text-ink m-0">Reset Password</h2>
+                <p className="text-xs text-muted m-0">
+                  Enter your registered work email to receive password instructions.
+                </p>
+              </div>
+
               {errorMessage && (
-                <div className="rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 p-3 text-xs text-rose-700 dark:text-rose-300 flex items-start space-x-2">
-                  <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
-                  <span>{errorMessage}</span>
+                <div className="rounded-field bg-brand-tint border border-brand/20 p-3 text-xs text-brand flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span className="font-semibold">{errorMessage}</span>
                 </div>
               )}
 
-              <div>
-                <label htmlFor="reset-email" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  Your Account Email
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                    <Mail className="w-4 h-4" />
-                  </div>
-                  <input
-                    id="reset-email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder=""
-                    className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
-                  />
-                </div>
-              </div>
+              <Field
+                label="Your Account Email"
+                required
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@sanford.ae"
+                prefixIcon={<Mail className="w-4 h-4" />}
+              />
 
               <Button
                 type="submit"
@@ -272,172 +264,128 @@ export function SignIn() {
                 Send Reset Instructions
               </Button>
 
-              <div className="text-center pt-1">
-                <button
-                  type="button"
-                  onClick={() => setForgotPasswordMode(false)}
-                  className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 underline"
-                >
-                  Cancel and Return to Sign In
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setForgotPasswordMode(false)}
+                className="text-xs text-muted hover:text-ink font-semibold underline text-center"
+              >
+                Cancel and Return to Sign In
+              </button>
             </form>
           )
         ) : requestSubmitted ? (
           /* Account Request Submitted Card */
-          <div className="rounded-xl bg-slate-50 dark:bg-[#121622] border border-emerald-500/30 p-6 text-center space-y-4">
-            <div className="w-13 h-13 mx-auto rounded-2xl bg-emerald-100 dark:bg-emerald-500/15 border border-emerald-300 dark:border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-              <CheckCircle2 className="w-7 h-7" />
+          <div className="rounded-card bg-ok-bg border border-ok-fg/20 p-6 text-center flex flex-col items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-white text-ok-fg flex items-center justify-center shadow-xs">
+              <CheckCircle2 className="w-8 h-8 stroke-[2.5]" />
             </div>
 
-            <div className="space-y-1.5">
-              <span className="inline-block px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-[10px] font-semibold uppercase tracking-wider rounded-full">
+            <div className="flex flex-col gap-1.5">
+              <span className="inline-block px-2.5 py-0.5 bg-white text-ok-fg text-[11px] font-bold rounded-full self-center border border-ok-fg/20">
                 Request Registered
               </span>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">Account Request Submitted</h2>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                Thank you, <span className="font-semibold text-slate-900 dark:text-white">{fullName || email}</span>! Your account request has been forwarded to the administrator for review.
+              <h2 className="text-base font-extrabold text-ink m-0">Account Request Submitted</h2>
+              <p className="text-xs text-muted leading-relaxed m-0">
+                Thank you, <strong className="text-ink">{fullName || email}</strong>! Your account request has been forwarded to the administrator.
               </p>
             </div>
 
-            <div className="p-3 bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.06] rounded-lg text-left space-y-1.5">
-              <div className="flex items-center space-x-2 text-[11px] font-medium text-indigo-600 dark:text-indigo-300">
-                <Clock className="w-3.5 h-3.5" />
-                <span>What happens next:</span>
+            <div className="p-3 bg-white rounded-field border border-border text-left flex flex-col gap-1 w-full text-xs">
+              <div className="flex items-center gap-1.5 font-bold text-ink">
+                <Clock className="w-3.5 h-3.5 text-muted" />
+                <span>Next steps:</span>
               </div>
-              <ul className="text-[11px] text-slate-600 dark:text-slate-400 space-y-1 list-disc pl-4">
+              <ul className="text-muted text-[11px] space-y-1 list-disc pl-4 m-0">
                 <li>An administrator will review your staff access request.</li>
-                <li>You will receive an approval email at <span className="font-mono text-slate-800 dark:text-slate-200">{email}</span>.</li>
-                <li>Once approved, you can sign in to access the studio.</li>
+                <li>You will receive an approval notification at {email}.</li>
+                <li>Once approved, sign in with your password to access the studio.</li>
               </ul>
             </div>
 
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              fullWidth
               onClick={() => {
                 setRequestSubmitted(false);
                 setActiveTab('signin');
                 setPassword('');
                 setConfirmPassword('');
               }}
-              className="w-full py-2.5 px-4 bg-[var(--brand)] hover:bg-[var(--brand-hover)] dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white font-medium text-xs rounded-lg shadow-sm dark:shadow-md transition flex items-center justify-center space-x-2"
             >
-              <span>Back to Sign In</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+              Back to Sign In
+            </Button>
           </div>
         ) : (
           /* Sign In vs Request Account Tabbed Form */
-          <div>
-            {/* Tabs */}
-            <div className="grid grid-cols-2 p-1 bg-[#F4F7FC] dark:bg-white/[0.04] rounded-xl border border-[#DCE4F2] dark:border-white/[0.06] mb-5">
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('signin');
-                  setErrorMessage(null);
-                }}
-                className={`py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center space-x-1.5 ${
-                  activeTab === 'signin'
-                    ? 'bg-[#E8EDF7] text-[#0F1B3D] font-semibold border-0 shadow-none dark:bg-indigo-600 dark:text-white'
-                    : 'text-[#5B6478] hover:text-[#0F172A] dark:text-slate-400 dark:hover:text-slate-200'
-                }`}
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Sign In</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('signup');
-                  setErrorMessage(null);
-                }}
-                className={`py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center space-x-1.5 ${
-                  activeTab === 'signup'
-                    ? 'bg-[#E8EDF7] text-[#0F1B3D] font-semibold border-0 shadow-none dark:bg-indigo-600 dark:text-white'
-                    : 'text-[#5B6478] hover:text-[#0F172A] dark:text-slate-400 dark:hover:text-slate-200'
-                }`}
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-                <span>Request Staff Account</span>
-              </button>
-            </div>
+          <div className="flex flex-col gap-4">
+            {/* Segmented control: Sign In vs Request Staff Account */}
+            <Segmented
+              value={activeTab}
+              onChange={(val) => {
+                setActiveTab(val as any);
+                setErrorMessage(null);
+              }}
+              options={[
+                { value: 'signin', label: 'Sign In', icon: <LogIn className="w-3.5 h-3.5" /> },
+                { value: 'signup', label: 'Request Account', icon: <UserPlus className="w-3.5 h-3.5" /> },
+              ]}
+            />
 
             {errorMessage && (
-              <div className="rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 p-3 mb-4 text-xs text-rose-700 dark:text-rose-300 flex items-start space-x-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
-                <span>{errorMessage}</span>
+              <div className="rounded-field bg-brand-tint border border-brand/20 p-3 text-xs text-brand flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span className="font-semibold">{errorMessage}</span>
               </div>
             )}
 
             {activeTab === 'signin' ? (
               /* Sign In Form */
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div>
-                  <label htmlFor="signin-email" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                    Work Email
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                      <Mail className="w-4 h-4" />
-                    </div>
-                    <input
-                      id="signin-email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder=""
-                      className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
-                    />
-                  </div>
+              <form onSubmit={handleSignIn} className="flex flex-col gap-4">
+                <Field
+                  label="Work Email"
+                  required
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@sanford.ae"
+                  prefixIcon={<Mail className="w-4 h-4" />}
+                />
+
+                <div className="flex flex-col">
+                  <Field
+                    label="Password"
+                    required
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter password"
+                    prefixIcon={<Lock className="w-4 h-4" />}
+                    action={
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setErrorMessage(null);
+                          setForgotPasswordMode(true);
+                        }}
+                        className="text-[11px] font-bold text-muted hover:text-ink transition-colors"
+                      >
+                        Forgot password?
+                      </button>
+                    }
+                    suffixIcon={
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="text-muted hover:text-ink cursor-pointer"
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    }
+                  />
                 </div>
 
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label htmlFor="signin-password" className="block text-xs font-medium text-slate-700 dark:text-slate-300">
-                      Password
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setErrorMessage(null);
-                        setForgotPasswordMode(true);
-                      }}
-                      className="text-[11px] text-[var(--brand)] hover:underline dark:text-indigo-400 dark:hover:text-indigo-300 transition"
-                    >
-                      Forgot password?
-                    </button>
-                  </div>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                      <Lock className="w-4 h-4" />
-                    </div>
-                    <input
-                      id="signin-password"
-                      name="password"
-                      type={showPassword ? 'text' : 'password'}
-                      autoComplete="current-password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder=""
-                      className="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[var(--brand)] dark:focus:ring-indigo-500 transition"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
+                {/* Single Primary Action Button in Brand Red */}
                 <Button
                   type="submit"
                   variant="primary"
@@ -445,123 +393,75 @@ export function SignIn() {
                   loading={submitting}
                   icon={<ArrowRight className="w-4 h-4" />}
                   iconPosition="right"
+                  className="mt-1"
                 >
                   Sign In
                 </Button>
               </form>
             ) : (
               /* Request Staff Account Form */
-              <form onSubmit={handleSignUp} className="space-y-3.5">
-                <div>
-                  <label htmlFor="signup-name" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                      <UserIcon className="w-4 h-4" />
-                    </div>
-                    <input
-                      id="signup-name"
-                      name="fullName"
-                      type="text"
-                      required
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder=""
-                      className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
-                    />
-                  </div>
-                </div>
+              <form onSubmit={handleSignUp} className="flex flex-col gap-3.5">
+                <Field
+                  label="Full Name"
+                  required
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="e.g. Ajil Muhammed"
+                  prefixIcon={<UserIcon className="w-4 h-4" />}
+                />
 
-                <div>
-                  <label htmlFor="signup-email" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                    Work Email
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                      <Mail className="w-4 h-4" />
-                    </div>
-                    <input
-                      id="signup-email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder=""
-                      className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
-                    />
-                  </div>
-                </div>
+                <Field
+                  label="Work Email"
+                  required
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@sanford.ae"
+                  prefixIcon={<Mail className="w-4 h-4" />}
+                />
 
-                <div>
-                  <label htmlFor="signup-password" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                    Password (min. 6 characters)
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                      <Lock className="w-4 h-4" />
-                    </div>
-                    <input
-                      id="signup-password"
-                      name="password"
-                      type={showPassword ? 'text' : 'password'}
-                      autoComplete="new-password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder=""
-                      className="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
-                    />
+                <Field
+                  label="Password"
+                  required
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Minimum 6 characters"
+                  prefixIcon={<Lock className="w-4 h-4" />}
+                  suffixIcon={
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                      className="text-muted hover:text-ink cursor-pointer"
                       tabIndex={-1}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
-                  </div>
-                </div>
+                  }
+                />
 
-                <div>
-                  <label htmlFor="signup-confirm-password" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                    Confirm Password
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                      <Lock className="w-4 h-4" />
-                    </div>
-                    <input
-                      id="signup-confirm-password"
-                      name="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      autoComplete="new-password"
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder=""
-                      className="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
-                    />
+                <Field
+                  label="Confirm Password"
+                  required
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter password"
+                  prefixIcon={<Lock className="w-4 h-4" />}
+                  suffixIcon={
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                      className="text-muted hover:text-ink cursor-pointer"
                       tabIndex={-1}
                     >
                       {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
-                  </div>
-                </div>
+                  }
+                />
 
-                <div className="p-2.5 bg-[var(--brand-tint)] dark:bg-indigo-500/10 border border-[var(--brand)]/30 dark:border-indigo-500/20 rounded-lg text-[11px] text-[var(--brand-ink)] dark:text-indigo-300 flex items-start space-x-2">
-                  <Clock className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-[var(--brand)] dark:text-indigo-400" />
-                  <span>
-                    New accounts require administrator approval. An email notification will be sent upon approval.
-                  </span>
-                </div>
-
+                {/* Single Primary Action Button in Brand Red */}
                 <Button
                   type="submit"
                   variant="primary"
@@ -569,6 +469,7 @@ export function SignIn() {
                   loading={submitting}
                   icon={<ArrowRight className="w-4 h-4" />}
                   iconPosition="right"
+                  className="mt-1"
                 >
                   Submit Account Request
                 </Button>
@@ -577,9 +478,10 @@ export function SignIn() {
           </div>
         )}
 
-        <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+        {/* Footer info */}
+        <div className="pt-2 border-t border-track flex items-center justify-between text-[11px] text-muted font-medium">
           <span>Sanford Authentication Gate</span>
-          <span>Sanford AI Studio</span>
+          <span>v2.0</span>
         </div>
       </div>
     </div>

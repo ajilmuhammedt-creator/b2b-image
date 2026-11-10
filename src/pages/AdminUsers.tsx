@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Navbar } from '../components/Navbar';
 import { Badge, Button, Segmented } from '../components/ui';
 import type { UserProfile, UserStatus, CreditStats } from '../types';
 import {
@@ -192,9 +191,7 @@ export function AdminUsers() {
   });
 
   return (
-    <div className="min-h-screen bg-[#EEF1F6] dark:bg-[#090B10] text-[#0F172A] dark:text-slate-100 flex flex-col font-sans transition-colors">
-      <Navbar />
-
+    <div className="min-h-screen bg-page text-ink flex flex-col font-sans transition-colors">
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-[#E3E8EF] dark:border-white/[0.06]">
