@@ -633,11 +633,16 @@ export function Studio() {
   // Execute single slot generation call
   const callGenerateApi = async (
     slotOrKind: number | 'poster',
-    styleRefPath?: string
+    styleRefPath?: string,
+    customInstructions?: string
   ): Promise<GenerationItem> => {
     const isPoster = slotOrKind === 'poster';
     const currentSlot = isPoster ? null : slotOrKind;
     const cardId = isPoster ? 'card-poster' : `card-${currentSlot}`;
+
+    const existingCard = generations.find((g) => g.id === cardId);
+    const prevVersion = existingCard?.version || 1;
+    const nextVersion = existingCard?.imageUrl ? prevVersion + 1 : 1;
 
     setGenerations((prev) =>
       prev.map((g) => (g.id === cardId ? { ...g, status: 'pending', error: undefined } : g))
@@ -682,6 +687,7 @@ export function Studio() {
           sourceImageDataUrl,
           styleRefPath,
           platform: targetPlatform,
+          customInstructions: customInstructions?.trim() || undefined,
           aplusType: targetSlotSpec?.aplusType,
           noonAplusType: targetSlotSpec?.noonAplusType,
           lang: targetSlotSpec?.noonLanguage || settings.noonLanguage || 'en',
@@ -704,6 +710,18 @@ export function Studio() {
         throw new Error(data.error || `HTTP error ${res.status}`);
       }
 
+      const existingHistory = existingCard?.iterationHistory || [];
+      const updatedHistory = customInstructions?.trim()
+        ? [
+            ...existingHistory,
+            {
+              note: customInstructions.trim(),
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              version: nextVersion,
+            },
+          ]
+        : existingHistory;
+
       let updatedCard: GenerationItem = {
         id: cardId,
         projectId,
@@ -719,9 +737,12 @@ export function Studio() {
         usage: data.usage,
         featureGroup: slotGroup,
         sanfordSlot: targetSlotSpec,
-        selected: true,
+        selected: existingCard?.selected ?? true,
         platform: targetPlatform,
         isApproved: true,
+        version: nextVersion,
+        customInstructions: customInstructions?.trim() || undefined,
+        iterationHistory: updatedHistory,
       };
 
       if (targetPlatform === 'amazon') {
@@ -766,6 +787,9 @@ export function Studio() {
         error: err.message || 'Generation failed',
         featureGroup: slotGroup,
         platform: targetPlatform,
+        selected: existingCard?.selected ?? true,
+        version: prevVersion,
+        iterationHistory: existingCard?.iterationHistory,
       };
 
       setGenerations((prev) => prev.map((g) => (g.id === cardId ? failedCard : g)));
@@ -905,7 +929,7 @@ export function Studio() {
   };
 
   // Regenerate single slot
-  const handleRegenerateSlot = async (slotOrKind: number | 'poster') => {
+  const handleRegenerateSlot = async (slotOrKind: number | 'poster', customInstructions?: string) => {
     if (!platform) {
       setIsPlatformModalOpen(true);
       showToast('Please select your target platform first.', 'error');
@@ -924,7 +948,12 @@ export function Studio() {
       return;
     }
 
-    showToast(`Regenerating ${slotOrKind === 'poster' ? 'Poster' : `Slot ${slotOrKind}`}...`);
+    const slotLabel = slotOrKind === 'poster' ? 'Poster' : `Slot ${slotOrKind}`;
+    if (customInstructions && customInstructions.trim()) {
+      showToast(`Refining ${slotLabel} with: "${customInstructions.trim().slice(0, 45)}..."`);
+    } else {
+      showToast(`Regenerating ${slotLabel}...`);
+    }
 
     let styleRef: string | undefined = undefined;
     if (settings.styleLock && slotOrKind !== 1) {
@@ -932,12 +961,81 @@ export function Studio() {
       styleRef = slot1?.imagePath;
     }
 
-    const res = await callGenerateApi(slotOrKind, styleRef);
+    const res = await callGenerateApi(slotOrKind, styleRef, customInstructions);
     if (res) {
       setTimeout(() => {
         saveCurrentProject();
       }, 500);
     }
+  };
+
+  // Selective Multi-Slot / Batch Regeneration
+  const handleRegenerateSelectedSlots = async (customInstructions?: string) => {
+    if (!platform) {
+      setIsPlatformModalOpen(true);
+      showToast('Please select your target platform first.', 'error');
+      return;
+    }
+
+    if (!isReadyToGenerate) {
+      setValidationAttempted(true);
+      setIsSpecsModalOpen(true);
+      showToast(`Please complete required specifications: ${missingFields.join(', ')}`, 'error');
+      return;
+    }
+
+    const selectedCards = generations.filter((g) => g.selected && g.status !== 'skipped');
+    if (selectedCards.length === 0) {
+      showToast('No slots currently selected. Please check at least one slot to regenerate.', 'error');
+      return;
+    }
+
+    const slotNames = selectedCards
+      .map((g) => (g.kind === 'poster' ? 'Poster' : `Slot ${g.slot}`))
+      .join(', ');
+
+    if (customInstructions && customInstructions.trim()) {
+      showToast(`Regenerating ${selectedCards.length} selected slot(s) (${slotNames}) with custom instructions... Keeping all other slots intact.`);
+    } else {
+      showToast(`Regenerating ${selectedCards.length} selected slot(s) (${slotNames})... Keeping all other slots intact.`);
+    }
+
+    // Get style reference from Slot 1 if available
+    let styleRef: string | undefined = undefined;
+    if (settings.styleLock) {
+      const slot1 = generations.find((g) => g.kind === 'feature' && g.slot === 1);
+      styleRef = slot1?.imagePath;
+    }
+
+    // Execute generation in parallel ONLY for the selected slots
+    const promises = selectedCards.map((item) => {
+      const slotVal = item.kind === 'poster' ? 'poster' : (item.slot || 1);
+      const refToUse = slotVal === 1 ? undefined : styleRef;
+      return callGenerateApi(slotVal, refToUse, customInstructions);
+    });
+
+    try {
+      await Promise.allSettled(promises);
+      showToast(`Iterative refinement completed! (${selectedCards.length} slots updated)`);
+      setTimeout(() => {
+        saveCurrentProject();
+      }, 500);
+    } catch (err: any) {
+      showToast(err.message || 'Error occurred during selective regeneration', 'error');
+    }
+  };
+
+  const handleSelectAllCards = () => {
+    setGenerations((prev) => prev.map((g) => ({ ...g, selected: true })));
+  };
+
+  const handleDeselectAllCards = () => {
+    setGenerations((prev) => prev.map((g) => ({ ...g, selected: false })));
+  };
+
+  const handleSelectOnlyCard = (id: string) => {
+    setGenerations((prev) => prev.map((g) => ({ ...g, selected: g.id === id })));
+    setSelectedSlotId(id);
   };
 
   // Image Export Blob Helper
@@ -1322,6 +1420,10 @@ export function Studio() {
         selectedSlotId={selectedSlotId}
         onSelectSlot={(id) => setSelectedSlotId(id)}
         onToggleSelectCheckbox={toggleSelectCard}
+        onRegenerateSelected={handleRegenerateSelectedSlots}
+        onSelectAll={handleSelectAllCards}
+        onDeselectAll={handleDeselectAllCards}
+        onSelectOnlySlot={handleSelectOnlyCard}
         onApproveItem={handleApproveItem}
         onSendBackItem={handleSendBackItem}
         onRetrySlot={handleRegenerateSlot}

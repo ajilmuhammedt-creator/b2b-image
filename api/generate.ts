@@ -66,6 +66,7 @@ export default async function handler(req: any, res: any) {
       aplusType,
       noonAplusType,
       lang = 'en',
+      customInstructions,
     } = body || {};
 
     // 2. Project ownership verification: project's user_id must match verified user id
@@ -272,6 +273,11 @@ export default async function handler(req: any, res: any) {
     // 3. Style Lock Prompt Guidance
     if (settings.styleLock && slot > 1) {
       prompt += '\n\nSTYLE CONSISTENCY MANDATE: Match the exact studio lighting, perspective, realism, color temperature, and clean studio aesthetic of the approved Slot 1 hero image. Maintain identical product material textures and finish.';
+    }
+
+    // 3b. Slot-Specific Feedback & Error Correction (User Iterative Refinement)
+    if (customInstructions && typeof customInstructions === 'string' && customInstructions.trim()) {
+      prompt += `\n\nUSER MODIFICATION AND ERROR CORRECTION INSTRUCTIONS (HIGHEST PRIORITY OVERRIDE):\n${customInstructions.trim()}\nApply these exact fixes and revisions to the product visualization while strictly preserving all other valid product design specifications, brand aesthetics, and photorealistic studio quality.`;
     }
 
     // 4. Call OpenAI Images Edit API with retry

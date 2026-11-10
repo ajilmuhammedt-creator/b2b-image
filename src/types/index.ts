@@ -147,6 +147,13 @@ export interface GenerationItem {
   exportFormat?: 'webp' | 'jpeg' | 'png';
   noonLanguage?: 'en' | 'ar';
   isApproved?: boolean;
+  version?: number;
+  customInstructions?: string;
+  iterationHistory?: Array<{
+    note: string;
+    timestamp: string;
+    version: number;
+  }>;
 }
 
 export interface CatalogueParsedData {

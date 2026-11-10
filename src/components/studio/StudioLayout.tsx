@@ -33,11 +33,15 @@ export interface StudioLayoutProps {
   selectedSlotId: string | null;
   onSelectSlot: (id: string) => void;
   onToggleSelectCheckbox: (id: string) => void;
+  onRegenerateSelected?: (customInstructions?: string) => void;
+  onSelectAll?: () => void;
+  onDeselectAll?: () => void;
+  onSelectOnlySlot?: (id: string) => void;
 
   // Inspector
   onApproveItem: (id: string) => void;
   onSendBackItem: (id: string, note: string) => void;
-  onRetrySlot: (slot: number | 'poster') => void;
+  onRetrySlot: (slot: number | 'poster', customInstructions?: string) => void;
   onCancelJob?: (id: string) => void;
   onOpenComplianceModal?: (item: GenerationItem) => void;
 
@@ -78,6 +82,10 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   selectedSlotId,
   onSelectSlot,
   onToggleSelectCheckbox,
+  onRegenerateSelected,
+  onSelectAll,
+  onDeselectAll,
+  onSelectOnlySlot,
   onApproveItem,
   onSendBackItem,
   onRetrySlot,
@@ -158,6 +166,10 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           onSelectSlot={onSelectSlot}
           onRetrySlot={onRetrySlot}
           onToggleSelectCheckbox={onToggleSelectCheckbox}
+          onRegenerateSelected={onRegenerateSelected}
+          onSelectAll={onSelectAll}
+          onDeselectAll={onDeselectAll}
+          onSelectOnlySlot={onSelectOnlySlot}
         />
 
         {/* Right: Inspector */}
