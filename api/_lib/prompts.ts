@@ -19,12 +19,19 @@ export function parseDimensionMeasurements(dimStr?: string): { height: string; w
   return { height: '197mm', width: '78mm', depth: '57mm' };
 }
 
-export const PRODUCT_ACCURACY_BLOCK = `PRODUCT ACCURACY
-Treat the uploaded product photograph as the source of truth for the product's appearance.
-Faithfully preserve its shape, proportions, colors, materials, texture, buttons, ports, branding, labels, and visible components.
-Keep the product clearly recognizable and accurately represented.
-Do not redesign it, add invented components, change its color, or alter its defining geometry.
-Use only the supplied specifications and claims. Do not invent certifications or performance figures not provided.`;
+export const PRODUCT_ACCURACY_BLOCK = `STRICT CATALOG ADHERENCE & HARDWARE ACCURACY (ZERO HALLUCINATIONS):
+- Treat the uploaded product photograph and the provided catalog specifications as the STRICT, EXCLUSIVE source of truth.
+- Faithfully preserve the product's exact shape, proportions, colors, materials, texture, buttons, switches, ports, branding, labels, and visible components from the reference photo.
+- STRICT NEGATIVE HARDWARE RULE — DO NOT INVENT OR ADD UNLISTED FEATURES:
+  * NEVER add fake digital displays, numeric LED screens (e.g. "100"), LCD panels, touchscreens, or illuminated readouts unless explicitly mentioned in the supplied specifications AND visibly present on the product photo.
+  * NEVER invent unmentioned USB ports (such as extra USB-A or Type-C ports), extra control buttons, hinges, 90-degree folding mechanisms, or cooling plates that are not in the supplied specifications.
+  * NEVER invent performance metrics, certifications, or technical capabilities not explicitly supplied.`;
+
+export const PRECISE_POINTER_MAPPING_BLOCK = `PRECISE 1-TO-1 CALLOUT POINTER & INSET MAPPING RULE:
+- When rendering any pointer lines, leader arrows, or circular zoom-in insets connecting labels/icons to product parts:
+  1. STRICT 1-TO-1 MAPPING: Every pointer line or zoom inset MUST map uniquely and accurately to its exact corresponding physical component (e.g., a "Type-C" callout points strictly to the Type-C port; a "USB-A" callout points strictly to the USB-A port; an "LED Indicator" callout points solely to the pinhole LED indicator dot).
+  2. NO AMBIGUOUS OR MULTI-TARGET POINTERS: Strictly forbid branching, forked, overlapping, or ambiguous pointer lines that connect one label to multiple unrelated ports/components.
+  3. ONLY POINT TO VERIFIED REAL PARTS: Never draw pointer lines or zoom-in detail circles for hardware features that do not exist on the physical product.`;
 
 export const SHARP_SANS_TYPOGRAPHY_BLOCK = `MANDATORY TYPOGRAPHY & FONT MANDATE (SHARP SANS ONLY):
 - ALL text, headlines, marketing slogans, specification callouts, labels, numbers, promotional banners, and dimensional measurements rendered anywhere on the image MUST STRICTLY USE THE "Sharp Sans" FONT FAMILY ONLY.
@@ -49,6 +56,7 @@ export function buildSanfordSlotPrompt(params: {
   brand?: string;
   modelNumber?: string;
   features: string[];
+  excludedFeatures?: string[];
   dimensions?: string;
   weight?: string;
   whatsInTheBox?: string[];
@@ -66,6 +74,7 @@ export function buildSanfordSlotPrompt(params: {
     brand = 'Sanford',
     modelNumber = '',
     features,
+    excludedFeatures = [],
     dimensions,
     weight,
     whatsInTheBox,
@@ -96,9 +105,33 @@ export function buildSanfordSlotPrompt(params: {
   const cleanHeadline = cleanText(headline) || headline;
   const cleanPromoBanner = cleanText(promoBanner) || promoBanner;
 
-  const cleanedFeatures = features
-    .map((f) => cleanText(f))
-    .filter((f) => f.length > 2);
+  // Deduplicate cleaned features strictly
+  const seenFeat = new Set<string>();
+  const cleanedFeatures: string[] = [];
+  for (const f of features) {
+    const cleaned = cleanText(f);
+    if (cleaned.length > 2) {
+      const key = cleaned.toLowerCase();
+      if (!seenFeat.has(key)) {
+        seenFeat.add(key);
+        cleanedFeatures.push(cleaned);
+      }
+    }
+  }
+
+  // Deduplicate excluded features (making sure none overlap with cleanedFeatures)
+  const cleanExcluded: string[] = [];
+  const seenExcl = new Set<string>();
+  for (const ex of excludedFeatures) {
+    const cleaned = cleanText(ex);
+    if (cleaned.length > 2) {
+      const key = cleaned.toLowerCase();
+      if (!seenFeat.has(key) && !seenExcl.has(key)) {
+        seenExcl.add(key);
+        cleanExcluded.push(cleaned);
+      }
+    }
+  }
 
   const featureListStr = cleanedFeatures.join('; ');
 
@@ -248,55 +281,9 @@ ${modelLine}
       break;
     }
 
-    case 'specs_part_1': {
-      const hasHeadline = cleanHeadline && !isDuplicateOrTechnicalSpec(cleanHeadline, cleanedFeatures);
-      const headlineSection = hasHeadline
-        ? `- UPPER-RIGHT USAGE CONTEXT SLOGAN (SHARP SANS FONT):
-  * In the upper-right corner, place ONLY the uppercase context slogan in clean, dark "Sharp Sans Medium" font:
-    "${cleanHeadline.toUpperCase()}"
-  * This is an overarching usage slogan ONLY.
-  * ABSOLUTELY DO NOT put any technical feature, battery spec, or charging text here.`
-        : '';
-
-      const hasPromoBanner = cleanPromoBanner && !isDuplicateOrTechnicalSpec(cleanPromoBanner, cleanedFeatures);
-      const bannerSection = hasPromoBanner
-        ? `- MANDATORY FULL-WIDTH SOLID RED BOTTOM PROMOTIONAL BANNER:
-  * Across the very bottom of the image, include a full-width solid RED strip (#E53935 / #D32F2F) spanning 100% edge-to-edge.
-  * Inside this red banner: large, bold, clean WHITE typography strictly in "Sharp Sans Bold" font displaying the main product benefit: "${cleanPromoBanner}".
-  * On the left of the banner: an optional white circular badge with an outline product/fan symbol.`
-        : '';
-
-      const modelLine = modelNumber
-        ? `  * Do NOT write "${modelNumber}" or any model code/number anywhere on the picture.`
-        : `  * Do NOT write any model code or number anywhere on the picture.`;
-
-      specificStyle = `SLOT 3: PRODUCT SPECIFICATIONS — PART 1 (EXACT BUYSANFORD BRAND STYLE)
-- UPPER-LEFT FEATURE HIGHLIGHTS (EXACT BRAND ICON & SHARP SANS FONT STYLE):
-  * Feature callouts positioned in the upper-left area in a neat vertical stack for: ${featureListStr}.
-  * Each feature item MUST follow this exact visual pattern:
-    1. A solid, vibrant RED circular icon badge (#E53935) containing a clean WHITE minimalist symbol/glyph (e.g. cold-plate/frost icon, turbine/speedometer icon, power icon).
-    2. Bold, short feature description text beside the red badge strictly in "Sharp Sans Bold" or "Sharp Sans Medium" font.
-    3. A delicate, fine horizontal divider line separating each feature item.
-${headlineSection ? '\n' + headlineSection + '\n' : ''}
-- CENTER COMPOSITION:
-  * Product is centered and upright, sharply rendered matching the reference photograph, with realistic surface lighting.
-${bannerSection ? '\n' + bannerSection + '\n' : ''}
-- STRICT ANTI-DUPLICATION RULE (CRITICAL - NO FEATURE MUST APPEAR TWICE):
-  * EVERY FEATURE AND SPECIFICATION MUST APPEAR ONCE AND ONLY ONCE ON THE ENTIRE IMAGE.
-  * Technical specifications (${cleanedFeatures.join(', ')}) belong EXCLUSIVELY in the upper-left red circular badge stack.
-  * DO NOT repeat or duplicate "${cleanedFeatures[0] || 'any feature'}" or any other specification in the upper-right corner, in the bottom banner, or anywhere else on the image.${hasHeadline ? `\n  * The upper-right text must be ONLY the usage slogan "${cleanHeadline.toUpperCase()}".` : ''}
-
-- STRICT NEGATIVE CONSTRAINT (CRITICAL - DO NOT VIOLATE):
-  * ABSOLUTELY NO BRAND NAME AND NO MODEL NUMBER TEXT ON THE IMAGE.
-  * Do NOT write "Sanford" or any brand name anywhere on the picture.
-${modelLine}
-  * Do NOT draw any model tag, logo box, brand header, or "[SF...]" badge.
-  * The text on the image must consist strictly of functional benefit callouts${hasHeadline ? ', the upper-right usage slogan' : ''}${hasPromoBanner ? ', and the bottom promotional banner message' : ''}.
-- STRICT FONT REQUIREMENT: All text and lettering on this image MUST be in the "Sharp Sans" font family only.`;
-      break;
-    }
-
+    case 'specs_part_1':
     case 'specs_part_2': {
+      const slotNumLabel = theme === 'specs_part_1' ? 'SLOT 3: PRODUCT SPECIFICATIONS — PART 1' : 'SLOT 4: PRODUCT SPECIFICATIONS — PART 2';
       const hasHeadline = cleanHeadline && !isDuplicateOrTechnicalSpec(cleanHeadline, cleanedFeatures);
       const headlineSection = hasHeadline
         ? `- UPPER-RIGHT USAGE CONTEXT SLOGAN (SHARP SANS FONT):
@@ -314,33 +301,43 @@ ${modelLine}
   * On the left of the banner: an optional white circular badge with a minimalist symbol.`
         : '';
 
+      const exclusiveListText = cleanedFeatures.length > 0
+        ? cleanedFeatures.map((f, idx) => `    ${idx + 1}. ${f}`).join('\n')
+        : '    (Render clean hardware close-up view only — no extra badge text invented)';
+
+      const excludedSection = cleanExcluded.length > 0
+        ? `\n- FORBIDDEN DUPLICATES (ALREADY ASSIGNED TO ANOTHER SLOT — DO NOT RENDER OR MENTION):\n  * The following specifications belong EXCLUSIVELY to the other specification slot and MUST NOT appear anywhere on THIS image (neither in icon rows, callouts, zoom circles, nor banners):\n    [ ${cleanExcluded.join(' | ')} ]`
+        : '';
+
       const modelLine = modelNumber
         ? `  * Do NOT write "${modelNumber}" or any model code/number anywhere on the picture.`
         : `  * Do NOT write any model code or number anywhere on the picture.`;
 
-      specificStyle = `SLOT 4: PRODUCT SPECIFICATIONS — PART 2 (EXACT BUYSANFORD BRAND STYLE)
-- UPPER-LEFT FEATURE HIGHLIGHTS (EXACT BRAND ICON & SHARP SANS FONT STYLE):
-  * Feature callouts positioned in the upper-left area in a neat vertical stack for: ${featureListStr}.
-  * Each feature item MUST follow this exact visual pattern:
-    1. A solid, vibrant RED circular icon badge (#E53935) containing a clean WHITE minimalist symbol/glyph (e.g. battery icon for 3600mAh, digital display screen icon for gear/battery readout, Type-C charging icon, 90° rotation fold icon).
-    2. Bold, short feature description text beside the red badge strictly in "Sharp Sans Bold" or "Sharp Sans Medium" font.
-    3. A delicate, fine horizontal divider line separating each feature item.
-${headlineSection ? '\n' + headlineSection + '\n' : ''}
-- CENTER COMPOSITION:
-  * Product is centered, showing the digital LED gear/battery display glowing and the Type-C port / folding angle.
+      specificStyle = `${slotNumLabel} (STRICT CATALOG COMPLIANCE & ZERO DUPLICATION)
+- UPPER-LEFT EXCLUSIVE FEATURE HIGHLIGHTS (EXACT BRAND ICON & SHARP SANS FONT STYLE):
+  * Render a clean vertical stack on the left side containing EXCLUSIVELY these ${cleanedFeatures.length} assigned specification(s):
+${exclusiveListText}
+  * EXACT COUNT RULE: Render ONLY ${cleanedFeatures.length} red circular icon badge row(s) matching the numbered items above. DO NOT add any extra unrequested badge rows, unlisted specs, or duplicate points.
+  * Each assigned feature row follows this visual pattern:
+    1. A solid, vibrant RED circular icon badge (#E53935 / #C8281E) containing a clean WHITE minimalist icon matching ONLY that specific item.
+    2. Bold, legible specification text beside the red badge preserving the exact wording and measurements from the list above strictly in "Sharp Sans" font.
+    3. A delicate horizontal hairline divider separating each row.
+${headlineSection ? '\n' + headlineSection + '\n' : ''}${excludedSection ? excludedSection + '\n' : ''}
+- CENTER COMPOSITION & HARDWARE INTEGRITY:
+  * Product is centered and sharply rendered matching the uploaded source reference photograph 100% faithfully.
+  * STRICT ZERO HALLUCINATION: Do NOT add a fake digital LED display/screen (like "100"), do NOT add extra USB-A/Type-C ports, do NOT show folding angles unless listed above, and do NOT place small color-variant thumbnails in the scene (color models belong exclusively to Slot 5).
+  * If showing zoomed-in detail circles/pointer lines for any listed port or hardware detail (such as Type-C port or LED pinhole indicator), render ONLY components that genuinely exist in the uploaded photograph and map pointer lines 1-to-1 strictly to that single part.
 ${bannerSection ? '\n' + bannerSection + '\n' : ''}
-- STRICT ANTI-DUPLICATION RULE (CRITICAL - NO FEATURE MUST APPEAR TWICE):
-  * EVERY FEATURE AND SPECIFICATION MUST APPEAR ONCE AND ONLY ONCE ON THE ENTIRE IMAGE.
-  * Technical specifications (${cleanedFeatures.join(', ')}) belong EXCLUSIVELY in the upper-left red circular badge stack.
-  * DO NOT repeat or duplicate any technical specification in the upper-right corner, in the bottom banner, or anywhere else on the image.${hasHeadline ? `\n  * The upper-right text must be ONLY the usage slogan "${cleanHeadline.toUpperCase()}".` : ''}
-  * STRICT: Do NOT repeat any feature or specification from Slot 3. Only showcase the distinct features assigned to this slot.
+- STRICT ANTI-DUPLICATION & MUTUAL EXCLUSIVITY RULE (CRITICAL):
+  * EVERY SPECIFICATION MUST APPEAR ONCE AND ONLY ONCE ACROSS THE ENTIRE SERIES.
+  * Specifications in this list (${cleanedFeatures.join(', ')}) belong EXCLUSIVELY in the upper-left red circular badge stack.
+  * NEVER repeat any feature twice on the same image or duplicate features from the forbidden list above.
 
 - STRICT NEGATIVE CONSTRAINT (CRITICAL - DO NOT VIOLATE):
   * ABSOLUTELY NO BRAND NAME AND NO MODEL NUMBER TEXT ON THE IMAGE.
   * Do NOT write "Sanford" or any brand name anywhere on the picture.
 ${modelLine}
   * Do NOT draw any model tag, logo box, brand header, or "[SF...]" badge.
-  * The text on the image must consist strictly of functional benefit callouts${hasHeadline ? ', the upper-right usage slogan' : ''}${hasPromoBanner ? ', and the bottom promotional banner message' : ''}.
 - STRICT FONT REQUIREMENT: All text and lettering on this image MUST be in the "Sharp Sans" font family only.`;
       break;
     }
@@ -418,6 +415,8 @@ Language: English
 
 ${PRODUCT_ACCURACY_BLOCK}
 
+${PRECISE_POINTER_MAPPING_BLOCK}
+
 ${NO_BRAND_OR_MODEL_RULE}
 
 ${SHARP_SANS_TYPOGRAPHY_BLOCK}
@@ -455,6 +454,8 @@ Image number: ${slot} of 5
 Language: English
 
 ${PRODUCT_ACCURACY_BLOCK}
+
+${PRECISE_POINTER_MAPPING_BLOCK}
 
 ${SHARP_SANS_TYPOGRAPHY_BLOCK}
 
@@ -506,6 +507,8 @@ Language: English
 
 ${PRODUCT_ACCURACY_BLOCK}
 
+${PRECISE_POINTER_MAPPING_BLOCK}
+
 ${SHARP_SANS_TYPOGRAPHY_BLOCK}
 
 POSTER STYLE
@@ -548,6 +551,7 @@ export function buildAmazonSlotPrompt(params: {
   brand?: string;
   modelNumber?: string;
   features: string[];
+  excludedFeatures?: string[];
   dimensions?: string;
   warranty?: string;
   colors?: string;
@@ -562,6 +566,7 @@ export function buildAmazonSlotPrompt(params: {
     brand = 'Sanford',
     modelNumber = '',
     features = [],
+    excludedFeatures = [],
     dimensions,
     warranty,
     colors,
@@ -586,8 +591,39 @@ export function buildAmazonSlotPrompt(params: {
   const cleanHeadline = cleanText(headline) || headline;
   const cleanPromoBanner = cleanText(promoBanner) || promoBanner;
 
-  const cleanedFeatures = features.map((f) => cleanText(f)).filter((f) => f.length > 2);
+  const seenFeat = new Set<string>();
+  const cleanedFeatures: string[] = [];
+  for (const f of features) {
+    const cleaned = cleanText(f);
+    if (cleaned.length > 2) {
+      const key = cleaned.toLowerCase();
+      if (!seenFeat.has(key)) {
+        seenFeat.add(key);
+        cleanedFeatures.push(cleaned);
+      }
+    }
+  }
+
+  const cleanExcluded: string[] = [];
+  const seenExcl = new Set<string>();
+  for (const ex of excludedFeatures) {
+    const cleaned = cleanText(ex);
+    if (cleaned.length > 2) {
+      const key = cleaned.toLowerCase();
+      if (!seenFeat.has(key) && !seenExcl.has(key)) {
+        seenExcl.add(key);
+        cleanExcluded.push(cleaned);
+      }
+    }
+  }
+
   const featureListStr = cleanedFeatures.join('; ');
+  const exclusiveListText = cleanedFeatures.length > 0
+    ? cleanedFeatures.map((f, idx) => `    ${idx + 1}. ${f}`).join('\n')
+    : '    (Render clean hardware close-up view only)';
+  const excludedWarning = cleanExcluded.length > 0
+    ? `\n- FORBIDDEN DUPLICATES (ALREADY SHOWN IN ANOTHER SLOT — STRICTLY DO NOT MENTION OR RENDER): [ ${cleanExcluded.join(' | ')} ]`
+    : '';
 
   let slotDirective = '';
 
@@ -629,29 +665,30 @@ export function buildAmazonSlotPrompt(params: {
     case 3:
       // IMAGE 03 — PRIMARY PRODUCT FEATURES INFOGRAPHIC
       slotDirective = `IMAGE 03 — AMAZON PRIMARY PRODUCT FEATURES INFOGRAPHIC:
-- PRIMARY OBJECTIVE: Clearly communicate the top 3–4 primary verified features from the catalogue.
+- PRIMARY OBJECTIVE: Clearly communicate EXCLUSIVELY these ${cleanedFeatures.length} assigned specification(s):
+${exclusiveListText}
 - BACKGROUND: Clean white or light neutral grey studio environment (#F8F9FA).
 - INFOGRAPHIC DESIGN SYSTEM:
-  * Upper-left: Vertical stack of 3 to 4 feature callouts for: ${featureListStr}.
+  * Upper-left: Vertical stack of ONLY ${cleanedFeatures.length} red circular icon badge row(s) matching the numbered items above. DO NOT invent extra items.
   * Each feature item consists of:
-    1. A solid vibrant RED circular icon badge (#E53935) with a clean white minimalist pictogram.
-    2. Bold, short headline and benefit text in clean "Sharp Sans Bold" / "Sharp Sans Medium" font.
-    3. Fine horizontal hairline dividers between items.
+    1. A solid vibrant RED circular icon badge (#E53935) with a clean white minimalist pictogram for that exact spec.
+    2. Bold, short specification text matching the exact wording in clean "Sharp Sans Bold" / "Sharp Sans Medium" font.
+    3. Fine horizontal hairline dividers between items.${excludedWarning}
 - FULL-WIDTH RED BENEFIT BANNER:
   * Across the bottom 10% of the canvas, include a solid vibrant RED full-width rectangular banner.
-  * Inside the red banner: Large, bold, clean WHITE typography in "Sharp Sans Bold" delivering the main benefit: "${cleanPromoBanner || cleanHeadline || 'High Performance Engineering'}".
-- ANTI-DUPLICATION RULE: Each feature appears once and only once. No extra brand watermarks or model numbers inside the graphic layout.`;
+  * Inside the red banner: Large, bold, clean WHITE typography in "Sharp Sans Bold" delivering the main benefit: "${cleanPromoBanner || cleanHeadline || 'Built for Everyday Performance'}".
+- ANTI-DUPLICATION RULE: Each feature appears once and only once. Zero repetition with Image 04. No extra brand watermarks or model numbers.`;
       break;
 
     case 4:
       // IMAGE 04 — ADDITIONAL PRODUCT FEATURES INFOGRAPHIC
       slotDirective = `IMAGE 04 — AMAZON SECONDARY FEATURES INFOGRAPHIC:
-- PRIMARY OBJECTIVE: Explain secondary features not covered in Image 03.
-- DESIGN SYSTEM: Matches Image 03 exactly in typography, red circular icon badges, alignment, and full-width red bottom benefits banner.
-- COMPOSITION: Feature callouts for secondary specifications: ${featureListStr}.
-- PRODUCT ANGLE: May feature a detailed close-up, functional angle, or alternative perspective of the product.
+- PRIMARY OBJECTIVE: Highlight EXCLUSIVELY these ${cleanedFeatures.length} secondary specification(s) not covered in Image 03:
+${exclusiveListText}
+- DESIGN SYSTEM: Matches Image 03 in typography, red circular icon badges (EXACTLY ${cleanedFeatures.length} badge row(s) only), alignment, and full-width red bottom benefits banner.${excludedWarning}
+- PRODUCT ANGLE & HARDWARE FIDELITY: Features a detailed close-up, functional angle, or 1-to-1 pointer callouts of genuine ports/components visible on the uploaded product. DO NOT invent digital LED screens, extra ports, or color thumbnails.
 - BENEFIT BANNER: Full-width solid red banner at the bottom with pure white typography in "Sharp Sans Bold".
-- STRICT RULE: Zero repetition with features displayed in Image 03.`;
+- STRICT RULE: Each feature appears ONCE. Zero repetition with Image 03.`;
       break;
 
     case 5:
@@ -705,6 +742,8 @@ PRODUCT SPECIFICATIONS:
 - Available Colours: ${colors || 'Single'}
 
 ${PRODUCT_ACCURACY_BLOCK}
+
+${PRECISE_POINTER_MAPPING_BLOCK}
 
 ${SHARP_SANS_TYPOGRAPHY_BLOCK}
 
@@ -777,6 +816,8 @@ PRODUCT DETAILS:
 - Verified Features: ${features.join('; ')}
 
 ${PRODUCT_ACCURACY_BLOCK}
+
+${PRECISE_POINTER_MAPPING_BLOCK}
 
 ${SHARP_SANS_TYPOGRAPHY_BLOCK}
 
@@ -1043,6 +1084,8 @@ PRODUCT DETAILS:
 - Verified Specifications: ${cleanFeatures.join('; ')}
 
 ${PRODUCT_ACCURACY_BLOCK}
+
+${PRECISE_POINTER_MAPPING_BLOCK}
 
 ${SHARP_SANS_TYPOGRAPHY_BLOCK}
 

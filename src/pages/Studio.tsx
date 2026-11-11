@@ -394,6 +394,46 @@ export function Studio() {
     .filter((c) => c.length > 0);
   const hasMultipleColors = parsedColors.length > 1;
 
+  // Deduplicate and partition specifications strictly 50/50 between Slot 3 and Slot 4
+  const partitionFeatures = (rawText: string) => {
+    const seen = new Set<string>();
+    const all: string[] = [];
+    for (const line of rawText.split('\n')) {
+      const clean = line.trim();
+      if (!clean) continue;
+      const key = clean.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        all.push(clean);
+      }
+    }
+    const half = Math.ceil(all.length / 2);
+    return {
+      all,
+      part1: all.slice(0, half),
+      part2: all.slice(half),
+    };
+  };
+
+  const applyPartitionToSlot = (
+    slotSpec: SanfordSlotSpec,
+    part1: string[],
+    part2: string[],
+    activePlatform: EcommercePlatform | null = platform,
+  ): SanfordSlotSpec => {
+    const isStandardSpecPlatform =
+      activePlatform === 'shopify' || activePlatform === 'amazon' || !activePlatform;
+    const isPart1 = slotSpec.theme === 'specs_part_1' || (isStandardSpecPlatform && slotSpec.slot === 3);
+    const isPart2 = slotSpec.theme === 'specs_part_2' || (isStandardSpecPlatform && slotSpec.slot === 4);
+    if (isPart1) {
+      return { ...slotSpec, features: part1, excludedFeatures: part2 };
+    }
+    if (isPart2) {
+      return { ...slotSpec, features: part2, excludedFeatures: part1 };
+    }
+    return slotSpec;
+  };
+
   // Validation
   const missingFields: string[] = [];
   if (!sourceImage.previewUrl && !sourceImage.file) missingFields.push('product photo');
@@ -419,32 +459,36 @@ export function Studio() {
       templateSlots = DEFAULT_SHOPIFY_SLOTS;
     }
 
-    setSanfordSlots((prev) =>
-      templateSlots.map((tmpl) => {
-        const existing = prev.find((s) => s.slot === tmpl.slot);
-        return {
-          ...tmpl,
-          features: existing?.features && existing.features.length > 0 ? existing.features : tmpl.features,
-          headline: existing?.headline || tmpl.headline,
-          promoBanner: existing?.promoBanner || tmpl.promoBanner,
-          dimensions: dimensions || tmpl.dimensions,
-          warranty: warranty || tmpl.warranty,
-          colors: colors || tmpl.colors,
-        };
-      })
-    );
+    const { part1, part2 } = partitionFeatures(featuresText);
+
+    const nextSlots: SanfordSlotSpec[] = templateSlots.map((tmpl) => {
+      const existing = sanfordSlots.find((s) => s.slot === tmpl.slot);
+      const merged: SanfordSlotSpec = {
+        ...tmpl,
+        features: existing?.features && existing.features.length > 0 ? existing.features : tmpl.features,
+        excludedFeatures: existing?.excludedFeatures || tmpl.excludedFeatures,
+        headline: existing?.headline || tmpl.headline,
+        promoBanner: existing?.promoBanner || tmpl.promoBanner,
+        dimensions: dimensions || tmpl.dimensions,
+        warranty: warranty || tmpl.warranty,
+        colors: colors || tmpl.colors,
+      };
+      return applyPartitionToSlot(merged, part1, part2, newPlatform);
+    });
+
+    setSanfordSlots(nextSlots);
 
     setGenerations((prev) => {
       const posterCard = prev.find((g) => g.kind === 'poster');
-      const updatedCards: GenerationItem[] = templateSlots.map((tmpl) => {
-        const existing = prev.find((g) => g.slot === tmpl.slot);
+      const updatedCards: GenerationItem[] = nextSlots.map((slotSpec) => {
+        const existing = prev.find((g) => g.slot === slotSpec.slot);
         return {
-          id: `card-${tmpl.slot}`,
+          id: `card-${slotSpec.slot}`,
           projectId,
           kind: 'feature',
-          slot: tmpl.slot,
-          theme: tmpl.theme,
-          slotTitle: tmpl.title,
+          slot: slotSpec.slot,
+          theme: slotSpec.theme,
+          slotTitle: slotSpec.title,
           status: existing?.status || 'idle',
           imageUrl: existing?.imageUrl,
           imagePath: existing?.imagePath,
@@ -453,8 +497,8 @@ export function Studio() {
           usage: existing?.usage,
           error: existing?.error,
           selected: existing?.selected ?? true,
-          featureGroup: existing?.featureGroup || tmpl.features,
-          sanfordSlot: tmpl,
+          featureGroup: slotSpec.features.length > 0 ? slotSpec.features : existing?.featureGroup || slotSpec.features,
+          sanfordSlot: slotSpec,
           platform: newPlatform,
           compliance: existing?.compliance,
           noonCompliance: existing?.noonCompliance,
@@ -506,14 +550,49 @@ export function Studio() {
     );
   }, [hasMultipleColors, platform]);
 
+  // Keep Slot 3 & Slot 4 strictly partitioned 50/50 whenever featuresText or platform changes
+  useEffect(() => {
+    const { part1, part2 } = partitionFeatures(featuresText);
+    setSanfordSlots((prev) =>
+      prev.map((slotSpec) => applyPartitionToSlot(slotSpec, part1, part2, platform)),
+    );
+    setGenerations((prev) =>
+      prev.map((g) => {
+        if (g.kind === 'poster') return g;
+        const isStandardSpecPlatform =
+          platform === 'shopify' || platform === 'amazon' || !platform;
+        const isPart1 =
+          g.theme === 'specs_part_1' ||
+          g.sanfordSlot?.theme === 'specs_part_1' ||
+          (isStandardSpecPlatform && g.slot === 3);
+        const isPart2 =
+          g.theme === 'specs_part_2' ||
+          g.sanfordSlot?.theme === 'specs_part_2' ||
+          (isStandardSpecPlatform && g.slot === 4);
+        const nextSlot = g.sanfordSlot
+          ? applyPartitionToSlot(g.sanfordSlot, part1, part2, platform)
+          : undefined;
+        const nextGroup = isPart1 ? part1 : isPart2 ? part2 : g.featureGroup;
+        return {
+          ...g,
+          featureGroup: nextGroup,
+          sanfordSlot: nextSlot,
+        };
+      }),
+    );
+  }, [featuresText, platform]);
+
   // When Catalogue is parsed
   const handleCatalogueParsed = (data: CatalogueParsedData) => {
     if (data.brand) setBrand(data.brand);
     if (data.productName) setProductName(data.productName);
     if (data.modelNumber) setModelNumber(data.modelNumber);
     if (data.tagline) setTagline(data.tagline);
-    if (data.fullFeatures && data.fullFeatures.length > 0) {
-      setFeaturesText(data.fullFeatures.join('\n'));
+    const parsedRawFeatures =
+      data.fullFeatures && data.fullFeatures.length > 0 ? data.fullFeatures.join('\n') : featuresText;
+    const { all: dedupedAll, part1, part2 } = partitionFeatures(parsedRawFeatures);
+    if (dedupedAll.length > 0) {
+      setFeaturesText(dedupedAll.join('\n'));
     }
     if (data.colors) setColors(data.colors);
     if (data.dimensions) setDimensions(data.dimensions);
@@ -524,9 +603,24 @@ export function Studio() {
     }
 
     if (data.slots && data.slots.length > 0) {
+      const enrichedSlots: SanfordSlotSpec[] = data.slots.map((slot) =>
+        applyPartitionToSlot(
+          {
+            ...slot,
+            dimensions: data.dimensions,
+            weight: slot.theme === 'size_warranty' ? undefined : data.weight,
+            whatsInTheBox: slot.theme === 'size_warranty' ? undefined : data.whatsInTheBox,
+            warranty: data.warranty,
+          },
+          part1,
+          part2,
+          platform,
+        ),
+      );
+      setSanfordSlots(enrichedSlots);
       setGenerations((prev) => {
         const posterCard = prev.find((g) => g.kind === 'poster');
-        const newSlots: GenerationItem[] = data.slots.map((slot) => {
+        const newSlots: GenerationItem[] = enrichedSlots.map((slot) => {
           const existing = prev.find((g) => g.slot === slot.slot);
           return {
             id: `card-${slot.slot}`,
@@ -542,13 +636,7 @@ export function Studio() {
             selected: true,
             featureGroup: slot.features,
             platform: platform || undefined,
-            sanfordSlot: {
-              ...slot,
-              dimensions: data.dimensions,
-              weight: slot.theme === 'size_warranty' ? undefined : data.weight,
-              whatsInTheBox: slot.theme === 'size_warranty' ? undefined : data.whatsInTheBox,
-              warranty: data.warranty,
-            },
+            sanfordSlot: slot,
             isApproved: true,
           };
         });
@@ -645,14 +733,35 @@ export function Studio() {
       prev.map((g) => (g.id === cardId ? { ...g, status: 'pending', error: undefined } : g))
     );
 
-    const fullFeatures = featuresText
-      .split('\n')
-      .map((f) => f.trim())
-      .filter((f) => f.length > 0);
-
-    const targetSlotSpec = !isPoster && currentSlot ? sanfordSlots.find((s) => s.slot === currentSlot) : undefined;
-    const slotGroup = targetSlotSpec?.features || fullFeatures;
+    const { all: fullFeatures, part1, part2 } = partitionFeatures(featuresText);
     const targetPlatform = platform || 'shopify';
+    const rawSlotSpec = !isPoster && currentSlot ? sanfordSlots.find((s) => s.slot === currentSlot) : undefined;
+    const targetSlotSpec = rawSlotSpec
+      ? applyPartitionToSlot(rawSlotSpec, part1, part2, targetPlatform)
+      : undefined;
+
+    const targetTheme = targetSlotSpec?.theme || existingCard?.theme;
+    const isSpecPart1 =
+      !isPoster &&
+      (targetTheme === 'specs_part_1' ||
+        (currentSlot === 3 && (targetPlatform === 'shopify' || targetPlatform === 'amazon')));
+    const isSpecPart2 =
+      !isPoster &&
+      (targetTheme === 'specs_part_2' ||
+        (currentSlot === 4 && (targetPlatform === 'shopify' || targetPlatform === 'amazon')));
+
+    const slotGroup = isSpecPart1
+      ? part1
+      : isSpecPart2
+        ? part2
+        : targetSlotSpec?.features && targetSlotSpec.features.length > 0
+          ? targetSlotSpec.features
+          : fullFeatures;
+    const excludedGroup = isSpecPart1
+      ? part2
+      : isSpecPart2
+        ? part1
+        : targetSlotSpec?.excludedFeatures || [];
 
     let sourceImageDataUrl = '';
     if (sourceImage.file) {
@@ -679,6 +788,7 @@ export function Studio() {
           tagline: tagline.trim(),
           fullFeatures,
           featureGroup: slotGroup,
+          excludedFeatures: excludedGroup,
           colors: colors.trim(),
           sourceImagePath: sourceImage.storagePath,
           sourceImageDataUrl,
@@ -691,6 +801,8 @@ export function Studio() {
           sanfordSlot: targetSlotSpec
             ? {
                 ...targetSlotSpec,
+                features: slotGroup,
+                excludedFeatures: excludedGroup,
                 headline:
                   targetSlotSpec.headline ||
                   (targetSlotSpec.theme === 'lifestyle' && tagline.trim() ? tagline.trim() : undefined) ||

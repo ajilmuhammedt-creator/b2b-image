@@ -56,6 +56,7 @@ export default async function handler(req: any, res: any) {
       tagline = '',
       fullFeatures = [],
       featureGroup = [],
+      excludedFeatures = [],
       colors = '',
       sourceImagePath,
       sourceImageDataUrl,
@@ -179,11 +180,92 @@ export default async function handler(req: any, res: any) {
       ? (settings.posterSize || '1024x1536')
       : (settings.featureSize || '1024x1024');
 
+    const dedupFeatures = (list: unknown[]): string[] => {
+      const seen = new Set<string>();
+      const out: string[] = [];
+      for (const item of list) {
+        const clean = String(item || '').trim();
+        if (!clean) continue;
+        const key = clean.toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          out.push(clean);
+        }
+      }
+      return out;
+    };
+
+    const uniqueFullFeatures = dedupFeatures(Array.isArray(fullFeatures) ? fullFeatures : []);
+    const resolvedTheme =
+      sanfordSlot?.theme ||
+      (slot === 1
+        ? 'hero'
+        : slot === 2
+          ? 'lifestyle'
+          : slot === 3
+            ? 'specs_part_1'
+            : slot === 4
+              ? 'specs_part_2'
+              : slot === 5
+                ? 'colors'
+                : slot === 6
+                  ? 'size_warranty'
+                  : 'specs_part_1');
+
+    const rawSlotFeatures = dedupFeatures(
+      Array.isArray(sanfordSlot?.features) && sanfordSlot.features.length > 0
+        ? sanfordSlot.features
+        : Array.isArray(featureGroup)
+          ? featureGroup
+          : [],
+    );
+
+    const halfIdx = Math.ceil(uniqueFullFeatures.length / 2);
+    const defaultPart1 = uniqueFullFeatures.slice(0, halfIdx);
+    const defaultPart2 = uniqueFullFeatures.slice(halfIdx);
+
+    const isSpecsPart1 =
+      resolvedTheme === 'specs_part_1' || (slot === 3 && (platform === 'shopify' || platform === 'amazon'));
+    const isSpecsPart2 =
+      resolvedTheme === 'specs_part_2' || (slot === 4 && (platform === 'shopify' || platform === 'amazon'));
+
+    let assignedFeatures = rawSlotFeatures;
+    let computedExcludedFeatures = dedupFeatures([
+      ...(Array.isArray(sanfordSlot?.excludedFeatures) ? sanfordSlot.excludedFeatures : []),
+      ...(Array.isArray(excludedFeatures) ? excludedFeatures : []),
+    ]);
+
+    if (isSpecsPart1) {
+      if (
+        assignedFeatures.length === 0 ||
+        (uniqueFullFeatures.length > 1 && assignedFeatures.length >= uniqueFullFeatures.length)
+      ) {
+        assignedFeatures = defaultPart1;
+      }
+      const assignedKeys = new Set(assignedFeatures.map((f) => f.toLowerCase()));
+      computedExcludedFeatures = dedupFeatures([...computedExcludedFeatures, ...uniqueFullFeatures]).filter(
+        (f) => !assignedKeys.has(f.toLowerCase()),
+      );
+    } else if (isSpecsPart2) {
+      if (
+        assignedFeatures.length === 0 ||
+        (uniqueFullFeatures.length > 0 && assignedFeatures.length >= uniqueFullFeatures.length)
+      ) {
+        assignedFeatures = defaultPart2;
+      }
+      const assignedKeys = new Set(assignedFeatures.map((f) => f.toLowerCase()));
+      computedExcludedFeatures = dedupFeatures([...computedExcludedFeatures, ...uniqueFullFeatures]).filter(
+        (f) => !assignedKeys.has(f.toLowerCase()),
+      );
+    } else if (assignedFeatures.length === 0) {
+      assignedFeatures = uniqueFullFeatures;
+    }
+
     let prompt = '';
     if (kind === 'poster') {
       prompt = buildPosterPrompt({
         productName,
-        fullFeatures,
+        fullFeatures: uniqueFullFeatures,
         colors,
         accentColor: settings.accentColor,
         background: settings.background,
@@ -192,14 +274,15 @@ export default async function handler(req: any, res: any) {
       // Amazon Product Listing Template
       prompt = buildAmazonSlotPrompt({
         productName,
-        theme: sanfordSlot?.theme || (slot === 1 ? 'hero' : slot === 2 ? 'lifestyle' : slot === 6 ? 'size_warranty' : 'specs_part_1'),
+        theme: resolvedTheme,
         slotNumber: slot || 1,
         slotTitle: sanfordSlot?.title || `Amazon Image ${slot}`,
         headline: sanfordSlot?.headline,
         promoBanner: sanfordSlot?.promoBanner,
         brand,
         modelNumber,
-        features: sanfordSlot?.features && sanfordSlot.features.length > 0 ? sanfordSlot.features : featureGroup,
+        features: assignedFeatures,
+        excludedFeatures: computedExcludedFeatures,
         dimensions: sanfordSlot?.dimensions,
         warranty: sanfordSlot?.warranty,
         colors,
@@ -212,7 +295,7 @@ export default async function handler(req: any, res: any) {
         brand,
         modelNumber,
         headline: sanfordSlot?.headline,
-        features: sanfordSlot?.features && sanfordSlot.features.length > 0 ? sanfordSlot.features : featureGroup,
+        features: assignedFeatures.length > 0 ? assignedFeatures : uniqueFullFeatures,
       });
     } else if (platform === 'noon') {
       // Noon UAE Product Listing Images (Slots 1-6)
@@ -223,7 +306,7 @@ export default async function handler(req: any, res: any) {
         slotTitle: sanfordSlot?.title || `Noon Image ${slot}`,
         brand,
         modelNumber,
-        features: sanfordSlot?.features && sanfordSlot.features.length > 0 ? sanfordSlot.features : featureGroup,
+        features: assignedFeatures.length > 0 ? assignedFeatures : uniqueFullFeatures,
         dimensions: sanfordSlot?.dimensions,
         colors,
       });
@@ -234,7 +317,7 @@ export default async function handler(req: any, res: any) {
         moduleType: noonAplusType || sanfordSlot?.noonAplusType || 'intro_banner_2400x1000',
         slotNumber: slot || 1,
         modelNumber,
-        features: sanfordSlot?.features && sanfordSlot.features.length > 0 ? sanfordSlot.features : featureGroup,
+        features: assignedFeatures.length > 0 ? assignedFeatures : uniqueFullFeatures,
         dimensions: sanfordSlot?.dimensions,
         colors,
         lang: lang || sanfordSlot?.noonLanguage || 'en',
@@ -250,7 +333,8 @@ export default async function handler(req: any, res: any) {
         slotTitle: sanfordSlot.title || `Image ${slot}`,
         headline: sanfordSlot.headline,
         promoBanner: sanfordSlot.promoBanner,
-        features: sanfordSlot.features && sanfordSlot.features.length > 0 ? sanfordSlot.features : featureGroup,
+        features: assignedFeatures,
+        excludedFeatures: computedExcludedFeatures,
         dimensions: sanfordSlot.dimensions,
         weight: isSizeWarranty ? undefined : sanfordSlot.weight,
         whatsInTheBox: isSizeWarranty ? undefined : sanfordSlot.whatsInTheBox,
@@ -262,8 +346,8 @@ export default async function handler(req: any, res: any) {
     } else {
       prompt = buildFeaturePrompt({
         productName,
-        fullFeatures,
-        selectedFeatureGroup: featureGroup,
+        fullFeatures: uniqueFullFeatures,
+        selectedFeatureGroup: assignedFeatures.length > 0 ? assignedFeatures : featureGroup,
         slot: slot || 1,
         accentColor: settings.accentColor,
         background: settings.background,

@@ -108,6 +108,7 @@ export interface SanfordSlotSpec {
   promoBanner?: string;
   description?: string;
   features: string[];
+  excludedFeatures?: string[];
   dimensions?: string;
   weight?: string;
   whatsInTheBox?: string[];
