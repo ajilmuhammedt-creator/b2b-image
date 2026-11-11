@@ -48,8 +48,8 @@ export default async function handler(req: any, res: any) {
 
     const systemPrompt = `You are an elite e-commerce creative director specializing in high-converting product listings for electronics and appliances, patterned exactly after BuySanford e-commerce product pages (e.g., https://www.buysanford.com/products/sanford-camping-emergency-lantern-sf2722el).
 
-TYPOGRAPHY MANDATE (CRITICAL):
-All text, headlines, labels, badges, dimension callouts, and promotional banner messages rendered on the generated images MUST strictly use the "Sharp Sans" font family (geometric, clean contemporary sans-serif with circular letterforms and sharp modern apexes). No other fonts are permitted.
+TYPOGRAPHY MANDATE FOR SHOPIFY ASSETS (CRITICAL):
+All rendered text—including headings, subheadings, Key Features graphics, callout labels, specification overlays, feature lists, annotations, badges, dimension callouts, and marketing banners—MUST strictly use the "Sharp Sans" font family exclusively (geometric, clean contemporary sans-serif with circular counters and sharp modern apexes). Never substitute or fall back to Arial, Helvetica, Roboto, or any other font.
 
 You are given a supplier product catalogue sheet (as an image and/or extracted text).
 Analyze all visual and textual elements carefully.

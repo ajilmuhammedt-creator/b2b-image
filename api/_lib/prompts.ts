@@ -40,6 +40,18 @@ export const SHARP_SANS_TYPOGRAPHY_BLOCK = `MANDATORY TYPOGRAPHY & FONT MANDATE 
 - Use "Sharp Sans Medium" or "Sharp Sans Regular" for supporting body text, slogans, and dimension units.
 - STRICT NEGATIVE CONSTRAINT: Absolutely DO NOT use Arial, Helvetica, Roboto, Times New Roman, Georgia, serif fonts, script, handwriting, rounded bubble fonts, or generic system fonts. Every single letter and digit on the image MUST be rendered strictly in "Sharp Sans" font.`;
 
+export const SHOPIFY_TYPOGRAPHY_COMPLIANCE_BLOCK = `SHOPIFY BRAND TYPOGRAPHY & FONT COMPLIANCE RULE (EXCLUSIVE SHARP SANS — ZERO FALLBACKS):
+1. MANDATORY EXCLUSIVE FONT FAMILY ("Sharp Sans" ONLY):
+   - Always render ALL text elements across this Shopify store asset exclusively in the "Sharp Sans" typeface family.
+   - This applies strictly and without exception to EVERY text layer: headings, subheadings, Key Features graphics, specification overlays, feature lists, callout labels, pointer annotations, circular badges, corner cards, warranty ribbons, dimension numbers/units, swatch labels, and marketing banners.
+2. GEOMETRIC CHARACTERISTICS & WEIGHT HIERARCHY:
+   - Maintain true "Sharp Sans" geometric letterforms: clean circular counters ("O", "e", "a"), flat horizontal/vertical cut terminals, sharp modern pointed vertices ("A", "V", "W", "M"), open aperture curves, and tight balanced kerning.
+   - Headings, banner titles, warranty ribbons, badge headlines, and spec values: "Sharp Sans Bold" or "Sharp Sans Semibold".
+   - Subheadings, feature descriptions, callout labels, pointer annotations, slogans, and dimension units: "Sharp Sans Medium" or "Sharp Sans Regular".
+3. STRICT NO-SUBSTITUTION & ZERO-FALLBACK ENFORCEMENT:
+   - NEVER substitute, fall back to, mix, or approximate using ANY other font family — strictly FORBIDDEN: Arial, Helvetica, Roboto, Inter, Open Sans, Segoe UI, Montserrat fallback glyphs, system default sans-serif, serif fonts (Times New Roman, Georgia), monospace, script, condensed grotesque, or rounded bubble fonts.
+   - Every single character, letter, digit, symbol, and unit anywhere on this Shopify image MUST strictly utilize "Sharp Sans" for 100% brand consistency.`;
+
 export const NO_BRAND_OR_MODEL_RULE = `STRICT RULE - NO BRAND NAME & NO MODEL NUMBER TEXT:
 - ABSOLUTELY DO NOT WRITE THE BRAND NAME (e.g. "Sanford" or any brand name) AS GRAPHICAL TEXT ON THE IMAGE.
 - ABSOLUTELY DO NOT WRITE THE MODEL NUMBER OR ANY MODEL CODE/NUMBER ON THE IMAGE.
@@ -250,14 +262,14 @@ export function buildSanfordSlotPrompt(params: {
      * Position: Pinned directly to the TOP-LEFT corner of the image canvas (top: 0, left: 0), flush with the top and left edges.
      * Shape: Solid vibrant RED rectangular card (#C8281E / #E52414 / Sanford Crimson Red).
      * Distinct Corner Geometry: The bottom-right corner of this red card is prominently rounded (border-bottom-right-radius: ~36px / rounded-br-3xl). The top edge, left edge, and top-right corner are rectangular and flush with the frame.
-     * Typography: Crisp, high-contrast, bold pure WHITE text (#FFFFFF) strictly in "Sharp Sans Bold" font:
+     * Typography: Crisp, high-contrast, bold pure WHITE heading text (#FFFFFF) strictly in "Sharp Sans Bold" font (NO Arial, Helvetica, or Roboto substitution):
 "${badgeTextLines}"
      * Formatting: Left-aligned with comfortable padding inside the red card, 2 to 4 clean lines, ending with a period.
 
-  2. TOP-RIGHT PRODUCT CATEGORY / TITLE (CLEAN WHITE FLOATING TYPOGRAPHY):
+  2. TOP-RIGHT PRODUCT CATEGORY / TITLE (CLEAN WHITE FLOATING SUBHEADING):
      * Position: Upper-right area of the canvas.
      * Style: Clean, elegant, pure WHITE text (#FFFFFF) rendered directly over the scene (NO background box, NO container).
-     * Font: Crisp "Sharp Sans Bold" or "Sharp Sans Semibold" with clear legibility against the ambient scene lighting.
+     * Font: Crisp "Sharp Sans Bold" or "Sharp Sans Semibold" ONLY (zero fallback to generic sans-serif, Arial, Helvetica, or Roboto).
      * Typography: Product category / title in 1 or 2 lines:
 "${categoryLines}"
      * STRICT RULE: Absolutely NO brand name ("Sanford") and NO model code here. Only the generic product category/title.
@@ -275,8 +287,9 @@ export function buildSanfordSlotPrompt(params: {
   * ABSOLUTELY NO MODEL NUMBER (${modelNumber || 'SF...'}) written on the canvas.
 ${modelLine}
   * The ONLY text permitted on the entire image is:
-    (a) The white Sharp Sans text INSIDE the top-left solid red corner card.
-    (b) The clean white Sharp Sans product category text in the top-right corner.
+    (a) The white "Sharp Sans Bold" text INSIDE the top-left solid red corner card.
+    (b) The clean white "Sharp Sans" product category text in the top-right corner.
+  * STRICT TYPOGRAPHY RULE: Do NOT substitute or fall back to Arial, Helvetica, Roboto, or any non-Sharp-Sans font.
   * NO other floating text anywhere else on the image.`;
       break;
     }
@@ -286,8 +299,8 @@ ${modelLine}
       const slotNumLabel = theme === 'specs_part_1' ? 'SLOT 3: PRODUCT SPECIFICATIONS — PART 1' : 'SLOT 4: PRODUCT SPECIFICATIONS — PART 2';
       const hasHeadline = cleanHeadline && !isDuplicateOrTechnicalSpec(cleanHeadline, cleanedFeatures);
       const headlineSection = hasHeadline
-        ? `- UPPER-RIGHT USAGE CONTEXT SLOGAN (SHARP SANS FONT):
-  * In the upper-right corner, place ONLY the uppercase context slogan in clean, dark "Sharp Sans Medium" font:
+        ? `- UPPER-RIGHT USAGE CONTEXT SUBHEADING / SLOGAN (EXCLUSIVE SHARP SANS FONT):
+  * In the upper-right corner, place ONLY the uppercase context slogan in clean, dark "Sharp Sans Semibold" / "Sharp Sans Medium" font ONLY (never Arial, Helvetica, or Roboto):
     "${cleanHeadline.toUpperCase()}"
   * This is an overarching usage slogan ONLY.
   * ABSOLUTELY DO NOT put any technical feature, battery spec, or charging text here.`
@@ -295,9 +308,9 @@ ${modelLine}
 
       const hasPromoBanner = cleanPromoBanner && !isDuplicateOrTechnicalSpec(cleanPromoBanner, cleanedFeatures);
       const bannerSection = hasPromoBanner
-        ? `- MANDATORY FULL-WIDTH SOLID RED BOTTOM PROMOTIONAL BANNER:
+        ? `- MANDATORY FULL-WIDTH SOLID RED BOTTOM MARKETING BANNER:
   * Across the very bottom of the image, include a full-width solid RED strip (#E53935 / #D32F2F) spanning 100% edge-to-edge.
-  * Inside this red banner: large, bold, clean WHITE typography strictly in "Sharp Sans Bold" font displaying the main benefit: "${cleanPromoBanner}".
+  * Inside this red banner: large, bold, clean WHITE heading typography strictly in "Sharp Sans Bold" font ONLY displaying the main benefit: "${cleanPromoBanner}". Zero substitution with Arial, Helvetica, or Roboto.
   * On the left of the banner: an optional white circular badge with a minimalist symbol.`
         : '';
 
@@ -314,19 +327,19 @@ ${modelLine}
         : `  * Do NOT write any model code or number anywhere on the picture.`;
 
       specificStyle = `${slotNumLabel} (STRICT CATALOG COMPLIANCE & ZERO DUPLICATION)
-- UPPER-LEFT EXCLUSIVE FEATURE HIGHLIGHTS (EXACT BRAND ICON & SHARP SANS FONT STYLE):
-  * Render a clean vertical stack on the left side containing EXCLUSIVELY these ${cleanedFeatures.length} assigned specification(s):
+- UPPER-LEFT EXCLUSIVE KEY FEATURES STACK (EXACT BRAND ICON & EXCLUSIVE SHARP SANS FONT STYLE):
+  * Render a clean vertical specification overlay stack on the left side containing EXCLUSIVELY these ${cleanedFeatures.length} assigned specification(s):
 ${exclusiveListText}
   * EXACT COUNT RULE: Render ONLY ${cleanedFeatures.length} red circular icon badge row(s) matching the numbered items above. DO NOT add any extra unrequested badge rows, unlisted specs, or duplicate points.
   * Each assigned feature row follows this visual pattern:
-    1. A solid, vibrant RED circular icon badge (#E53935 / #C8281E) containing a clean WHITE minimalist icon matching ONLY that specific item.
-    2. Bold, legible specification text beside the red badge preserving the exact wording and measurements from the list above strictly in "Sharp Sans" font.
+    1. A solid, vibrant RED circular icon badge (#E53935 / #C8281E) containing a clean WHITE minimalist icon matching ONLY that specific item (any embedded icon numbers/text must strictly use "Sharp Sans Bold").
+    2. Feature list text beside the red badge preserving the exact wording and measurements from the list above: bold spec title/numbers in "Sharp Sans Bold" and supporting unit/detail text in "Sharp Sans Medium" — STRICTLY "Sharp Sans" ONLY.
     3. A delicate horizontal hairline divider separating each row.
 ${headlineSection ? '\n' + headlineSection + '\n' : ''}${excludedSection ? excludedSection + '\n' : ''}
 - CENTER COMPOSITION & HARDWARE INTEGRITY:
   * Product is centered and sharply rendered matching the uploaded source reference photograph 100% faithfully.
   * STRICT ZERO HALLUCINATION: Do NOT add a fake digital LED display/screen (like "100"), do NOT add extra USB-A/Type-C ports, do NOT show folding angles unless listed above, and do NOT place small color-variant thumbnails in the scene (color models belong exclusively to Slot 5).
-  * If showing zoomed-in detail circles/pointer lines for any listed port or hardware detail (such as Type-C port or LED pinhole indicator), render ONLY components that genuinely exist in the uploaded photograph and map pointer lines 1-to-1 strictly to that single part.
+  * If showing zoomed-in detail circles/pointer lines for any listed port or hardware detail (such as Type-C port or LED pinhole indicator), render ONLY components that genuinely exist in the uploaded photograph, map pointer lines 1-to-1 strictly to that single part, and render EVERY callout label and annotation text exclusively in "Sharp Sans Semibold" / "Sharp Sans Medium" (never Arial, Helvetica, or Roboto).
 ${bannerSection ? '\n' + bannerSection + '\n' : ''}
 - STRICT ANTI-DUPLICATION & MUTUAL EXCLUSIVITY RULE (CRITICAL):
   * EVERY SPECIFICATION MUST APPEAR ONCE AND ONLY ONCE ACROSS THE ENTIRE SERIES.
@@ -338,15 +351,15 @@ ${bannerSection ? '\n' + bannerSection + '\n' : ''}
   * Do NOT write "Sanford" or any brand name anywhere on the picture.
 ${modelLine}
   * Do NOT draw any model tag, logo box, brand header, or "[SF...]" badge.
-- STRICT FONT REQUIREMENT: All text and lettering on this image MUST be in the "Sharp Sans" font family only.`;
+- STRICT SHOPIFY FONT ENFORCEMENT: ALL headings, subheadings, feature list items, callout labels, specification overlays, badge text, annotations, and bottom marketing banners MUST render exclusively in "Sharp Sans" with ZERO fallback to Arial, Helvetica, Roboto, or generic sans-serif fonts.`;
       break;
     }
 
     case 'colors': {
       const bannerSection = cleanPromoBanner
-        ? `- MANDATORY FULL-WIDTH SOLID RED BOTTOM PROMOTIONAL BANNER:
+        ? `- MANDATORY FULL-WIDTH SOLID RED BOTTOM MARKETING BANNER:
   * Across the very bottom of the image, include a full-width solid RED strip (#E53935 / #D32F2F) spanning 100% edge-to-edge.
-  * Inside this red banner: large, bold, clean WHITE typography strictly in "Sharp Sans Bold" font delivering the brand message: "${cleanPromoBanner}".`
+  * Inside this red banner: large, bold, clean WHITE heading typography strictly in "Sharp Sans Bold" font ONLY delivering the brand message: "${cleanPromoBanner}". Zero substitution to Arial, Helvetica, or Roboto.`
         : '';
 
       const colorList = colors ? colors : 'all available color variants';
@@ -356,7 +369,7 @@ ${modelLine}
   * Display the product in its available color finishes / models: ${colorList}.
   * Products arranged cleanly side-by-side or fanned out showing each available color option.
   * Clean, bright studio background with soft natural floor contact shadow.
-${bannerSection ? bannerSection + '\n' : ''}- STRICT FONT REQUIREMENT: Any color labels, swatch descriptions, or banner typography MUST strictly be in the "Sharp Sans" font.
+${bannerSection ? bannerSection + '\n' : ''}- STRICT SHOPIFY FONT REQUIREMENT: Any color labels, swatch annotations, badges, headings, or marketing banner typography MUST render exclusively in "Sharp Sans" ("Sharp Sans Bold" / "Sharp Sans Medium"). Do NOT substitute Arial, Helvetica, Roboto, or generic sans-serif fonts.
 - STRICT CONSTRAINT: STRICTLY NO technical product specifications, NO wattage, NO battery numbers, NO feature descriptions.
 - STRICT CONSTRAINT: ABSOLUTELY NO brand name and NO model number written on the image.`;
       break;
@@ -371,23 +384,23 @@ ${bannerSection ? bannerSection + '\n' : ''}- STRICT FONT REQUIREMENT: Any color
   * Flat studio surface horizon line where the product stands upright in the center with a realistic soft floor contact shadow.
   * Flawless centered product facing forward.
 
-- TOP-LEFT HEADER (SHARP SANS FONT):
-  * In the top-left corner, display clean, modest-sized header text strictly in "Sharp Sans Bold" font (dark charcoal/black): "Unit Dimension".
-  * Clean, elegant typography with generous margins from the edges.
+- TOP-LEFT HEADING (EXCLUSIVE SHARP SANS FONT):
+  * In the top-left corner, display clean, modest-sized header text strictly in "Sharp Sans Bold" font ONLY (dark charcoal/black): "Unit Dimension".
+  * Clean, elegant geometric typography with generous margins from the edges (never Arial, Helvetica, or Roboto).
 
-- TOP-RIGHT WARRANTY BADGE (EXACT SANFORD DUAL-RIBBON BANNER WITH SHARP SANS FONT):
+- TOP-RIGHT WARRANTY BADGE (EXACT SANFORD DUAL-RIBBON BANNER WITH EXCLUSIVE SHARP SANS FONT):
   * In the top-right corner, place the official Sanford folded ribbon banner badge:
-    - Top folded angled ribbon: Bright VIBRANT RED banner with bold white text "1 YEAR" in "Sharp Sans Bold" font.
-    - Lower folded angled ribbon: Rich NAVY BLUE banner with bold white text "SERVICE WARRANTY" in "Sharp Sans Bold" font.
+    - Top folded angled ribbon: Bright VIBRANT RED banner with bold white text "1 YEAR" strictly in "Sharp Sans Bold" font.
+    - Lower folded angled ribbon: Rich NAVY BLUE banner with bold white text "SERVICE WARRANTY" strictly in "Sharp Sans Bold" font.
     - Clean folded ribbon 3D geometry with notched/folded banner ends.
     - STRICT: DO NOT use a golden shield. MUST use the RED and NAVY BLUE folded ribbon banner.
 
-- DIMENSION ARROWS & CALLOUTS (EXACT CRIMSON RED ARROWS & SHARP SANS FONT):
+- DIMENSION ARROWS & CALLOUT LABELS (EXACT CRIMSON RED ARROWS & EXCLUSIVE SHARP SANS FONT):
   * Dimension arrows MUST be crisp, thin double-ended arrows in bright CRIMSON RED (<───────>) with solid red triangular arrowheads on both ends.
-  * Height callout: A vertical double-ended crimson red arrow along the right side of the product with dark legible text in "Sharp Sans Bold / Medium" font: "${height}".
-  * Width callout: A horizontal double-ended crimson red arrow beneath the product base with dark legible text in "Sharp Sans Bold / Medium" font: "${width}".
-  * Depth callout: An angled perspective double-ended crimson red arrow showing product depth/thickness with dark legible text in "Sharp Sans Bold / Medium" font: "${depth}".
-  * Measurement numbers must be clearly readable in clean, dark "Sharp Sans" font.
+  * Height callout annotation: A vertical double-ended crimson red arrow along the right side of the product with dark legible text strictly in "Sharp Sans Bold" / "Sharp Sans Medium" font: "${height}".
+  * Width callout annotation: A horizontal double-ended crimson red arrow beneath the product base with dark legible text strictly in "Sharp Sans Bold" / "Sharp Sans Medium" font: "${width}".
+  * Depth callout annotation: An angled perspective double-ended crimson red arrow showing product depth/thickness with dark legible text strictly in "Sharp Sans Bold" / "Sharp Sans Medium" font: "${depth}".
+  * Every measurement number and unit MUST render exclusively in clean, dark "Sharp Sans" — never Arial, Helvetica, Roboto, or monospace fallback.
 
 - STRICT NEGATIVE RULES (CRITICAL):
   * STRICTLY NO PRODUCT WEIGHT. Absolutely NO "Unit Weight", NO "Package Weight", NO "225g", NO "305g", NO weight icons, NO scales.
@@ -400,12 +413,20 @@ ${bannerSection ? bannerSection + '\n' : ''}- STRICT FONT REQUIREMENT: Any color
     default:
       specificStyle = `SLOT FEATURE ARTWORK
 - Feature artwork for: ${featureListStr}.
-- Clean ${bgDesc} background with high-contrast text in "Sharp Sans" font. ${accentLine}
+- Clean ${bgDesc} background with high-contrast headings, subheadings, annotations, feature lists, and callout labels exclusively in "Sharp Sans" font (NO Arial, Helvetica, or Roboto fallback). ${accentLine}
 - STRICTLY NO brand name and NO model number written on the image.`;
       break;
   }
 
-  return `Create ONE premium 1:1 square e-commerce product image for BuySanford online store (patterned after BuySanford product page rules: https://www.buysanford.com).
+  const isHero = theme === 'hero';
+  const shopifyFontSection = isHero
+    ? ''
+    : `\n${SHOPIFY_TYPOGRAPHY_COMPLIANCE_BLOCK}\n`;
+  const shopifyFontFooter = isHero
+    ? ''
+    : `\nCRITICAL SHOPIFY FONT MANDATE (EXCLUSIVE SHARP SANS — ZERO FALLBACKS):\nEvery single rendered text element—headings, subheadings, Key Features graphics, callout labels, specification overlays, badges, annotations, feature lists, dimension numbers/units, and marketing banners—MUST strictly use "Sharp Sans" ONLY. Absolutely NO substitution or fallback to Arial, Helvetica, Roboto, or any other font family is permitted.\n`;
+
+  return `Create ONE premium 1:1 square e-commerce product image for BuySanford Shopify online store (patterned after BuySanford product page rules: https://www.buysanford.com).
 
 PRODUCT INFORMATION
 Product: ${cleanProductTitle}
@@ -418,14 +439,9 @@ ${PRODUCT_ACCURACY_BLOCK}
 ${PRECISE_POINTER_MAPPING_BLOCK}
 
 ${NO_BRAND_OR_MODEL_RULE}
-
-${SHARP_SANS_TYPOGRAPHY_BLOCK}
-
+${shopifyFontSection}
 ${specificStyle}
-
-CRITICAL FONT MANDATE (SHARP SANS ONLY):
-Every single word, letter, number, unit, callout headline, promotional banner, and measurement rendered anywhere on this image MUST STRICTLY USE THE "Sharp Sans" FONT FAMILY ONLY. Absolutely NO other font is permitted.
-
+${shopifyFontFooter}
 OUTPUT
 Generate exactly ONE complete 1:1 square image.
 No outer borders, no watermark, no production notes.`;
@@ -436,11 +452,14 @@ export function buildFeaturePrompt(params: {
   fullFeatures: string[];
   selectedFeatureGroup: string[];
   slot: number;
+  platform?: string;
   accentColor?: string;
   background?: string;
 }): string {
-  const { productName, fullFeatures, selectedFeatureGroup, slot, accentColor, background } = params;
+  const { productName, fullFeatures, selectedFeatureGroup, slot, platform = 'shopify', accentColor, background } = params;
 
+  const isShopify = platform === 'shopify';
+  const fontBlock = isShopify ? SHOPIFY_TYPOGRAPHY_COMPLIANCE_BLOCK : SHARP_SANS_TYPOGRAPHY_BLOCK;
   const accentLine = accentColor && accentColor !== 'Auto' ? `Use ${accentColor} as the accent colour.` : '';
   const bgDesc = background === 'pale tint' ? 'pale tinted' : 'white';
 
@@ -457,27 +476,27 @@ ${PRODUCT_ACCURACY_BLOCK}
 
 ${PRECISE_POINTER_MAPPING_BLOCK}
 
-${SHARP_SANS_TYPOGRAPHY_BLOCK}
+${fontBlock}
 
 VISUAL STYLE
 Create polished e-commerce feature artwork with realistic product photography, soft studio lighting, subtle shadows, and a clean ${bgDesc} background.
 Choose one restrained accent color that complements the actual product.
 ${accentLine}
-Typography Mandate: Use dark, high-contrast text strictly in the "Sharp Sans" font family (Sharp Sans Bold for headlines, Sharp Sans Medium/Regular for body and callouts).
+Typography Mandate: Use dark, high-contrast text exclusively in the "Sharp Sans" font family ("Sharp Sans Bold" / "Sharp Sans Semibold" for headings and banner titles, "Sharp Sans Medium" / "Sharp Sans Regular" for subheadings, annotations, callout labels, and feature lists). NEVER substitute Arial, Helvetica, Roboto, or generic sans-serif fonts.
 Keep the overall style consistent across the image series.
 
 LAYOUT
 Make the product prominent, with a balanced arrangement of product, headline, icons, and supporting text.
 Keep the product's defining parts visible.
-Use a short headline, one clear main benefit, and up to three concise supporting callouts, all strictly rendered in Sharp Sans font.
+Use a short headline, one clear main benefit, and up to three concise supporting callouts, all strictly rendered in "Sharp Sans" font.
 Leave generous spacing and safe margins. Ensure text is readable on a mobile screen.
 
 COPY
 Write clear, concise English based only on the selected feature group.
 Preserve every supplied number, unit, and technical specification accurately.
 
-CRITICAL FONT MANDATE (SHARP SANS ONLY):
-Every piece of text, headline, specification, number, and label on this image MUST be rendered strictly in the "Sharp Sans" font family. Do not use any other font.
+CRITICAL FONT MANDATE (EXCLUSIVE SHARP SANS ONLY):
+Every piece of text—headings, subheadings, Key Features graphics, callout labels, specification overlays, badges, annotations, feature lists, and marketing banners—MUST be rendered strictly in the "Sharp Sans" font family. Do NOT substitute or fall back to Arial, Helvetica, Roboto, or any other font.
 
 OUTPUT
 Generate exactly ONE complete 1:1 square image.
@@ -489,11 +508,14 @@ export function buildPosterPrompt(params: {
   productName: string;
   fullFeatures: string[];
   colors?: string;
+  platform?: string;
   accentColor?: string;
   background?: string;
 }): string {
-  const { productName, fullFeatures, colors, accentColor, background } = params;
+  const { productName, fullFeatures, colors, platform = 'shopify', accentColor, background } = params;
 
+  const isShopify = platform === 'shopify';
+  const fontBlock = isShopify ? SHOPIFY_TYPOGRAPHY_COMPLIANCE_BLOCK : SHARP_SANS_TYPOGRAPHY_BLOCK;
   const accentLine = accentColor && accentColor !== 'Auto' ? `Use ${accentColor} as the primary accent colour.` : '';
   const bgDesc = background === 'pale tint' ? 'pale tinted' : 'clean white';
 
@@ -509,22 +531,22 @@ ${PRODUCT_ACCURACY_BLOCK}
 
 ${PRECISE_POINTER_MAPPING_BLOCK}
 
-${SHARP_SANS_TYPOGRAPHY_BLOCK}
+${fontBlock}
 
 POSTER STYLE
 Make the product the hero: large, sharp, realistic, with soft studio lighting and a subtle shadow or reflection.
 Use a clean ${bgDesc} background or a soft gradient of one restrained accent colour that complements the actual product. ${accentLine}
-Place one bold headline of no more than six words near the top and a one-line subheading under it in Sharp Sans Bold font.
-Add three or four short feature callouts with small, simple icons, taken only from the supplied features, in Sharp Sans font.
-Show colour options as labelled swatches only when colours are supplied.
-Typography Mandate: Use dark, high-contrast text strictly in the "Sharp Sans" font family (Sharp Sans Bold for headlines, Sharp Sans Medium for subheadings and body). Keep generous margins; all text must be readable on a phone.
+Place one bold headline of no more than six words near the top and a one-line subheading under it strictly in "Sharp Sans Bold" / "Sharp Sans Medium".
+Add three or four short feature callouts with small, simple icons, taken only from the supplied features, strictly in "Sharp Sans" font.
+Show colour options as labelled swatches only when colours are supplied (swatch labels strictly in "Sharp Sans").
+Typography Mandate: Use dark, high-contrast text exclusively in the "Sharp Sans" font family ("Sharp Sans Bold" for headings, "Sharp Sans Medium" for subheadings, annotations, badges, and feature lists). NEVER substitute Arial, Helvetica, Roboto, or generic sans-serif fonts. Keep generous margins; all text must be readable on a phone.
 
 COPY
 Use only the supplied information. Preserve every number, unit and specification exactly.
 Do not add prices, discounts, logos, certifications or claims that were not supplied.
 
-CRITICAL FONT MANDATE (SHARP SANS ONLY):
-Every piece of text, headline, subheading, and feature callout on this poster MUST be rendered strictly in the "Sharp Sans" font family. Do not use any other font.
+CRITICAL FONT MANDATE (EXCLUSIVE SHARP SANS ONLY):
+Every piece of text—headings, subheadings, feature callouts, badges, annotations, swatch labels, and marketing banners—on this poster MUST be rendered strictly in the "Sharp Sans" font family. Do NOT substitute or fall back to Arial, Helvetica, Roboto, or any other font.
 
 OUTPUT
 Generate exactly ONE complete portrait poster. Not a collage.

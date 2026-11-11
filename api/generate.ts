@@ -9,6 +9,7 @@ import {
   buildAmazonAPlusPrompt,
   buildNoonSlotPrompt,
   buildNoonAPlusPrompt,
+  SHOPIFY_TYPOGRAPHY_COMPLIANCE_BLOCK,
 } from './_lib/prompts.js';
 
 export const config = {
@@ -267,6 +268,7 @@ export default async function handler(req: any, res: any) {
         productName,
         fullFeatures: uniqueFullFeatures,
         colors,
+        platform: platform || 'shopify',
         accentColor: settings.accentColor,
         background: settings.background,
       });
@@ -349,6 +351,7 @@ export default async function handler(req: any, res: any) {
         fullFeatures: uniqueFullFeatures,
         selectedFeatureGroup: assignedFeatures.length > 0 ? assignedFeatures : featureGroup,
         slot: slot || 1,
+        platform: platform || 'shopify',
         accentColor: settings.accentColor,
         background: settings.background,
       });
@@ -362,6 +365,14 @@ export default async function handler(req: any, res: any) {
     // 3b. Slot-Specific Feedback & Error Correction (User Iterative Refinement)
     if (customInstructions && typeof customInstructions === 'string' && customInstructions.trim()) {
       prompt += `\n\nUSER MODIFICATION AND ERROR CORRECTION INSTRUCTIONS (HIGHEST PRIORITY OVERRIDE):\n${customInstructions.trim()}\nApply these exact fixes and revisions to the product visualization while strictly preserving all other valid product design specifications, brand aesthetics, and photorealistic studio quality.`;
+    }
+
+    // 3c. Strict Typography & Brand Compliance Lock (Shopify Assets Only)
+    const isShopifyPlatform = !platform || platform === 'shopify';
+    const isShopifyTextBearing =
+      isShopifyPlatform && !(kind !== 'poster' && (resolvedTheme === 'hero' || slot === 1));
+    if (isShopifyTextBearing) {
+      prompt += `\n\n${SHOPIFY_TYPOGRAPHY_COMPLIANCE_BLOCK}\nFINAL SHOPIFY FONT VERIFICATION: Every rendered text element across this Shopify asset—including headings, subheadings, Key Features graphics, callout labels, specification overlays, badges, annotations, feature lists, marketing banners, and any user-requested edits—MUST render strictly in "Sharp Sans" with ZERO substitution or fallback to Arial, Helvetica, Roboto, or generic sans-serif fonts.`;
     }
 
     // 4. Call OpenAI Images Edit API with retry

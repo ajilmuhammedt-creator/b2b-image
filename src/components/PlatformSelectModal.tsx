@@ -99,6 +99,10 @@ export function PlatformSelectModal({
                 </li>
                 <li className="flex items-center space-x-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                  <span><strong>Typography:</strong> Exclusive Sharp Sans font (zero fallbacks)</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
                   <span><strong>Poster:</strong> Optional portrait poster view</span>
                 </li>
               </ul>

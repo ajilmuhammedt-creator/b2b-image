@@ -76,7 +76,7 @@ export const DEFAULT_SHOPIFY_SLOTS: SanfordSlotSpec[] = [
     title: 'Available Colour Models Only',
     headline: '',
     promoBanner: '',
-    description: 'Product lineup in available color finishes; full-width solid red bottom promotional banner with white typography.',
+    description: 'Product lineup in available color finishes; full-width solid red bottom promotional banner with white Sharp Sans typography (zero font fallback).',
     features: [],
   },
   {
@@ -84,7 +84,7 @@ export const DEFAULT_SHOPIFY_SLOTS: SanfordSlotSpec[] = [
     theme: 'size_warranty',
     title: 'Unit Dimension & Warranty Only',
     headline: '',
-    description: 'Exact BuySanford style: Pale warm pastel background, "Unit Dimension" header in top left, red/navy 1-Year Warranty ribbon badge in top right, crimson red double-ended arrows (<--->) for height/width/depth. Strictly NO weight, NO box contents.',
+    description: 'Exact BuySanford style: Pale warm pastel background, "Unit Dimension" header in top left, red/navy 1-Year Warranty ribbon badge in top right, crimson red double-ended arrows (<--->) for height/width/depth—all exclusively in Sharp Sans font. Strictly NO weight, NO box contents.',
     features: [],
   },
 ];

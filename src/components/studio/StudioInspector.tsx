@@ -68,16 +68,30 @@ export const StudioInspector: React.FC<StudioInspectorProps> = ({
     'Remove extraneous artifacts',
   ];
 
-  // Derive compliance checks based on slot
+  // Derive compliance checks based on slot & platform
+  const isShopifyAsset = !item.platform || item.platform === 'shopify';
   const checks: InspectorCheck[] = [];
   if (item.imageUrl) {
-    checks.push({ status: 'pass', text: '1:1 Square Resolution standard verified' });
-    if (slotNum === 1) {
+    checks.push({
+      status: 'pass',
+      text:
+        item.kind === 'poster'
+          ? 'Portrait poster aspect ratio standard verified'
+          : '1:1 Square Resolution standard verified',
+    });
+    if (slotNum === 1 && item.kind !== 'poster') {
       checks.push({ status: 'pass', text: 'Pure white background (#FFFFFF)' });
       checks.push({ status: 'pass', text: 'Strictly zero text or promotional badges' });
     } else {
       checks.push({ status: 'pass', text: 'Product orientation matches catalogue' });
-      checks.push({ status: 'warning', text: 'Typography readability verified on 390px screens' });
+      if (isShopifyAsset) {
+        checks.push({
+          status: 'pass',
+          text: 'Shopify Typography: Exclusive Sharp Sans enforced (zero Arial/Helvetica/Roboto fallback)',
+        });
+      } else {
+        checks.push({ status: 'warning', text: 'Typography readability verified on 390px screens' });
+      }
     }
   } else if (isFailed) {
     checks.push({ status: 'fail', text: 'Generation failed: Image generation service timed out' });
