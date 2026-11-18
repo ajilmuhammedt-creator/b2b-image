@@ -1,7 +1,7 @@
 import React, { useState, useRef, DragEvent, ChangeEvent } from 'react';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
-import { validateUploadFile, resizeImageToMax2048 } from '../../lib/imageProcessing';
+import { validateUploadFile, resizeImageToMax2048, compressDataUrlIfNeeded } from '../../lib/imageProcessing';
 import { renderPdfToImage } from '../../lib/pdfRenderer';
 import { fetchApi } from '../../lib/apiClient';
 import type { CatalogueParsedData } from '../../types';
@@ -55,6 +55,9 @@ export const CatalogueUploadModal: React.FC<CatalogueUploadModalProps> = ({
         });
       }
 
+      // Safety check: ensure the data URL is compact enough for Serverless Function limits
+      catalogueDataUrl = await compressDataUrlIfNeeded(catalogueDataUrl, 1600, 0.85);
+
       setCatalogueImage({
         previewUrl: catalogueDataUrl,
         fileName: file.name,
@@ -66,7 +69,6 @@ export const CatalogueUploadModal: React.FC<CatalogueUploadModalProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          catalogueImage: catalogueDataUrl,
           imageDataUrl: catalogueDataUrl,
           extractedText: extractedText || undefined,
           fileName: file.name,
@@ -74,8 +76,27 @@ export const CatalogueUploadModal: React.FC<CatalogueUploadModalProps> = ({
       });
 
       if (!parseRes.ok) {
-        const errJson = await parseRes.json().catch(() => ({}));
-        throw new Error(errJson.error || 'Failed to analyze catalogue');
+        let errMsg = '';
+        try {
+          const errJson = await parseRes.json();
+          errMsg = errJson.error || errJson.message;
+        } catch {
+          const rawText = await parseRes.text().catch(() => '');
+          if (
+            parseRes.status === 413 ||
+            rawText.includes('FUNCTION_PAYLOAD_TOO_LARGE') ||
+            rawText.includes('Payload Too Large')
+          ) {
+            errMsg = 'Catalogue file is too large for server processing. Please use an optimized image or PDF under 4 MB.';
+          } else if (parseRes.status === 504 || rawText.includes('GATEWAY_TIMEOUT')) {
+            errMsg = 'Catalogue analysis timed out. Please try again with a single page or smaller file.';
+          } else if (parseRes.status === 401 || parseRes.status === 403) {
+            errMsg = 'Your session has expired. Please sign in again to continue.';
+          } else if (rawText) {
+            errMsg = rawText.slice(0, 150);
+          }
+        }
+        throw new Error(errMsg || `Failed to analyze catalogue (HTTP ${parseRes.status})`);
       }
 
       const parsed: CatalogueParsedData = await parseRes.json();

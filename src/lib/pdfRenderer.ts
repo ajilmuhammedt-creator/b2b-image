@@ -1,7 +1,9 @@
 import * as pdfjsLib from 'pdfjs-dist';
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
-// Use cloudflare CDN worker for reliable cross-browser execution without asset bundling issues
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+// Use bundled worker with CDN fallback
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  pdfWorker || `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
 export async function renderPdfToImage(file: File): Promise<{
   imageDataUrl: string;
@@ -11,28 +13,46 @@ export async function renderPdfToImage(file: File): Promise<{
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   const page = await pdf.getPage(1);
 
-  // Extract textual elements from PDF
+  // Extract textual elements across first 3 pages if available
   let extractedText = '';
-  try {
-    const textContent = await page.getTextContent();
-    extractedText = textContent.items
-      .map((item: any) => item.str || '')
-      .filter(Boolean)
-      .join(' ');
-  } catch (textErr) {
-    console.warn('PDF text extraction note:', textErr);
+  const numPages = Math.min(pdf.numPages || 1, 3);
+  for (let i = 1; i <= numPages; i++) {
+    try {
+      const p = await pdf.getPage(i);
+      const textContent = await p.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => item.str || '')
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+      if (pageText) {
+        extractedText += (extractedText ? '\n\n' : '') + `[Page ${i}]: ${pageText}`;
+      }
+    } catch (textErr) {
+      console.warn(`PDF page ${i} text extraction note:`, textErr);
+    }
   }
 
-  // Render Page to high-res Canvas
-  const viewport = page.getViewport({ scale: 2.0 });
+  // Calculate optimal rendering scale so longest dimension is capped at ~1600px
+  // (Prevents giant multi-megabyte canvas allocations while preserving pin-sharp text for Vision AI)
+  const initialViewport = page.getViewport({ scale: 1.0 });
+  const longestSide = Math.max(initialViewport.width, initialViewport.height);
+  const targetMaxDim = 1600;
+  const scale = longestSide > 0 ? Math.min(2.0, Math.max(1.0, targetMaxDim / longestSide)) : 1.5;
+
+  const viewport = page.getViewport({ scale });
   const canvas = document.createElement('canvas');
-  canvas.width = viewport.width;
-  canvas.height = viewport.height;
+  canvas.width = Math.round(viewport.width);
+  canvas.height = Math.round(viewport.height);
   const context = canvas.getContext('2d');
 
   if (!context) {
     throw new Error('Canvas 2D context not available.');
   }
+
+  // Paint clean white background first so transparent PDF vector layers don't render black
+  context.fillStyle = '#ffffff';
+  context.fillRect(0, 0, canvas.width, canvas.height);
 
   await page.render({
     canvasContext: context,
@@ -40,7 +60,8 @@ export async function renderPdfToImage(file: File): Promise<{
     viewport,
   } as any).promise;
 
-  const imageDataUrl = canvas.toDataURL('image/png');
+  // Use image/jpeg at 0.85 quality: produces a crisp 200-400 KB payload instead of an 8-15 MB PNG!
+  const imageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
   return { imageDataUrl, extractedText };
 }
 
@@ -77,7 +98,7 @@ export function cropImageByBox(
       ctx.fillRect(0, 0, w, h);
       ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
 
-      resolve(canvas.toDataURL('image/png'));
+      resolve(canvas.toDataURL('image/jpeg', 0.88));
     };
     img.onerror = () => resolve(sourceDataUrl);
     img.src = sourceDataUrl;

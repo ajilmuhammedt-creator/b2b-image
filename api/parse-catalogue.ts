@@ -172,7 +172,9 @@ Output MUST be valid JSON matching this schema:
     }
 
     const completion = await response.json();
-    const resultJson = JSON.parse(completion.choices?.[0]?.message?.content || '{}');
+    let rawContent = completion.choices?.[0]?.message?.content || '{}';
+    rawContent = rawContent.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    const resultJson = JSON.parse(rawContent);
 
     // Normalize keys in case model returned snake_case
     const rawProductName = resultJson.productName || resultJson.product_name || resultJson.title || '';
