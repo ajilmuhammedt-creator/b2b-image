@@ -6,6 +6,7 @@ import { Textarea } from '../ui/Textarea';
 import { resizeImageToMax2048, validateUploadFile } from '../../lib/imageProcessing';
 import { Image as ImageIcon, Check, AlertTriangle, Sparkles, Layers } from 'lucide-react';
 import type { SanfordSlotSpec } from '../../types';
+import { isDuplicateFeature, findFeatureHighlightDuplicate } from '../../lib/featureDeduplication';
 
 interface ProductSpecsModalProps {
   isOpen: boolean;
@@ -82,17 +83,10 @@ export const ProductSpecsModal: React.FC<ProductSpecsModalProps> = ({
   const slot3 = sanfordSlots.find((s) => s.slot === 3);
   const slot4 = sanfordSlots.find((s) => s.slot === 4);
 
-  // Validation: Check for duplicates across Slot 3 and Slot 4
-  const s3Features = [slot3?.bannerFeature, slot3?.callout1, slot3?.callout2]
-    .map((f) => (f || '').trim().toLowerCase())
-    .filter(Boolean);
-  const s4Features = [slot4?.bannerFeature, slot4?.callout1, slot4?.callout2]
-    .map((f) => (f || '').trim().toLowerCase())
-    .filter(Boolean);
+  // Validation: Check for duplicate features across Slot 3 and Slot 4 (banners AND callouts combined)
+  const duplicateCheck = findFeatureHighlightDuplicate(slot3, slot4);
 
-  const duplicateFeature = s3Features.find((f) => s4Features.includes(f));
-
-  // Auto-suggest handler from verified specs
+  // Auto-suggest handler from verified specs (respects mutual exclusivity & character limits)
   const handleAutoSuggest = () => {
     if (!onUpdateSlotField) return;
     const lines = featuresText
@@ -108,21 +102,26 @@ export const ProductSpecsModal: React.FC<ProductSpecsModalProps> = ({
         cleanList.push(l);
       }
     }
-    const clamp = (str: string, maxLen: number) => {
-      if (!str) return '';
-      const clean = str.trim();
-      if (clean.length <= maxLen) return clean;
-      const sub = clean.slice(0, maxLen);
-      const lastSpace = sub.lastIndexOf(' ');
-      return (lastSpace > maxLen * 0.6 ? sub.slice(0, lastSpace) : sub).trim();
+
+    const chosen: string[] = [];
+    const isAlreadyChosen = (cand: string) => chosen.some((c) => isDuplicateFeature(cand, c));
+
+    const pickNext = (maxLen: number): string => {
+      for (const item of cleanList) {
+        if (item.length <= maxLen && !isAlreadyChosen(item)) {
+          chosen.push(item);
+          return item;
+        }
+      }
+      return '';
     };
 
-    if (cleanList[0]) onUpdateSlotField(3, 'bannerFeature', clamp(cleanList[0], 30));
-    if (cleanList[1]) onUpdateSlotField(4, 'bannerFeature', clamp(cleanList[1], 30));
-    if (cleanList[2]) onUpdateSlotField(3, 'callout1', clamp(cleanList[2], 25));
-    if (cleanList[3]) onUpdateSlotField(3, 'callout2', clamp(cleanList[3], 25));
-    if (cleanList[4]) onUpdateSlotField(4, 'callout1', clamp(cleanList[4], 25));
-    if (cleanList[5]) onUpdateSlotField(4, 'callout2', clamp(cleanList[5], 25));
+    onUpdateSlotField(3, 'bannerFeature', pickNext(30));
+    onUpdateSlotField(4, 'bannerFeature', pickNext(30));
+    onUpdateSlotField(3, 'callout1', pickNext(25));
+    onUpdateSlotField(3, 'callout2', pickNext(25));
+    onUpdateSlotField(4, 'callout1', pickNext(25));
+    onUpdateSlotField(4, 'callout2', pickNext(25));
   };
 
   return (
@@ -144,7 +143,7 @@ export const ProductSpecsModal: React.FC<ProductSpecsModalProps> = ({
             <Button
               variant="primary"
               onClick={onClose}
-              disabled={Boolean(duplicateFeature)}
+              disabled={Boolean(duplicateCheck?.hasDuplicate)}
               icon={<Check className="w-4 h-4" />}
             >
               Verify & Continue
@@ -260,10 +259,10 @@ export const ProductSpecsModal: React.FC<ProductSpecsModalProps> = ({
             </p>
 
             {/* Duplicate Feature Inline Warning */}
-            {duplicateFeature && (
+            {duplicateCheck && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-xs font-semibold">
                 <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />
-                <span>Validation Error: Feature "{duplicateFeature}" cannot be used in both Feature Highlight slots. Each slot must highlight a unique feature.</span>
+                <span>Validation Error: {duplicateCheck.message}</span>
               </div>
             )}
 

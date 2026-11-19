@@ -16,6 +16,7 @@ import { supabase } from '../lib/supabase';
 import { renderPdfToImage, cropImageByBox } from '../lib/pdfRenderer';
 import { validateUploadFile, resizeImageToMax2048 } from '../lib/imageProcessing';
 import { fetchApi } from '../lib/apiClient';
+import { findFeatureHighlightDuplicate } from '../lib/featureDeduplication';
 import type { SanfordSlotSpec, CatalogueParsedData } from '../types';
 
 interface ProductInputProps {
@@ -641,22 +642,16 @@ export function ProductInput({
           {/* 6. Slot Customization block: background #F4F7FC, border #DCE4F2, radius 12px */}
           {isSlotsOpen && (
             <div className="space-y-2.5 pt-3 mt-2 bg-[#F4F7FC] dark:bg-transparent border border-[#DCE4F2] dark:border-white/[0.06] rounded-[12px] p-3">
-              {/* Check for duplicate feature across Slot 3 & 4 */}
+              {/* Check for duplicate feature across Slot 3 & 4 (banners AND callouts together) */}
               {(() => {
                 const s3 = sanfordSlots.find((s) => s.slot === 3);
                 const s4 = sanfordSlots.find((s) => s.slot === 4);
-                const s3Feats = [s3?.bannerFeature, s3?.callout1, s3?.callout2]
-                  .map((f) => (f || '').trim().toLowerCase())
-                  .filter(Boolean);
-                const s4Feats = [s4?.bannerFeature, s4?.callout1, s4?.callout2]
-                  .map((f) => (f || '').trim().toLowerCase())
-                  .filter(Boolean);
-                const dup = s3Feats.find((f) => s4Feats.includes(f));
-                if (dup) {
+                const dupCheck = findFeatureHighlightDuplicate(s3, s4);
+                if (dupCheck) {
                   return (
                     <div className="flex items-center gap-1.5 p-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-[11px] font-semibold">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-600 dark:text-red-400" />
-                      <span>Validation Error: Feature "{dup}" cannot be used in both Feature Highlight slots.</span>
+                      <span>Validation Error: {dupCheck.message}</span>
                     </div>
                   );
                 }

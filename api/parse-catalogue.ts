@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { requireUser } from './_lib/requireUser.js';
+import { isDuplicateFeature } from './_lib/featureDeduplication.js';
 
 export const config = {
   maxDuration: 300,
@@ -79,19 +80,21 @@ Extract the following in strictly structured JSON:
       * features: []
     - Slot 3: theme "specs_part_1", title "Feature Highlight 1"
       * Description: Exact buysanford.com single-feature focus. Dark atmospheric scene showcasing Banner Feature in action. Full-width red bottom banner showing ONLY Banner Feature (max 30 chars). Overlapping white circle with red ring on left containing one black line icon. At most 2 supporting callouts (solid red circle icon + large white text). Optional white uppercase top headline (max 40 chars).
-      * bannerFeature: Strongest verified feature from catalogue (max 30 chars, e.g. "4L Capacity")
-      * callout1: Supporting verified spec (optional, max 25 chars)
-      * callout2: Supporting verified spec (optional, max 25 chars)
-      * topHeadline: Optional uppercase headline (max 40 chars)
+      * bannerFeature: Strongest verified feature from catalogue (required, max 30 chars, e.g. "4L Capacity"). If the verified feature is longer than 30 characters, write a concise short version that keeps every number and unit exactly without mid-phrase clipping, or leave it empty if it cannot fit cleanly under 30 characters. NEVER cut a feature mid-phrase.
+      * callout1: Supporting verified spec (optional, max 25 chars, e.g. "Digital Display"). If longer than 25 chars, provide a concise short version that preserves every number and unit exactly, or leave it empty so the user can type it. NEVER cut a feature mid-phrase.
+      * callout2: Supporting verified spec (optional, max 25 chars). If longer than 25 chars, provide a concise short version keeping every number and unit exactly, or leave it empty. NEVER cut a feature mid-phrase.
+      * topHeadline: Optional uppercase headline (max 40 chars). STRICT: Only if an overarching headline or slogan is explicitly printed in the catalogue. If the catalogue gives NO headline, return "" (EMPTY STRING) so no top headline is drawn. DO NOT invent default headlines like "DESIGNED FOR EVERYDAY USE".
+      * headline: Return "" (EMPTY STRING) if no headline is explicitly in the catalogue.
       * promoBanner: Same as bannerFeature
       * STRICT DEDUPLICATION: Do NOT repeat the product name or category in the banner. Zero overlap with Slot 4.
       * features: [Assigned specs for Feature Highlight 1]
     - Slot 4: theme "specs_part_2", title "Feature Highlight 2"
       * Description: Exact buysanford.com single-feature focus. Dark atmospheric scene showcasing second key feature. Full-width red bottom banner showing ONLY Banner Feature (max 30 chars). Overlapping white circle with red ring on left containing one black line icon. At most 2 supporting callouts. Optional white uppercase top headline (max 40 chars).
-      * bannerFeature: Second strongest verified feature from catalogue (max 30 chars, e.g. "Adjustable Zoom Function")
-      * callout1: Supporting verified spec (optional, max 25 chars)
-      * callout2: Supporting verified spec (optional, max 25 chars)
-      * topHeadline: Optional uppercase headline (max 40 chars)
+      * bannerFeature: Second strongest verified feature from catalogue (required, max 30 chars, e.g. "Adjustable Zoom Function"). If longer than 30 characters, write a concise short version keeping every number and unit exactly, or leave empty. NEVER cut a feature mid-phrase.
+      * callout1: Supporting verified spec (optional, max 25 chars). If longer than 25 chars, provide a concise short version keeping every number and unit exactly, or leave empty. NEVER cut a feature mid-phrase.
+      * callout2: Supporting verified spec (optional, max 25 chars). If longer than 25 chars, provide a concise short version keeping every number and unit exactly, or leave empty. NEVER cut a feature mid-phrase.
+      * topHeadline: Optional uppercase headline (max 40 chars). STRICT: Only if explicitly printed in the catalogue; otherwise "" (EMPTY STRING) so no top headline is drawn. DO NOT invent default headlines like "BUILT FOR PERFORMANCE & RELIABILITY".
+      * headline: Return "" (EMPTY STRING) if no headline is explicitly in the catalogue.
       * promoBanner: Same as bannerFeature
       * STRICT DEDUPLICATION: MUST NOT repeat or duplicate any feature from Slot 3.
       * features: [Assigned specs for Feature Highlight 2]
@@ -250,30 +253,59 @@ Output MUST be valid JSON matching this schema:
     const cleanSeriesName = cleanBrandModel(resultJson.seriesName || '');
     const aiSlot3 = Array.isArray(resultJson.slots) ? resultJson.slots.find((s: any) => s?.slot === 3) : undefined;
     const aiSlot4 = Array.isArray(resultJson.slots) ? resultJson.slots.find((s: any) => s?.slot === 4) : undefined;
-    const slot3Headline = cleanBrandModel(aiSlot3?.headline || '') || 'DESIGNED FOR EVERYDAY USE';
-    const slot4Headline = cleanBrandModel(aiSlot4?.headline || '') || 'BUILT FOR PERFORMANCE & RELIABILITY';
+    // Rule 1: No default headlines. If the catalogue gives no headline, leave it empty.
+    const slot3Headline = cleanBrandModel(aiSlot3?.headline || '');
+    const slot4Headline = cleanBrandModel(aiSlot4?.headline || '');
 
-    // Auto-suggest for Feature Highlight 1 & 2:
-    // Slot 3 banner = strongest feature (sanitizedFeatures[0]), max 30 chars
-    // Slot 4 banner = second strongest feature (sanitizedFeatures[1]), max 30 chars
-    // Up to 2 supporting callouts each, taken only from verified specs, strictly no duplicates!
-    const clampText = (str: string, maxLen: number) => {
-      if (!str) return '';
-      const clean = str.trim();
-      if (clean.length <= maxLen) return clean;
-      const sub = clean.slice(0, maxLen);
-      const lastSpace = sub.lastIndexOf(' ');
-      return (lastSpace > maxLen * 0.6 ? sub.slice(0, lastSpace) : sub).trim();
+    // Rule 2: Feature Highlight duplicate check:
+    // A feature may appear only once across Slot 3 and Slot 4, counting banners AND callouts together.
+    // Case-insensitive, and treat variations (e.g. "Adjustable timer" vs "Adjustable timer from 0 to 30 minutes")
+    // as duplicate features.
+    // If a verified feature is longer than the limit, use the concise short version from the model
+    // that preserves numbers/units, or leave it empty so the user can type it. NEVER cut mid-phrase.
+    const chosenFeatures: string[] = [];
+
+    const isAlreadyChosen = (candidate?: string) => {
+      if (!candidate || !candidate.trim()) return false;
+      return chosenFeatures.some((chosen) => isDuplicateFeature(candidate, chosen));
     };
 
-    const s3Banner = clampText(cleanBrandModel(aiSlot3?.bannerFeature || '') || sanitizedFeatures[0] || '', 30);
-    const s4Banner = clampText(cleanBrandModel(aiSlot4?.bannerFeature || '') || sanitizedFeatures[1] || '', 30);
-    const s3Callout1 = clampText(cleanBrandModel(aiSlot3?.callout1 || '') || sanitizedFeatures[2] || '', 25);
-    const s3Callout2 = clampText(cleanBrandModel(aiSlot3?.callout2 || '') || sanitizedFeatures[3] || '', 25);
-    const s4Callout1 = clampText(cleanBrandModel(aiSlot4?.callout1 || '') || sanitizedFeatures[4] || '', 25);
-    const s4Callout2 = clampText(cleanBrandModel(aiSlot4?.callout2 || '') || sanitizedFeatures[5] || '', 25);
-    const s3TopHeadline = clampText(cleanBrandModel(aiSlot3?.topHeadline || ''), 40);
-    const s4TopHeadline = clampText(cleanBrandModel(aiSlot4?.topHeadline || ''), 40);
+    const pickFeature = (
+      preferredAiVal: string | undefined,
+      maxLen: number,
+      fallbackPool: string[] = sanitizedFeatures,
+    ): string => {
+      // 1. Try preferred AI extracted/shortened value
+      const cleanAi = preferredAiVal ? cleanBrandModel(preferredAiVal).trim() : '';
+      if (cleanAi && cleanAi.length <= maxLen && !isAlreadyChosen(cleanAi)) {
+        chosenFeatures.push(cleanAi);
+        return cleanAi;
+      }
+
+      // 2. Otherwise search verified catalogue features
+      for (const raw of fallbackPool) {
+        const clean = cleanBrandModel(raw).trim();
+        if (clean && clean.length <= maxLen && !isAlreadyChosen(clean)) {
+          chosenFeatures.push(clean);
+          return clean;
+        }
+      }
+
+      // If no candidate fits without mid-phrase truncation or all duplicate: return empty string
+      return '';
+    };
+
+    const s3Banner = pickFeature(aiSlot3?.bannerFeature, 30);
+    const s4Banner = pickFeature(aiSlot4?.bannerFeature, 30);
+    const s3Callout1 = pickFeature(aiSlot3?.callout1, 25);
+    const s3Callout2 = pickFeature(aiSlot3?.callout2, 25);
+    const s4Callout1 = pickFeature(aiSlot4?.callout1, 25);
+    const s4Callout2 = pickFeature(aiSlot4?.callout2, 25);
+
+    const s3TopRaw = cleanBrandModel(aiSlot3?.topHeadline || '');
+    const s4TopRaw = cleanBrandModel(aiSlot4?.topHeadline || '');
+    const s3TopHeadline = s3TopRaw.length <= 40 ? s3TopRaw : '';
+    const s4TopHeadline = s4TopRaw.length <= 40 ? s4TopRaw : '';
 
     const strictSlots = [
       {

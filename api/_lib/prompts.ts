@@ -1,3 +1,5 @@
+import { isDuplicateFeature } from './featureDeduplication.js';
+
 export function parseDimensionMeasurements(dimStr?: string): { height: string; width: string; depth: string } {
   if (!dimStr) return { height: '197mm', width: '78mm', depth: '57mm' };
   const matches = dimStr.match(/(\d+(?:\.\d+)?\s*(?:mm|cm|in|inch|inches)?)/gi);
@@ -318,27 +320,24 @@ ${modelLine}
       // 1. Resolve Banner Feature (required, max 30 characters, e.g. "4L Capacity", "Adjustable Zoom Function")
       let resolvedBanner = cleanBanner;
       if (!resolvedBanner) {
-        // Fallback: pick first available feature from cleanedFeatures that isn't the product name or category
+        // Fallback: pick first available feature from cleanedFeatures that isn't the product name or category and fits <= 30 chars
         const nonTitleFeature = cleanedFeatures.find(
-          (f) => f.toLowerCase() !== cleanProductTitle.toLowerCase() && !cleanProductTitle.toLowerCase().includes(f.toLowerCase())
+          (f) => f.length <= 30 && f.toLowerCase() !== cleanProductTitle.toLowerCase() && !cleanProductTitle.toLowerCase().includes(f.toLowerCase())
         );
-        resolvedBanner = nonTitleFeature || (cleanPromoBanner.toLowerCase() !== cleanProductTitle.toLowerCase() ? cleanPromoBanner : cleanedFeatures[0] || 'High Performance');
-      }
-      if (resolvedBanner.length > 30) {
-        resolvedBanner = resolvedBanner.slice(0, 30).trim();
+        resolvedBanner = nonTitleFeature || (cleanPromoBanner.length <= 30 && cleanPromoBanner.toLowerCase() !== cleanProductTitle.toLowerCase() ? cleanPromoBanner : '');
       }
 
-      // 2. Resolve Supporting Callouts (at most 2, max 25 chars each, never duplicating banner)
-      const remainingFeatures = cleanedFeatures.filter(
-        (f) => f.toLowerCase() !== resolvedBanner.toLowerCase()
+      // 2. Resolve Supporting Callouts (at most 2, max 25 chars each, never duplicating banner or each other)
+      const nonDuplicateCandidates = cleanedFeatures.filter(
+        (f) => f.length <= 25 && !isDuplicateFeature(f, resolvedBanner)
       );
-      let resolvedCallout1 = cleanCallout1 || (remainingFeatures[0] ? remainingFeatures[0].slice(0, 25).trim() : '');
-      let resolvedCallout2 = cleanCallout2 || (remainingFeatures[1] ? remainingFeatures[1].slice(0, 25).trim() : '');
+      let resolvedCallout1 = cleanCallout1 || nonDuplicateCandidates[0] || '';
+      let resolvedCallout2 = cleanCallout2 || nonDuplicateCandidates.find((f) => !isDuplicateFeature(f, resolvedCallout1)) || '';
 
-      if (resolvedCallout1 && resolvedCallout1.toLowerCase() === resolvedBanner.toLowerCase()) {
+      if (isDuplicateFeature(resolvedCallout1, resolvedBanner)) {
         resolvedCallout1 = '';
       }
-      if (resolvedCallout2 && (resolvedCallout2.toLowerCase() === resolvedBanner.toLowerCase() || resolvedCallout2.toLowerCase() === resolvedCallout1.toLowerCase())) {
+      if (isDuplicateFeature(resolvedCallout2, resolvedBanner) || isDuplicateFeature(resolvedCallout2, resolvedCallout1)) {
         resolvedCallout2 = '';
       }
 

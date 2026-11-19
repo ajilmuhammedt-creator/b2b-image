@@ -33,6 +33,7 @@ import type {
   CatalogueParsedData,
   EcommercePlatform,
 } from '../types';
+import { isDuplicateFeature } from '../lib/featureDeduplication';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export const DEFAULT_SHOPIFY_SLOTS: SanfordSlotSpec[] = [
@@ -416,15 +417,6 @@ export function Studio() {
     };
   };
 
-  const clampText = (str: string, maxLen: number) => {
-    if (!str) return '';
-    const clean = str.trim();
-    if (clean.length <= maxLen) return clean;
-    const sub = clean.slice(0, maxLen);
-    const lastSpace = sub.lastIndexOf(' ');
-    return (lastSpace > maxLen * 0.6 ? sub.slice(0, lastSpace) : sub).trim();
-  };
-
   const autoSuggestFeatureHighlights = (rawTextOrArr: string | string[]) => {
     const lines = Array.isArray(rawTextOrArr) ? rawTextOrArr : rawTextOrArr.split('\n');
     const cleanList: string[] = [];
@@ -439,17 +431,30 @@ export function Studio() {
       }
     }
 
+    const chosen: string[] = [];
+    const isAlreadyChosen = (cand: string) => chosen.some((c) => isDuplicateFeature(cand, c));
+
+    const pickNext = (maxLen: number): string => {
+      for (const item of cleanList) {
+        if (item.length <= maxLen && !isAlreadyChosen(item)) {
+          chosen.push(item);
+          return item;
+        }
+      }
+      return '';
+    };
+
     return {
       slot3: {
-        bannerFeature: clampText(cleanList[0] || '', 30),
-        callout1: clampText(cleanList[2] || '', 25),
-        callout2: clampText(cleanList[3] || '', 25),
+        bannerFeature: pickNext(30),
+        callout1: pickNext(25),
+        callout2: pickNext(25),
         topHeadline: '',
       },
       slot4: {
-        bannerFeature: clampText(cleanList[1] || '', 30),
-        callout1: clampText(cleanList[4] || '', 25),
-        callout2: clampText(cleanList[5] || '', 25),
+        bannerFeature: pickNext(30),
+        callout1: pickNext(25),
+        callout2: pickNext(25),
         topHeadline: '',
       },
     };
@@ -467,9 +472,9 @@ export function Studio() {
     const isPart1 = slotSpec.theme === 'specs_part_1' || (isStandardSpecPlatform && slotSpec.slot === 3);
     const isPart2 = slotSpec.theme === 'specs_part_2' || (isStandardSpecPlatform && slotSpec.slot === 4);
     if (isPart1) {
-      const bFeature = slotSpec.bannerFeature || suggested?.slot3.bannerFeature || (part1[0] ? clampText(part1[0], 30) : '');
-      const c1 = slotSpec.callout1 ?? (suggested?.slot3.callout1 || (part1[1] ? clampText(part1[1], 25) : ''));
-      const c2 = slotSpec.callout2 ?? (suggested?.slot3.callout2 || (part1[2] ? clampText(part1[2], 25) : ''));
+      const bFeature = slotSpec.bannerFeature || suggested?.slot3.bannerFeature || '';
+      const c1 = slotSpec.callout1 ?? (suggested?.slot3.callout1 || '');
+      const c2 = slotSpec.callout2 ?? (suggested?.slot3.callout2 || '');
       return {
         ...slotSpec,
         title: slotSpec.title || 'Feature Highlight 1',
@@ -482,9 +487,9 @@ export function Studio() {
       };
     }
     if (isPart2) {
-      const bFeature = slotSpec.bannerFeature || suggested?.slot4.bannerFeature || (part2[0] ? clampText(part2[0], 30) : '');
-      const c1 = slotSpec.callout1 ?? (suggested?.slot4.callout1 || (part2[1] ? clampText(part2[1], 25) : ''));
-      const c2 = slotSpec.callout2 ?? (suggested?.slot4.callout2 || (part2[2] ? clampText(part2[2], 25) : ''));
+      const bFeature = slotSpec.bannerFeature || suggested?.slot4.bannerFeature || '';
+      const c1 = slotSpec.callout1 ?? (suggested?.slot4.callout1 || '');
+      const c2 = slotSpec.callout2 ?? (suggested?.slot4.callout2 || '');
       return {
         ...slotSpec,
         title: slotSpec.title || 'Feature Highlight 2',
