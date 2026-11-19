@@ -347,7 +347,7 @@ ${modelLine}
         resolvedTopHeadline = cleanHeadline;
       }
       if (resolvedTopHeadline && resolvedTopHeadline.length > 40) {
-        resolvedTopHeadline = resolvedTopHeadline.slice(0, 40).trim();
+        resolvedTopHeadline = '';
       }
 
       // 4. Series Logo in top-right (Change 6)

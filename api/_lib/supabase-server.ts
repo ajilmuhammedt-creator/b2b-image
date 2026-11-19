@@ -1,15 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl =
-  process.env.SUPABASE_URL ||
-  process.env.VITE_SUPABASE_URL ||
-  'https://ymesewobvdngegbuthuz.supabase.co';
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Dedicated service role key with fallback to ensure serverless functions never crash on cold start
-const DEFAULT_SERVICE_ROLE_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltZXNld29idmRuZ2VnYnV0aHV6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MzQ0Njk0MCwiZXhwIjoyMTA5MDIyOTQwfQ.rtgLct5pH2xU7Vn-Sb30SdWA_WgJ1Xyd0Dy5Hzy2qKs';
+if (!supabaseUrl) {
+  throw new Error('Missing SUPABASE_URL (or VITE_SUPABASE_URL) environment variable.');
+}
 
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || DEFAULT_SERVICE_ROLE_KEY;
+if (!supabaseServiceKey) {
+  throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable.');
+}
 
 export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
@@ -17,3 +17,4 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
     autoRefreshToken: false,
   },
 });
+
