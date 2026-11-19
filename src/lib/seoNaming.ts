@@ -37,8 +37,8 @@ export function getSlotDescriptor(item: {
   const theme = item.sanfordSlot?.theme;
   if (theme === 'hero' || slotNum === 1) return '01-hero-studio-view';
   if (theme === 'lifestyle' || slotNum === 2) return '02-lifestyle-in-use';
-  if (theme === 'specs_part_1' || slotNum === 3) return '03-specifications-features';
-  if (theme === 'specs_part_2' || slotNum === 4) return '04-technical-specifications';
+  if (theme === 'specs_part_1' || slotNum === 3) return '03-feature-highlight-1';
+  if (theme === 'specs_part_2' || slotNum === 4) return '04-feature-highlight-2';
   if (theme === 'color_focus' || theme === 'colors' || slotNum === 5) return '05-available-colour-models';
   if (theme === 'box_dimensions' || theme === 'size_warranty' || slotNum === 6) return '06-unit-dimension-warranty';
 

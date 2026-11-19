@@ -55,6 +55,7 @@ export default async function handler(req: any, res: any) {
       modelNumber = '',
       brand = 'Sanford',
       tagline = '',
+      seriesName = '',
       fullFeatures = [],
       featureGroup = [],
       excludedFeatures = [],
@@ -274,6 +275,7 @@ export default async function handler(req: any, res: any) {
       });
     } else if (platform === 'amazon') {
       // Amazon Product Listing Template
+      const resolvedSeriesName = seriesName || body?.seriesLogo || sanfordSlot?.seriesName || '';
       prompt = buildAmazonSlotPrompt({
         productName,
         theme: resolvedTheme,
@@ -281,6 +283,11 @@ export default async function handler(req: any, res: any) {
         slotTitle: sanfordSlot?.title || `Amazon Image ${slot}`,
         headline: sanfordSlot?.headline,
         promoBanner: sanfordSlot?.promoBanner,
+        bannerFeature: sanfordSlot?.bannerFeature || body?.bannerFeature,
+        callout1: sanfordSlot?.callout1 || body?.callout1,
+        callout2: sanfordSlot?.callout2 || body?.callout2,
+        topHeadline: sanfordSlot?.topHeadline || body?.topHeadline,
+        seriesName: resolvedSeriesName,
         brand,
         modelNumber,
         features: assignedFeatures,
@@ -327,6 +334,7 @@ export default async function handler(req: any, res: any) {
     } else if (sanfordSlot && sanfordSlot.theme) {
       // Shopify / BuySanford Pattern
       const isSizeWarranty = sanfordSlot.theme === 'size_warranty' || sanfordSlot.slot === 6;
+      const resolvedSeriesName = seriesName || body?.seriesLogo || sanfordSlot.seriesName || '';
       prompt = buildSanfordSlotPrompt({
         productName,
         brand,
@@ -335,6 +343,11 @@ export default async function handler(req: any, res: any) {
         slotTitle: sanfordSlot.title || `Image ${slot}`,
         headline: sanfordSlot.headline,
         promoBanner: sanfordSlot.promoBanner,
+        bannerFeature: sanfordSlot.bannerFeature || body?.bannerFeature,
+        callout1: sanfordSlot.callout1 || body?.callout1,
+        callout2: sanfordSlot.callout2 || body?.callout2,
+        topHeadline: sanfordSlot.topHeadline || body?.topHeadline,
+        seriesName: resolvedSeriesName,
         features: assignedFeatures,
         excludedFeatures: computedExcludedFeatures,
         dimensions: sanfordSlot.dimensions,
@@ -380,7 +393,7 @@ export default async function handler(req: any, res: any) {
 
     const callOpenAi = async (): Promise<any> => {
       const form = new FormData();
-      const imageBlob = new Blob([imageBuffer!], { type: 'image/png' });
+      const imageBlob = new Blob([new Uint8Array(imageBuffer!)], { type: 'image/png' });
       form.append('image', imageBlob, 'product.png');
 
       form.append('model', selectedModel);

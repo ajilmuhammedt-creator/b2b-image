@@ -106,6 +106,11 @@ export interface SanfordSlotSpec {
   title: string;
   headline?: string;
   promoBanner?: string;
+  bannerFeature?: string;
+  callout1?: string;
+  callout2?: string;
+  topHeadline?: string;
+  seriesName?: string;
   description?: string;
   features: string[];
   excludedFeatures?: string[];
@@ -162,6 +167,7 @@ export interface CatalogueParsedData {
   modelNumber: string;
   brand: string;
   tagline: string;
+  seriesName?: string;
   fullFeatures: string[];
   dimensions?: string;
   weight?: string;
@@ -179,6 +185,7 @@ export interface ProjectData {
   product_name: string;
   model_number?: string;
   tagline?: string;
+  series_name?: string;
   features: string[];
   colors?: string;
   dimensions?: string;

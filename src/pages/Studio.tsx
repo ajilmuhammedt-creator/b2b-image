@@ -55,19 +55,19 @@ export const DEFAULT_SHOPIFY_SLOTS: SanfordSlotSpec[] = [
   {
     slot: 3,
     theme: 'specs_part_1',
-    title: 'Specifications — Part 1',
+    title: 'Feature Highlight 1',
     headline: '',
     promoBanner: '',
-    description: 'Upper-left red circular icon badges with white symbols & divider lines; upper-right usage slogan; full-width solid red bottom promotional banner in Sharp Sans font. Zero feature duplicates.',
+    description: 'buysanford.com single-feature focus: Dark atmospheric scene, full-width red bottom banner showing Feature 1 only, overlapping white circle with red ring and black icon, at most 2 supporting callouts. Zero feature duplicates.',
     features: [],
   },
   {
     slot: 4,
     theme: 'specs_part_2',
-    title: 'Specifications — Part 2 (Non-Overlapping)',
+    title: 'Feature Highlight 2',
     headline: '',
     promoBanner: '',
-    description: 'Upper-left red circular icon badges with white symbols & divider lines; upper-right usage slogan; full-width solid red bottom promotional banner in Sharp Sans font. Zero feature duplicates.',
+    description: 'buysanford.com single-feature focus: Dark atmospheric scene, full-width red bottom banner showing Feature 2 only, overlapping white circle with red ring and black icon, at most 2 supporting callouts. Zero feature duplicates.',
     features: [],
   },
   {
@@ -109,19 +109,19 @@ export const DEFAULT_AMAZON_SLOTS: SanfordSlotSpec[] = [
   {
     slot: 3,
     theme: 'specs_part_1',
-    title: 'IMAGE 03 · Primary Features Infographic',
+    title: 'IMAGE 03 · Feature Highlight 1',
     headline: '',
     promoBanner: '',
-    description: 'Top 3–4 verified features, vibrant red circular badges, Sharp Sans typography, full-width red benefits banner at bottom. Zero duplication.',
+    description: 'buysanford.com single-feature focus: Dark atmospheric scene, full-width red bottom banner showing Feature 1 only, overlapping white circle with red ring and black icon, at most 2 supporting callouts.',
     features: [],
   },
   {
     slot: 4,
     theme: 'specs_part_2',
-    title: 'IMAGE 04 · Secondary Features Infographic',
+    title: 'IMAGE 04 · Feature Highlight 2',
     headline: '',
     promoBanner: '',
-    description: 'Secondary verified features, matching red circular badge design system, alternative product perspective, full-width red benefits banner.',
+    description: 'buysanford.com single-feature focus: Dark atmospheric scene, full-width red bottom banner showing Feature 2 only, overlapping white circle with red ring and black icon, at most 2 supporting callouts.',
     features: [],
   },
   {
@@ -302,6 +302,7 @@ export function Studio() {
   const [modelNumber, setModelNumber] = useState('');
   const [brand, setBrand] = useState('Sanford');
   const [tagline, setTagline] = useState('');
+  const [seriesName, setSeriesName] = useState('');
   const [featuresText, setFeaturesText] = useState('');
   const [colors, setColors] = useState('');
   const [dimensions, setDimensions] = useState('');
@@ -415,23 +416,117 @@ export function Studio() {
     };
   };
 
+  const clampText = (str: string, maxLen: number) => {
+    if (!str) return '';
+    const clean = str.trim();
+    if (clean.length <= maxLen) return clean;
+    const sub = clean.slice(0, maxLen);
+    const lastSpace = sub.lastIndexOf(' ');
+    return (lastSpace > maxLen * 0.6 ? sub.slice(0, lastSpace) : sub).trim();
+  };
+
+  const autoSuggestFeatureHighlights = (rawTextOrArr: string | string[]) => {
+    const lines = Array.isArray(rawTextOrArr) ? rawTextOrArr : rawTextOrArr.split('\n');
+    const cleanList: string[] = [];
+    const seen = new Set<string>();
+    for (const line of lines) {
+      const clean = line.replace(/^[-•*#\d.]+\s*/, '').trim();
+      if (!clean) continue;
+      const key = clean.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        cleanList.push(clean);
+      }
+    }
+
+    return {
+      slot3: {
+        bannerFeature: clampText(cleanList[0] || '', 30),
+        callout1: clampText(cleanList[2] || '', 25),
+        callout2: clampText(cleanList[3] || '', 25),
+        topHeadline: '',
+      },
+      slot4: {
+        bannerFeature: clampText(cleanList[1] || '', 30),
+        callout1: clampText(cleanList[4] || '', 25),
+        callout2: clampText(cleanList[5] || '', 25),
+        topHeadline: '',
+      },
+    };
+  };
+
   const applyPartitionToSlot = (
     slotSpec: SanfordSlotSpec,
     part1: string[],
     part2: string[],
     activePlatform: EcommercePlatform | null = platform,
+    suggested?: ReturnType<typeof autoSuggestFeatureHighlights>,
   ): SanfordSlotSpec => {
     const isStandardSpecPlatform =
       activePlatform === 'shopify' || activePlatform === 'amazon' || !activePlatform;
     const isPart1 = slotSpec.theme === 'specs_part_1' || (isStandardSpecPlatform && slotSpec.slot === 3);
     const isPart2 = slotSpec.theme === 'specs_part_2' || (isStandardSpecPlatform && slotSpec.slot === 4);
     if (isPart1) {
-      return { ...slotSpec, features: part1, excludedFeatures: part2 };
+      const bFeature = slotSpec.bannerFeature || suggested?.slot3.bannerFeature || (part1[0] ? clampText(part1[0], 30) : '');
+      const c1 = slotSpec.callout1 ?? (suggested?.slot3.callout1 || (part1[1] ? clampText(part1[1], 25) : ''));
+      const c2 = slotSpec.callout2 ?? (suggested?.slot3.callout2 || (part1[2] ? clampText(part1[2], 25) : ''));
+      return {
+        ...slotSpec,
+        title: slotSpec.title || 'Feature Highlight 1',
+        bannerFeature: bFeature,
+        callout1: c1,
+        callout2: c2,
+        promoBanner: slotSpec.promoBanner || bFeature,
+        features: part1,
+        excludedFeatures: part2,
+      };
     }
     if (isPart2) {
-      return { ...slotSpec, features: part2, excludedFeatures: part1 };
+      const bFeature = slotSpec.bannerFeature || suggested?.slot4.bannerFeature || (part2[0] ? clampText(part2[0], 30) : '');
+      const c1 = slotSpec.callout1 ?? (suggested?.slot4.callout1 || (part2[1] ? clampText(part2[1], 25) : ''));
+      const c2 = slotSpec.callout2 ?? (suggested?.slot4.callout2 || (part2[2] ? clampText(part2[2], 25) : ''));
+      return {
+        ...slotSpec,
+        title: slotSpec.title || 'Feature Highlight 2',
+        bannerFeature: bFeature,
+        callout1: c1,
+        callout2: c2,
+        promoBanner: slotSpec.promoBanner || bFeature,
+        features: part2,
+        excludedFeatures: part1,
+      };
     }
     return slotSpec;
+  };
+
+  const handleUpdateSlotField = (slotNum: number, field: string, val: any) => {
+    setSanfordSlots((prev) =>
+      prev.map((s) => {
+        if (s.slot === slotNum) {
+          const updated = { ...s, [field]: val };
+          if (field === 'bannerFeature' && (!s.promoBanner || s.promoBanner === s.bannerFeature)) {
+            updated.promoBanner = val;
+          }
+          return updated;
+        }
+        return s;
+      })
+    );
+    setGenerations((prev) =>
+      prev.map((g) => {
+        if (g.slot === slotNum) {
+          const nextSlot = g.sanfordSlot ? { ...g.sanfordSlot, [field]: val } : undefined;
+          if (nextSlot && field === 'bannerFeature' && (!nextSlot.promoBanner || nextSlot.promoBanner === nextSlot.bannerFeature)) {
+            nextSlot.promoBanner = val;
+          }
+          return {
+            ...g,
+            sanfordSlot: nextSlot,
+          };
+        }
+        return g;
+      })
+    );
   };
 
   // Validation
@@ -553,8 +648,9 @@ export function Studio() {
   // Keep Slot 3 & Slot 4 strictly partitioned 50/50 whenever featuresText or platform changes
   useEffect(() => {
     const { part1, part2 } = partitionFeatures(featuresText);
+    const suggested = autoSuggestFeatureHighlights(featuresText);
     setSanfordSlots((prev) =>
-      prev.map((slotSpec) => applyPartitionToSlot(slotSpec, part1, part2, platform)),
+      prev.map((slotSpec) => applyPartitionToSlot(slotSpec, part1, part2, platform, suggested)),
     );
     setGenerations((prev) =>
       prev.map((g) => {
@@ -570,7 +666,7 @@ export function Studio() {
           g.sanfordSlot?.theme === 'specs_part_2' ||
           (isStandardSpecPlatform && g.slot === 4);
         const nextSlot = g.sanfordSlot
-          ? applyPartitionToSlot(g.sanfordSlot, part1, part2, platform)
+          ? applyPartitionToSlot(g.sanfordSlot, part1, part2, platform, suggested)
           : undefined;
         const nextGroup = isPart1 ? part1 : isPart2 ? part2 : g.featureGroup;
         return {
@@ -588,6 +684,7 @@ export function Studio() {
     if (data.productName) setProductName(data.productName);
     if (data.modelNumber) setModelNumber(data.modelNumber);
     if (data.tagline) setTagline(data.tagline);
+    if (data.seriesName) setSeriesName(data.seriesName);
     const parsedRawFeatures =
       data.fullFeatures && data.fullFeatures.length > 0 ? data.fullFeatures.join('\n') : featuresText;
     const { all: dedupedAll, part1, part2 } = partitionFeatures(parsedRawFeatures);
@@ -602,11 +699,14 @@ export function Studio() {
       setWhatsInTheBox(data.whatsInTheBox);
     }
 
+    const suggested = autoSuggestFeatureHighlights(dedupedAll.length > 0 ? dedupedAll : parsedRawFeatures);
+
     if (data.slots && data.slots.length > 0) {
       const enrichedSlots: SanfordSlotSpec[] = data.slots.map((slot) =>
         applyPartitionToSlot(
           {
             ...slot,
+            seriesName: data.seriesName || seriesName,
             dimensions: data.dimensions,
             weight: slot.theme === 'size_warranty' ? undefined : data.weight,
             whatsInTheBox: slot.theme === 'size_warranty' ? undefined : data.whatsInTheBox,
@@ -615,6 +715,7 @@ export function Studio() {
           part1,
           part2,
           platform,
+          suggested,
         ),
       );
       setSanfordSlots(enrichedSlots);
@@ -786,6 +887,7 @@ export function Studio() {
           modelNumber: modelNumber.trim(),
           brand: 'Sanford',
           tagline: tagline.trim(),
+          seriesName: seriesName.trim() || undefined,
           fullFeatures,
           featureGroup: slotGroup,
           excludedFeatures: excludedGroup,
@@ -801,6 +903,12 @@ export function Studio() {
           sanfordSlot: targetSlotSpec
             ? {
                 ...targetSlotSpec,
+                seriesName: seriesName.trim() || targetSlotSpec.seriesName || undefined,
+                bannerFeature: targetSlotSpec.bannerFeature,
+                callout1: targetSlotSpec.callout1,
+                callout2: targetSlotSpec.callout2,
+                topHeadline: targetSlotSpec.topHeadline,
+                promoBanner: targetSlotSpec.promoBanner || targetSlotSpec.bannerFeature,
                 features: slotGroup,
                 excludedFeatures: excludedGroup,
                 headline:
@@ -1619,6 +1727,8 @@ export function Studio() {
           setProductName={setProductName}
           modelNumber={modelNumber}
           setModelNumber={setModelNumber}
+          seriesName={seriesName}
+          setSeriesName={setSeriesName}
           tagline={tagline}
           setTagline={setTagline}
           featuresText={featuresText}
@@ -1631,6 +1741,8 @@ export function Studio() {
           setWarranty={setWarranty}
           sourceImage={sourceImage}
           setSourceImage={setSourceImage}
+          sanfordSlots={sanfordSlots}
+          onUpdateSlotField={handleUpdateSlotField}
         />
 
         {/* Dialogue 3: Platform Selection Modal */}

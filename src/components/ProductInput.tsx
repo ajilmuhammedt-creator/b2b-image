@@ -27,6 +27,8 @@ interface ProductInputProps {
   setModelNumber: (model: string) => void;
   tagline: string;
   setTagline: (tagline: string) => void;
+  seriesName?: string;
+  setSeriesName?: (name: string) => void;
   featuresText: string;
   setFeaturesText: (text: string) => void;
   colors: string;
@@ -66,6 +68,8 @@ export function ProductInput({
   setModelNumber,
   tagline,
   setTagline,
+  seriesName = '',
+  setSeriesName,
   featuresText,
   setFeaturesText,
   colors,
@@ -289,7 +293,7 @@ export function ProductInput({
 
   const updateSlotField = (
     index: number,
-    field: 'title' | 'headline' | 'promoBanner' | 'features',
+    field: keyof SanfordSlotSpec,
     value: any
   ) => {
     const updated = [...sanfordSlots];
@@ -548,6 +552,18 @@ export function ProductInput({
           />
         </div>
 
+        {/* Series / Product Line */}
+        <div className="space-y-1">
+          <label className="block text-[11px] font-medium text-[#5B6478] dark:text-slate-400">Series / Product Line (Optional)</label>
+          <input
+            type="text"
+            value={seriesName}
+            onChange={(e) => setSeriesName?.(e.target.value)}
+            placeholder="e.g. PLATINUM ZOOM"
+            className="w-full px-2.5 py-1.5 bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] rounded-lg text-xs text-[#0F172A] dark:text-slate-100 placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500"
+          />
+        </div>
+
         {/* Verified Features */}
         <div className="space-y-1">
           <div className="flex items-center justify-between">
@@ -625,8 +641,31 @@ export function ProductInput({
           {/* 6. Slot Customization block: background #F4F7FC, border #DCE4F2, radius 12px */}
           {isSlotsOpen && (
             <div className="space-y-2.5 pt-3 mt-2 bg-[#F4F7FC] dark:bg-transparent border border-[#DCE4F2] dark:border-white/[0.06] rounded-[12px] p-3">
+              {/* Check for duplicate feature across Slot 3 & 4 */}
+              {(() => {
+                const s3 = sanfordSlots.find((s) => s.slot === 3);
+                const s4 = sanfordSlots.find((s) => s.slot === 4);
+                const s3Feats = [s3?.bannerFeature, s3?.callout1, s3?.callout2]
+                  .map((f) => (f || '').trim().toLowerCase())
+                  .filter(Boolean);
+                const s4Feats = [s4?.bannerFeature, s4?.callout1, s4?.callout2]
+                  .map((f) => (f || '').trim().toLowerCase())
+                  .filter(Boolean);
+                const dup = s3Feats.find((f) => s4Feats.includes(f));
+                if (dup) {
+                  return (
+                    <div className="flex items-center gap-1.5 p-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-[11px] font-semibold">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-600 dark:text-red-400" />
+                      <span>Validation Error: Feature "{dup}" cannot be used in both Feature Highlight slots.</span>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
               {sanfordSlots.map((slot, index) => {
                 const isSlot5Skipped = slot.slot === 5 && !hasMultipleColors;
+                const isFeatureHighlight = slot.slot === 3 || slot.slot === 4;
 
                 let slotBadgeColor = 'text-indigo-600 dark:text-indigo-300';
                 if (slot.slot === 1) slotBadgeColor = 'text-blue-700 dark:text-blue-300';
@@ -635,6 +674,13 @@ export function ProductInput({
                 else if (slot.slot === 4) slotBadgeColor = 'text-purple-700 dark:text-purple-300';
                 else if (slot.slot === 5) slotBadgeColor = 'text-amber-700 dark:text-amber-300';
                 else if (slot.slot === 6) slotBadgeColor = 'text-rose-700 dark:text-rose-300';
+
+                const slotTitleLabel =
+                  slot.slot === 3
+                    ? 'Slot 3: Feature Highlight 1'
+                    : slot.slot === 4
+                    ? 'Slot 4: Feature Highlight 2'
+                    : `Slot ${slot.slot}: ${slot.title}`;
 
                 return (
                   <div
@@ -647,7 +693,7 @@ export function ProductInput({
                   >
                     <div className="flex items-center justify-between text-xs font-medium">
                       <span className={`${slotBadgeColor} font-semibold text-[11px]`}>
-                        Slot {slot.slot}: {slot.title}
+                        {slotTitleLabel}
                       </span>
                       {isSlot5Skipped ? (
                         <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D] dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20">
@@ -655,7 +701,7 @@ export function ProductInput({
                         </span>
                       ) : (
                         <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-100 text-[#5B6478] border border-[#E3E8EF] dark:bg-white/[0.04] dark:text-slate-400 dark:border-white/[0.06]">
-                          {slot.theme}
+                          {isFeatureHighlight ? 'feature_focus' : slot.theme}
                         </span>
                       )}
                     </div>
@@ -666,66 +712,150 @@ export function ProductInput({
                       </p>
                     )}
 
-                    {slot.slot !== 1 && (
-                      <div className="space-y-0.5">
-                        <label className="text-[10px] font-medium text-[#5B6478] dark:text-slate-400">
-                          {slot.slot === 2
-                            ? 'Top-Right Red Badge Tagline (Sharp Sans Text)'
-                            : slot.slot === 3 || slot.slot === 4
-                            ? 'Upper-Right Context Slogan'
-                            : slot.slot === 5
-                            ? 'Header Title'
-                            : 'Top-Left Header'}
-                        </label>
-                        <input
-                          type="text"
-                          value={slot.headline || ''}
-                          onChange={(e) => updateSlotField(index, 'headline', e.target.value)}
-                          placeholder={
-                            slot.slot === 2
-                              ? 'e.g. Refreshing Airflow In Every Spin!'
-                              : slot.slot === 3
-                              ? 'e.g. SUITABLE FOR OUTDOOR & INDOOR USE'
-                              : slot.slot === 4
-                              ? 'e.g. PORTABLE, POWERFUL, STAY COOL EVERYWHERE'
-                              : slot.slot === 5
-                              ? 'e.g. Available Colors'
-                              : 'e.g. Unit Dimension'
-                          }
-                          className="w-full bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] px-2 py-1 rounded text-[11px] text-[#0F172A] dark:text-slate-200 placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500"
-                        />
-                      </div>
-                    )}
+                    {/* Dedicated fields for Feature Highlight Slots (Slot 3 & 4) */}
+                    {isFeatureHighlight ? (
+                      <div className="space-y-1.5 pt-1">
+                        {/* Banner Feature */}
+                        <div className="space-y-0.5">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-semibold text-[#0F172A] dark:text-slate-300">
+                              Banner Feature <span className="text-red-600">*</span>
+                            </label>
+                            <span className="text-[9px] text-[#94A3B8] font-mono">
+                              {(slot.bannerFeature || '').length}/30
+                            </span>
+                          </div>
+                          <input
+                            type="text"
+                            maxLength={30}
+                            value={slot.bannerFeature || ''}
+                            onChange={(e) => {
+                              updateSlotField(index, 'bannerFeature', e.target.value);
+                              updateSlotField(index, 'promoBanner', e.target.value);
+                            }}
+                            placeholder={slot.slot === 3 ? 'e.g. 4L Capacity' : 'e.g. Adjustable Zoom Function'}
+                            className="w-full bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] px-2 py-1 rounded text-[11px] text-[#0F172A] dark:text-slate-200 font-medium placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500"
+                          />
+                        </div>
 
-                    {(slot.slot === 3 || slot.slot === 4 || slot.slot === 5) && (
-                      <div className="space-y-0.5">
-                        <label className="text-[10px] font-medium text-[#5B6478] dark:text-slate-400">
-                          Bottom Banner Text
-                        </label>
-                        <input
-                          type="text"
-                          value={slot.promoBanner || ''}
-                          onChange={(e) => updateSlotField(index, 'promoBanner', e.target.value)}
-                          placeholder="e.g. Rechargeable Cooling Hand Fan with Cold Plate"
-                          className="w-full bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] px-2 py-1 rounded text-[11px] text-[#0F172A] dark:text-slate-200 placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500"
-                        />
-                      </div>
-                    )}
+                        {/* Supporting Callout 1 */}
+                        <div className="space-y-0.5">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-medium text-[#5B6478] dark:text-slate-400">
+                              Supporting Callout 1 (Optional)
+                            </label>
+                            <span className="text-[9px] text-[#94A3B8] font-mono">
+                              {(slot.callout1 || '').length}/25
+                            </span>
+                          </div>
+                          <input
+                            type="text"
+                            maxLength={25}
+                            value={slot.callout1 || ''}
+                            onChange={(e) => updateSlotField(index, 'callout1', e.target.value)}
+                            placeholder={slot.slot === 3 ? 'e.g. Digital Display' : 'e.g. 1500W Powerful Motor'}
+                            className="w-full bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] px-2 py-1 rounded text-[11px] text-[#0F172A] dark:text-slate-200 placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500"
+                          />
+                        </div>
 
-                    {slot.slot !== 1 && slot.slot !== 2 && (
-                      <textarea
-                        rows={2}
-                        value={slot.features?.join('\n') || ''}
-                        onChange={(e) =>
-                          updateSlotField(
-                            index,
-                            'features',
-                            e.target.value.split('\n').filter((f) => f.trim().length > 0)
-                          )
-                        }
-                        placeholder="e.g. Feature callouts (one per line)..."
-                        className="w-full bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] p-1.5 rounded text-[11px] text-[#0F172A] dark:text-slate-300 placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500 resize-y font-mono leading-relaxed"
-                      />
+                        {/* Supporting Callout 2 */}
+                        <div className="space-y-0.5">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-medium text-[#5B6478] dark:text-slate-400">
+                              Supporting Callout 2 (Optional)
+                            </label>
+                            <span className="text-[9px] text-[#94A3B8] font-mono">
+                              {(slot.callout2 || '').length}/25
+                            </span>
+                          </div>
+                          <input
+                            type="text"
+                            maxLength={25}
+                            value={slot.callout2 || ''}
+                            onChange={(e) => updateSlotField(index, 'callout2', e.target.value)}
+                            placeholder={slot.slot === 3 ? 'e.g. Non-Stick Basket' : 'e.g. Overheat Protection'}
+                            className="w-full bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] px-2 py-1 rounded text-[11px] text-[#0F172A] dark:text-slate-200 placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500"
+                          />
+                        </div>
+
+                        {/* Top Headline */}
+                        <div className="space-y-0.5">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-medium text-[#5B6478] dark:text-slate-400">
+                              Top Headline (Optional)
+                            </label>
+                            <span className="text-[9px] text-[#94A3B8] font-mono">
+                              {(slot.topHeadline || '').length}/40
+                            </span>
+                          </div>
+                          <input
+                            type="text"
+                            maxLength={40}
+                            value={slot.topHeadline || ''}
+                            onChange={(e) => updateSlotField(index, 'topHeadline', e.target.value)}
+                            placeholder={slot.slot === 3 ? 'e.g. FOCUS THE TARGET!' : 'e.g. PERFORMANCE & SPEED'}
+                            className="w-full bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] px-2 py-1 rounded text-[11px] text-[#0F172A] dark:text-slate-200 placeholder-[#94A3B8] uppercase focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {slot.slot !== 1 && (
+                          <div className="space-y-0.5">
+                            <label className="text-[10px] font-medium text-[#5B6478] dark:text-slate-400">
+                              {slot.slot === 2
+                                ? 'Top-Left Red Badge Tagline (Sharp Sans Text)'
+                                : slot.slot === 5
+                                ? 'Header Title'
+                                : 'Top-Left Header'}
+                            </label>
+                            <input
+                              type="text"
+                              value={slot.headline || ''}
+                              onChange={(e) => updateSlotField(index, 'headline', e.target.value)}
+                              placeholder={
+                                slot.slot === 2
+                                  ? 'e.g. Refreshing Airflow In Every Spin!'
+                                  : slot.slot === 5
+                                  ? 'e.g. Available Colors'
+                                  : 'e.g. Unit Dimension'
+                              }
+                              className="w-full bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] px-2 py-1 rounded text-[11px] text-[#0F172A] dark:text-slate-200 placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500"
+                            />
+                          </div>
+                        )}
+
+                        {slot.slot === 5 && (
+                          <div className="space-y-0.5">
+                            <label className="text-[10px] font-medium text-[#5B6478] dark:text-slate-400">
+                              Bottom Banner Text
+                            </label>
+                            <input
+                              type="text"
+                              value={slot.promoBanner || ''}
+                              onChange={(e) => updateSlotField(index, 'promoBanner', e.target.value)}
+                              placeholder="e.g. Available in Multiple Attractive Colors"
+                              className="w-full bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] px-2 py-1 rounded text-[11px] text-[#0F172A] dark:text-slate-200 placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500"
+                            />
+                          </div>
+                        )}
+
+                        {slot.slot !== 1 && slot.slot !== 2 && (
+                          <textarea
+                            rows={2}
+                            value={slot.features?.join('\n') || ''}
+                            onChange={(e) =>
+                              updateSlotField(
+                                index,
+                                'features',
+                                e.target.value.split('\n').filter((f) => f.trim().length > 0)
+                              )
+                            }
+                            placeholder="e.g. Feature callouts (one per line)..."
+                            className="w-full bg-white dark:bg-white/[0.02] border border-[#E3E8EF] dark:border-white/[0.08] p-1.5 rounded text-[11px] text-[#0F172A] dark:text-slate-300 placeholder-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#0F1B3D] dark:focus:ring-indigo-500 resize-y font-mono leading-relaxed"
+                          />
+                        )}
+                      </>
                     )}
                   </div>
                 );

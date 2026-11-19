@@ -65,6 +65,11 @@ export function buildSanfordSlotPrompt(params: {
   slotTitle: string;
   headline?: string;
   promoBanner?: string;
+  bannerFeature?: string;
+  callout1?: string;
+  callout2?: string;
+  topHeadline?: string;
+  seriesName?: string;
   brand?: string;
   modelNumber?: string;
   features: string[];
@@ -83,6 +88,11 @@ export function buildSanfordSlotPrompt(params: {
     slotTitle,
     headline,
     promoBanner,
+    bannerFeature,
+    callout1,
+    callout2,
+    topHeadline,
+    seriesName,
     brand = 'Sanford',
     modelNumber = '',
     features,
@@ -116,6 +126,11 @@ export function buildSanfordSlotPrompt(params: {
   const cleanProductTitle = cleanText(productName) || productName;
   const cleanHeadline = cleanText(headline) || headline;
   const cleanPromoBanner = cleanText(promoBanner) || promoBanner;
+  const cleanBanner = cleanText(bannerFeature);
+  const cleanCallout1 = cleanText(callout1);
+  const cleanCallout2 = cleanText(callout2);
+  const cleanTopHeadline = cleanText(topHeadline);
+  const cleanSeries = cleanText(seriesName);
 
   // Deduplicate cleaned features strictly
   const seenFeat = new Set<string>();
@@ -226,21 +241,23 @@ export function buildSanfordSlotPrompt(params: {
         badgeTextLines = `${words.slice(0, p1).join(' ')}\n${words.slice(p1, p2).join(' ')}\n${words.slice(p2).join(' ')}`;
       }
 
-      // 2. Prepare Top-Right Floating Product Category Text (e.g. "Rechargeable\nEmergency Lantern")
-      const cleanCategory = cleanProductTitle
+      // 2. Prepare Product Type / Caption for Bottom-Right Corner (Change 5)
+      const cleanProductType = cleanProductTitle
         .replace(/\b(sanford|sf\d+[a-z0-9]*)\b/gi, '')
         .replace(/["']/g, '')
         .trim();
-      const catWords = cleanCategory.split(' ').filter(Boolean);
-      let categoryLines: string;
-      if (catWords.length <= 3) {
-        categoryLines = catWords.join('\n');
-      } else {
-        const mid = Math.ceil(catWords.length / 2);
-        categoryLines = `${catWords.slice(0, mid).join(' ')}\n${catWords.slice(mid).join(' ')}`;
-      }
 
-      // 3. Dynamic lifestyle scene setting based on product category
+      // 3. Optional Series Logo for Top-Right (Change 6)
+      const seriesLogoSection = cleanSeries
+        ? `  2. TOP-RIGHT SERIES / PRODUCT LINE BADGE (BOLD ITALIC SILVER METALLIC):
+     * Position: Pinned to the top-right corner of the canvas.
+     * Styling: Bold italic silver metallic typography strictly in "Sharp Sans Bold Italic": "${cleanSeries.toUpperCase()}".
+     * High-end brushed silver chrome metallic sheen with subtle bevel highlights.`
+        : `  2. TOP-RIGHT CORNER (CLEAN - NO SERIES NAME):
+     * Keep the top-right corner clean with NO text, logo, or badge.
+     * STRICT CONSTRAINT: Do NOT invent or render any series name or product line.`;
+
+      // 4. Dynamic lifestyle scene setting based on product category
       let sceneEnvironment = '';
       if (/lantern|light|torch|lamp|emergency/i.test(cleanProductTitle)) {
         sceneEnvironment = 'Outdoor evening campsite with lit tent and pine trees, or warm atmospheric room during evening. A person in outdoor jacket or casual wear holding or placing the glowing lantern, with warm luminous light illuminating their face and surroundings.';
@@ -257,7 +274,7 @@ export function buildSanfordSlotPrompt(params: {
         : `  * Do NOT write any model code or model number anywhere on the picture.`;
 
       specificStyle = `SLOT 2: LIFESTYLE & IN-USE SCENE (EXACT BUYSANFORD STORE REFERENCE TEMPLATE)
-- MANDATORY TWO-CORNER BUYSANFORD BRAND TEMPLATE:
+- MANDATORY BUYSANFORD BRAND TEMPLATE:
   1. TOP-LEFT SOLID RED CORNER BADGE (BRAND LIFESTYLE HEADLINE):
      * Position: Pinned directly to the TOP-LEFT corner of the image canvas (top: 0, left: 0), flush with the top and left edges.
      * Shape: Solid vibrant RED rectangular card (#C8281E / #E52414 / Sanford Crimson Red).
@@ -266,13 +283,12 @@ export function buildSanfordSlotPrompt(params: {
 "${badgeTextLines}"
      * Formatting: Left-aligned with comfortable padding inside the red card, 2 to 4 clean lines, ending with a period.
 
-  2. TOP-RIGHT PRODUCT CATEGORY / TITLE (CLEAN WHITE FLOATING SUBHEADING):
-     * Position: Upper-right area of the canvas.
-     * Style: Clean, elegant, pure WHITE text (#FFFFFF) rendered directly over the scene (NO background box, NO container).
-     * Font: Crisp "Sharp Sans Bold" or "Sharp Sans Semibold" ONLY (zero fallback to generic sans-serif, Arial, Helvetica, or Roboto).
-     * Typography: Product category / title in 1 or 2 lines:
-"${categoryLines}"
-     * STRICT RULE: Absolutely NO brand name ("Sanford") and NO model code here. Only the generic product category/title.
+${seriesLogoSection}
+
+  3. BOTTOM-RIGHT PRODUCT TYPE CAPTION (DISCREET WHITE TEXT ONLY):
+     * Position: Pinned subtly to the bottom-right corner of the canvas.
+     * Style: Clean, modest, discreet pure WHITE caption text in "Sharp Sans Medium" font: "${cleanProductType}".
+     * STRICT CONSTRAINT: Never put this in a red banner or colored box. Pure floating white caption only.
 
 - SCENE & COMPOSITION (PHOTOREALISTIC COMMERCIAL LIFESTYLE IN-USE):
   * Setting: ${sceneEnvironment}
@@ -286,72 +302,112 @@ export function buildSanfordSlotPrompt(params: {
   * ABSOLUTELY NO BRAND NAME ("Sanford") written on the canvas.
   * ABSOLUTELY NO MODEL NUMBER (${modelNumber || 'SF...'}) written on the canvas.
 ${modelLine}
-  * The ONLY text permitted on the entire image is:
-    (a) The white "Sharp Sans Bold" text INSIDE the top-left solid red corner card.
-    (b) The clean white "Sharp Sans" product category text in the top-right corner.
+  * ABSOLUTELY NO RED BANNER AT THE BOTTOM (red banners belong exclusively to Feature Highlight slots).
   * STRICT TYPOGRAPHY RULE: Do NOT substitute or fall back to Arial, Helvetica, Roboto, or any non-Sharp-Sans font.
   * NO other floating text anywhere else on the image.`;
       break;
     }
 
     case 'specs_part_1':
-    case 'specs_part_2': {
-      const slotNumLabel = theme === 'specs_part_1' ? 'SLOT 3: PRODUCT SPECIFICATIONS — PART 1' : 'SLOT 4: PRODUCT SPECIFICATIONS — PART 2';
-      const hasHeadline = cleanHeadline && !isDuplicateOrTechnicalSpec(cleanHeadline, cleanedFeatures);
-      const headlineSection = hasHeadline
-        ? `- UPPER-RIGHT USAGE CONTEXT SUBHEADING / SLOGAN (EXCLUSIVE SHARP SANS FONT):
-  * In the upper-right corner, place ONLY the uppercase context slogan in clean, dark "Sharp Sans Semibold" / "Sharp Sans Medium" font ONLY (never Arial, Helvetica, or Roboto):
-    "${cleanHeadline.toUpperCase()}"
-  * This is an overarching usage slogan ONLY.
-  * ABSOLUTELY DO NOT put any technical feature, battery spec, or charging text here.`
+    case 'specs_part_2':
+    case 'feature_highlight_1':
+    case 'feature_highlight_2': {
+      const isPart1 = theme === 'specs_part_1' || theme === 'feature_highlight_1' || slotTitle.includes('1');
+      const slotNumLabel = isPart1 ? 'SLOT 3: FEATURE HIGHLIGHT 1' : 'SLOT 4: FEATURE HIGHLIGHT 2';
+
+      // 1. Resolve Banner Feature (required, max 30 characters, e.g. "4L Capacity", "Adjustable Zoom Function")
+      let resolvedBanner = cleanBanner;
+      if (!resolvedBanner) {
+        // Fallback: pick first available feature from cleanedFeatures that isn't the product name or category
+        const nonTitleFeature = cleanedFeatures.find(
+          (f) => f.toLowerCase() !== cleanProductTitle.toLowerCase() && !cleanProductTitle.toLowerCase().includes(f.toLowerCase())
+        );
+        resolvedBanner = nonTitleFeature || (cleanPromoBanner.toLowerCase() !== cleanProductTitle.toLowerCase() ? cleanPromoBanner : cleanedFeatures[0] || 'High Performance');
+      }
+      if (resolvedBanner.length > 30) {
+        resolvedBanner = resolvedBanner.slice(0, 30).trim();
+      }
+
+      // 2. Resolve Supporting Callouts (at most 2, max 25 chars each, never duplicating banner)
+      const remainingFeatures = cleanedFeatures.filter(
+        (f) => f.toLowerCase() !== resolvedBanner.toLowerCase()
+      );
+      let resolvedCallout1 = cleanCallout1 || (remainingFeatures[0] ? remainingFeatures[0].slice(0, 25).trim() : '');
+      let resolvedCallout2 = cleanCallout2 || (remainingFeatures[1] ? remainingFeatures[1].slice(0, 25).trim() : '');
+
+      if (resolvedCallout1 && resolvedCallout1.toLowerCase() === resolvedBanner.toLowerCase()) {
+        resolvedCallout1 = '';
+      }
+      if (resolvedCallout2 && (resolvedCallout2.toLowerCase() === resolvedBanner.toLowerCase() || resolvedCallout2.toLowerCase() === resolvedCallout1.toLowerCase())) {
+        resolvedCallout2 = '';
+      }
+
+      // 3. Resolve Top Headline (optional, max 40 characters, e.g. "FOCUS THE TARGET!")
+      let resolvedTopHeadline = cleanTopHeadline;
+      if (!resolvedTopHeadline && cleanHeadline && cleanHeadline.toLowerCase() !== cleanProductTitle.toLowerCase() && !isDuplicateOrTechnicalSpec(cleanHeadline, [resolvedBanner])) {
+        resolvedTopHeadline = cleanHeadline;
+      }
+      if (resolvedTopHeadline && resolvedTopHeadline.length > 40) {
+        resolvedTopHeadline = resolvedTopHeadline.slice(0, 40).trim();
+      }
+
+      // 4. Series Logo in top-right (Change 6)
+      const seriesSection = cleanSeries
+        ? `  * TOP-RIGHT SERIES / PRODUCT LINE BADGE: In the top-right corner, render "${cleanSeries.toUpperCase()}" in bold italic silver metallic typography strictly in "Sharp Sans Bold Italic" font with subtle brushed chrome highlights.`
+        : `  * TOP-RIGHT AREA: Completely clean. Do NOT render any series name, logo, or badge in the top-right corner. NEVER invent a series name.`;
+
+      // 5. Callouts presentation
+      const calloutItems: string[] = [];
+      if (resolvedCallout1) calloutItems.push(resolvedCallout1);
+      if (resolvedCallout2) calloutItems.push(resolvedCallout2);
+
+      const headlineSection = resolvedTopHeadline
+        ? `  * TOP HEADLINE: Display "${resolvedTopHeadline.toUpperCase()}" in clean, bold, large pure WHITE uppercase typography strictly in "Sharp Sans Bold" font at the top of the image (above or instead of callouts).`
         : '';
 
-      const hasPromoBanner = cleanPromoBanner && !isDuplicateOrTechnicalSpec(cleanPromoBanner, cleanedFeatures);
-      const bannerSection = hasPromoBanner
-        ? `- MANDATORY FULL-WIDTH SOLID RED BOTTOM MARKETING BANNER:
-  * Across the very bottom of the image, include a full-width solid RED strip (#E53935 / #D32F2F) spanning 100% edge-to-edge.
-  * Inside this red banner: large, bold, clean WHITE heading typography strictly in "Sharp Sans Bold" font ONLY displaying the main benefit: "${cleanPromoBanner}". Zero substitution with Arial, Helvetica, or Roboto.
-  * On the left of the banner: an optional white circular badge with a minimalist symbol.`
-        : '';
-
-      const exclusiveListText = cleanedFeatures.length > 0
-        ? cleanedFeatures.map((f, idx) => `    ${idx + 1}. ${f}`).join('\n')
-        : '    (Render clean hardware close-up view only — no extra badge text invented)';
+      const calloutSection = calloutItems.length > 0
+        ? `  * UPPER AREA SUPPORTING CALLOUTS (AT MOST 2):
+${calloutItems.map((c, i) => `    ${i + 1}. A solid, vibrant RED circular icon badge (#C8281E / #E52414) with a clean white minimalist symbol, beside large, crisp pure WHITE text strictly in "Sharp Sans Bold" font: "${c}".`).join('\n')}
+    - STRICT LIMIT: At most ${calloutItems.length} supporting callout(s). Every line must be large, high-contrast, and effortlessly readable on a mobile phone screen.`
+        : '  * UPPER AREA: Minimalist clean dark atmospheric backdrop without bullet lists or extra spec badges.';
 
       const excludedSection = cleanExcluded.length > 0
-        ? `\n- FORBIDDEN DUPLICATES (ALREADY ASSIGNED TO ANOTHER SLOT — DO NOT RENDER OR MENTION):\n  * The following specifications belong EXCLUSIVELY to the other specification slot and MUST NOT appear anywhere on THIS image (neither in icon rows, callouts, zoom circles, nor banners):\n    [ ${cleanExcluded.join(' | ')} ]`
+        ? `\n- FORBIDDEN DUPLICATES (ASSIGNED EXCLUSIVELY TO THE OTHER FEATURE HIGHLIGHT SLOT):\n  * The following features belong strictly to the OTHER feature slot and MUST NOT appear anywhere on this image (neither in banner, callouts, or annotations):\n    [ ${cleanExcluded.join(' | ')} ]`
         : '';
 
       const modelLine = modelNumber
         ? `  * Do NOT write "${modelNumber}" or any model code/number anywhere on the picture.`
         : `  * Do NOT write any model code or number anywhere on the picture.`;
 
-      specificStyle = `${slotNumLabel} (STRICT CATALOG COMPLIANCE & ZERO DUPLICATION)
-- UPPER-LEFT EXCLUSIVE KEY FEATURES STACK (EXACT BRAND ICON & EXCLUSIVE SHARP SANS FONT STYLE):
-  * Render a clean vertical specification overlay stack on the left side containing EXCLUSIVELY these ${cleanedFeatures.length} assigned specification(s):
-${exclusiveListText}
-  * EXACT COUNT RULE: Render ONLY ${cleanedFeatures.length} red circular icon badge row(s) matching the numbered items above. DO NOT add any extra unrequested badge rows, unlisted specs, or duplicate points.
-  * Each assigned feature row follows this visual pattern:
-    1. A solid, vibrant RED circular icon badge (#E53935 / #C8281E) containing a clean WHITE minimalist icon matching ONLY that specific item (any embedded icon numbers/text must strictly use "Sharp Sans Bold").
-    2. Feature list text beside the red badge preserving the exact wording and measurements from the list above: bold spec title/numbers in "Sharp Sans Bold" and supporting unit/detail text in "Sharp Sans Medium" — STRICTLY "Sharp Sans" ONLY.
-    3. A delicate horizontal hairline divider separating each row.
-${headlineSection ? '\n' + headlineSection + '\n' : ''}${excludedSection ? excludedSection + '\n' : ''}
-- CENTER COMPOSITION & HARDWARE INTEGRITY:
-  * Product is centered and sharply rendered matching the uploaded source reference photograph 100% faithfully.
-  * STRICT ZERO HALLUCINATION: Do NOT add a fake digital LED display/screen (like "100"), do NOT add extra USB-A/Type-C ports, do NOT show folding angles unless listed above, and do NOT place small color-variant thumbnails in the scene (color models belong exclusively to Slot 5).
-  * If showing zoomed-in detail circles/pointer lines for any listed port or hardware detail (such as Type-C port or LED pinhole indicator), render ONLY components that genuinely exist in the uploaded photograph, map pointer lines 1-to-1 strictly to that single part, and render EVERY callout label and annotation text exclusively in "Sharp Sans Semibold" / "Sharp Sans Medium" (never Arial, Helvetica, or Roboto).
-${bannerSection ? '\n' + bannerSection + '\n' : ''}
-- STRICT ANTI-DUPLICATION & MUTUAL EXCLUSIVITY RULE (CRITICAL):
-  * EVERY SPECIFICATION MUST APPEAR ONCE AND ONLY ONCE ACROSS THE ENTIRE SERIES.
-  * Specifications in this list (${cleanedFeatures.join(', ')}) belong EXCLUSIVELY in the upper-left red circular badge stack.
-  * NEVER repeat any feature twice on the same image or duplicate features from the forbidden list above.
+      specificStyle = `${slotNumLabel} (BUYSANFORD STORE SINGLE-FEATURE FOCUS & MOBILE-FIRST STYLE)
+- MANDATORY FULL-WIDTH SOLID RED BOTTOM BANNER:
+  * Across the very bottom of the canvas spanning 100% edge-to-edge, render a solid, vibrant RED banner strip (#C8281E / #E52414).
+  * Inside this red banner: display ONLY the Banner Feature text in large, bold, clean pure WHITE sans-serif typography strictly in "Sharp Sans Bold" font:
+    "${resolvedBanner}"
+  * CRITICAL FORBIDDEN RULE: NEVER put the product name (e.g. "Air Fryer"), product category, or brand ("Sanford") inside the red banner. The banner is EXCLUSIVELY for the single key feature/benefit.
+  * OVERLAPPING ICON CIRCLE (LEFT END): A large pure WHITE circular badge with a thick solid RED outer ring overlaps the left end of the banner. Inside this white circle, place exactly ONE clean, simple, minimalist BLACK line icon that directly matches and illustrates "${resolvedBanner}".
 
-- STRICT NEGATIVE CONSTRAINT (CRITICAL - DO NOT VIOLATE):
-  * ABSOLUTELY NO BRAND NAME AND NO MODEL NUMBER TEXT ON THE IMAGE.
-  * Do NOT write "Sanford" or any brand name anywhere on the picture.
+- UPPER AREA (HEADLINE & CALLOUTS):
+${headlineSection}
+${calloutSection}
+${seriesSection}
+
+- BACKGROUND & ATMOSPHERE:
+  * A dark, atmospheric, realistic scene that vividly demonstrates the Banner Feature "${resolvedBanner}" in active use (for example food cooking inside for capacity, a dramatic focused light beam for brightness/illumination, an active refreshing breeze for airflow, or power/motor surge).
+  * Dramatic, moody, premium commercial studio lighting that highlights product craftsmanship and hardware materials.
+
+- PRODUCT FIDELITY & COMPOSITION:
+  * The product must be large, sharp, centered or dramatic 3/4 angle, and 100% identical to the uploaded reference photo: same exact shape, colours, buttons, dials, proportions, and physically molded logo.
+  * Preserve every number and unit exactly as supplied (e.g. "4L", "1500W", "600mAh").
+
+- STRICT NEGATIVE CONSTRAINTS (MOBILE-FIRST READABILITY LOCK):
+  * NO other text. NO bullet lists, NO small print, NO specification tables, NO multi-row icon stacks.
+  * At most 2 supporting callouts plus the single red bottom banner — every line must be large and readable on a phone.
+  * ABSOLUTELY NO BRAND NAME ("Sanford") and NO MODEL NUMBER (${modelNumber || 'SF...'}) written as text overlays.
 ${modelLine}
-  * Do NOT draw any model tag, logo box, brand header, or "[SF...]" badge.
-- STRICT SHOPIFY FONT ENFORCEMENT: ALL headings, subheadings, feature list items, callout labels, specification overlays, badge text, annotations, and bottom marketing banners MUST render exclusively in "Sharp Sans" with ZERO fallback to Arial, Helvetica, Roboto, or generic sans-serif fonts.`;
+  * The two feature images never repeat the same feature.
+  * STRICT SHOPIFY FONT ENFORCEMENT: ALL text (banner, callouts, headline) MUST render exclusively in "Sharp Sans" (NO Arial, Helvetica, Roboto, or generic sans-serif fallback).
+${excludedSection}`;
       break;
     }
 
@@ -378,6 +434,20 @@ ${bannerSection ? bannerSection + '\n' : ''}- STRICT SHOPIFY FONT REQUIREMENT: A
     case 'size_warranty':
     case 'infographic': {
       const { height, width, depth } = parseDimensionMeasurements(dimensions);
+      const cleanWarranty = warranty ? cleanText(warranty) : '';
+      const durationMatch = cleanWarranty ? cleanWarranty.match(/(\d+\s*(?:year|month|yr)s?)/i) : null;
+      const topRibbonText = durationMatch ? durationMatch[1].toUpperCase() : (cleanWarranty ? cleanWarranty.toUpperCase() : '1 YEAR');
+
+      const warrantyBadgeSection = cleanWarranty
+        ? `- TOP-RIGHT WARRANTY BADGE (EXACT SANFORD DUAL-RIBBON BANNER WITH EXCLUSIVE SHARP SANS FONT):
+  * In the top-right corner, place the official Sanford folded ribbon banner badge:
+    - Top folded angled ribbon: Bright VIBRANT RED banner with bold white text "${topRibbonText}" strictly in "Sharp Sans Bold" font.
+    - Lower folded angled ribbon: Rich NAVY BLUE banner with bold white text "SERVICE WARRANTY" strictly in "Sharp Sans Bold" font.
+    - Clean folded ribbon 3D geometry with notched/folded banner ends.
+    - STRICT: DO NOT use a golden shield. MUST use the RED and NAVY BLUE folded ribbon banner.`
+        : `- TOP-RIGHT AREA:
+  * Keep the top-right area completely clean. Do NOT draw any warranty badge because no warranty was specified in source catalogue.`;
+
       specificStyle = `SLOT 6: UNIT DIMENSION & WARRANTY ONLY (EXACT BUYSANFORD STYLE)
 - BACKGROUND & COMPOSITION:
   * Soft, pale warm pastel background with a delicate peach/pink tint (#FDEFEF to #FADBD8, matching BuySanford specification artwork).
@@ -388,12 +458,7 @@ ${bannerSection ? bannerSection + '\n' : ''}- STRICT SHOPIFY FONT REQUIREMENT: A
   * In the top-left corner, display clean, modest-sized header text strictly in "Sharp Sans Bold" font ONLY (dark charcoal/black): "Unit Dimension".
   * Clean, elegant geometric typography with generous margins from the edges (never Arial, Helvetica, or Roboto).
 
-- TOP-RIGHT WARRANTY BADGE (EXACT SANFORD DUAL-RIBBON BANNER WITH EXCLUSIVE SHARP SANS FONT):
-  * In the top-right corner, place the official Sanford folded ribbon banner badge:
-    - Top folded angled ribbon: Bright VIBRANT RED banner with bold white text "1 YEAR" strictly in "Sharp Sans Bold" font.
-    - Lower folded angled ribbon: Rich NAVY BLUE banner with bold white text "SERVICE WARRANTY" strictly in "Sharp Sans Bold" font.
-    - Clean folded ribbon 3D geometry with notched/folded banner ends.
-    - STRICT: DO NOT use a golden shield. MUST use the RED and NAVY BLUE folded ribbon banner.
+${warrantyBadgeSection}
 
 - DIMENSION ARROWS & CALLOUT LABELS (EXACT CRIMSON RED ARROWS & EXCLUSIVE SHARP SANS FONT):
   * Dimension arrows MUST be crisp, thin double-ended arrows in bright CRIMSON RED (<───────>) with solid red triangular arrowheads on both ends.
@@ -406,7 +471,7 @@ ${bannerSection ? bannerSection + '\n' : ''}- STRICT SHOPIFY FONT REQUIREMENT: A
   * STRICTLY NO PRODUCT WEIGHT. Absolutely NO "Unit Weight", NO "Package Weight", NO "225g", NO "305g", NO weight icons, NO scales.
   * STRICTLY NO "WHAT'S IN THE BOX". Absolutely NO box contents, NO USB cables, NO user manual drawings, NO accessories, NO inset boxes.
   * STRICTLY NO BRAND NAME AND NO MODEL NUMBER TEXT ON THE IMAGE.
-  * The image must contain ONLY: the centered product, "Unit Dimension" in top left (in Sharp Sans font), the red/blue ribbon "1 YEAR SERVICE WARRANTY" badge in top right (in Sharp Sans font), and the crimson red dimension arrows (<--->) with measurements (in Sharp Sans font).`;
+  * The image must contain ONLY: the centered product, "Unit Dimension" in top left (in Sharp Sans font), ${cleanWarranty ? `the red/navy ribbon "${topRibbonText} SERVICE WARRANTY" badge in top right (in Sharp Sans font)` : 'no warranty badge'}, and the crimson red dimension arrows (<--->) with measurements (in Sharp Sans font).`;
       break;
     }
 
@@ -570,6 +635,11 @@ export function buildAmazonSlotPrompt(params: {
   slotTitle: string;
   headline?: string;
   promoBanner?: string;
+  bannerFeature?: string;
+  callout1?: string;
+  callout2?: string;
+  topHeadline?: string;
+  seriesName?: string;
   brand?: string;
   modelNumber?: string;
   features: string[];
@@ -585,6 +655,11 @@ export function buildAmazonSlotPrompt(params: {
     slotTitle,
     headline,
     promoBanner,
+    bannerFeature,
+    callout1,
+    callout2,
+    topHeadline,
+    seriesName,
     brand = 'Sanford',
     modelNumber = '',
     features = [],
@@ -612,6 +687,11 @@ export function buildAmazonSlotPrompt(params: {
   const cleanProductTitle = cleanText(productName) || productName;
   const cleanHeadline = cleanText(headline) || headline;
   const cleanPromoBanner = cleanText(promoBanner) || promoBanner;
+  const cleanBanner = cleanText(bannerFeature);
+  const cleanCallout1 = cleanText(callout1);
+  const cleanCallout2 = cleanText(callout2);
+  const cleanTopHeadline = cleanText(topHeadline);
+  const cleanSeries = cleanText(seriesName);
 
   const seenFeat = new Set<string>();
   const cleanedFeatures: string[] = [];

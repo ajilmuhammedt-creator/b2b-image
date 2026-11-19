@@ -59,39 +59,42 @@ Extract the following in strictly structured JSON:
 2. "modelNumber": Model code (e.g. "SF6671HFN")
 3. "brand": Brand name (e.g. "Sanford")
 4. "tagline": The main marketing headline or slogan literally printed on the sheet (or "" if none is written).
-5. "fullFeatures": An array of ONLY the verified bullet-point specifications and technical claims explicitly printed on the catalogue sheet (e.g. wattage, battery capacity, speed levels, charging port, runtime, blade/motor specs). STRICT COMPLIANCE: NEVER invent, assume, or add unlisted features such as digital LED displays, screens, extra ports, folding hinges, or cooling plates unless explicitly written on the sheet. Deduplicate repeated bullets so each spec appears ONCE only.
-6. "dimensions": Unit and package dimensions if present (e.g. "78mm x 197mm x 57mm")
-7. "weight": Unit weight and package weight (e.g. "Unit 225g, Package 305g")
-8. "whatsInTheBox": Array of items included (e.g. ["Hand Fan", "Type-C USB Cable", "User Manual"])
-9. "warranty": Warranty statement if shown (e.g. "1 Year Service Warranty")
-10. "colors": Color options or finishes (e.g. "Graphite Black, Arctic White, Slate Grey")
-11. "cropBox": Normalized bounding box [ymin, xmin, ymax, xmax] (values 0.0 to 1.0) of the primary hero product image on this catalogue sheet.
-12. "slots": Exactly 6 slots matching the STRICT BuySanford 6-image e-commerce rules:
+5. "seriesName": Optional series or product line printed on the sheet (e.g. "PLATINUM ZOOM", or "" if none).
+6. "fullFeatures": An array of ONLY the verified bullet-point specifications and technical claims explicitly printed on the catalogue sheet (e.g. wattage, battery capacity, speed levels, charging port, runtime, blade/motor specs). STRICT COMPLIANCE: NEVER invent, assume, or add unlisted features such as digital LED displays, screens, extra ports, folding hinges, or cooling plates unless explicitly written on the sheet. Deduplicate repeated bullets so each spec appears ONCE only.
+7. "dimensions": Unit and package dimensions if present (e.g. "78mm x 197mm x 57mm")
+8. "weight": Unit weight and package weight (e.g. "Unit 225g, Package 305g")
+9. "whatsInTheBox": Array of items included (e.g. ["Hand Fan", "Type-C USB Cable", "User Manual"])
+10. "warranty": Warranty statement if shown (e.g. "1 Year Service Warranty")
+11. "colors": Color options or finishes (e.g. "Graphite Black, Arctic White, Slate Grey")
+12. "cropBox": Normalized bounding box [ymin, xmin, ymax, xmax] (values 0.0 to 1.0) of the primary hero product image on this catalogue sheet.
+13. "slots": Exactly 6 slots matching the STRICT BuySanford 6-image e-commerce rules:
     - Slot 1: theme "hero", title "Hero Studio View (White Background)"
       * Description: Pure white background (#FFFFFF), studio softbox lighting, soft floor shadow.
       * STRICT: NO text, NO numbers, NO specifications, NO badges.
       * features: []
     - Slot 2: theme "lifestyle", title "Lifestyle In-Use (No Specs)"
-      * Description: Exact BuySanford lifestyle template. In the top-LEFT corner, a solid RED rectangle (#E53935) with rounded corners containing crisp white bold sans-serif tagline text. In the top-RIGHT area, crisp white bold product title text. ZERO floating specs across the image. Realistic person naturally using the product in its authentic setting.
+      * Description: Exact BuySanford lifestyle template. In the top-LEFT corner, a solid RED rectangle (#E53935) with rounded corners containing crisp white bold sans-serif tagline text. In the bottom-RIGHT corner, small discreet white product type caption. If seriesName is present, top-right shows series name in bold italic silver metallic style. ZERO floating specs across the image. Realistic person naturally using the product in its authentic setting.
       * headline: Short 2-5 word lifestyle tagline from the catalogue (or concise product tagline based strictly on the sheet)
       * STRICT: Slogan/tagline headline only. STRICTLY NO product specifications or technical data.
       * features: []
-    - Slot 3: theme "specs_part_1", title "Specifications — Part 1"
-      * Description: First half of verified specifications drawn strictly and exclusively from the uploaded catalogue.
-      * Icon Style (Upper Left): Red circular icon badges (#E53935), white minimalist symbols matching ONLY verified catalogue features, bold short feature descriptions, and fine horizontal divider lines.
-      * Upper-Right Slogan: An uppercase lifestyle/usage context slogan derived strictly from the product category (e.g. "SUITABLE FOR OUTDOOR & INDOOR USE"). NEVER repeat any technical spec here.
-      * Bottom Banner: Full-width solid red promotional strip with large white typography showing the product name/category (without brand/model codes).
-      * promoBanner: Concise product title/category strictly matching the catalogue (NO unlisted features like "Cold Plate" or "LED Display" unless written in the catalogue).
-      * STRICT DEDUPLICATION: Do NOT repeat any feature from the left badges as the headline or in the banner, and NEVER include features assigned to Slot 4.
-      * features: [First half of verified specifications from catalogue ONLY]
-    - Slot 4: theme "specs_part_2", title "Specifications — Part 2 (Non-Overlapping)"
-      * Description: Remaining second half of verified specifications drawn strictly and exclusively from the uploaded catalogue (ZERO overlap with Slot 3; ZERO unlisted displays, hinges, or color-variant thumbnails).
-      * Icon Style (Upper Left): Red circular icon badges (#E53935), white minimalist symbols matching ONLY Slot 4's assigned catalogue features, bold short feature descriptions, and fine horizontal divider lines.
-      * Upper-Right Slogan: A short uppercase usage-context slogan (e.g. "DESIGNED FOR EVERYDAY CONVENIENCE"). NEVER repeat any technical spec here.
-      * Bottom Banner: Full-width solid red promotional strip with large white typography summarizing the second benefit from the catalogue (or product title/benefit without duplicating any bullet spec).
-      * promoBanner: Concise benefit headline derived strictly from catalogue (NO duplicated specs or unlisted features).
-      * STRICT DEDUPLICATION: MUST NOT repeat or duplicate any specification from Slot 3. Mutually exclusive. Do NOT repeat any feature from the left badges as the headline or banner.
-      * features: [Second half of verified specifications from catalogue ONLY]
+    - Slot 3: theme "specs_part_1", title "Feature Highlight 1"
+      * Description: Exact buysanford.com single-feature focus. Dark atmospheric scene showcasing Banner Feature in action. Full-width red bottom banner showing ONLY Banner Feature (max 30 chars). Overlapping white circle with red ring on left containing one black line icon. At most 2 supporting callouts (solid red circle icon + large white text). Optional white uppercase top headline (max 40 chars).
+      * bannerFeature: Strongest verified feature from catalogue (max 30 chars, e.g. "4L Capacity")
+      * callout1: Supporting verified spec (optional, max 25 chars)
+      * callout2: Supporting verified spec (optional, max 25 chars)
+      * topHeadline: Optional uppercase headline (max 40 chars)
+      * promoBanner: Same as bannerFeature
+      * STRICT DEDUPLICATION: Do NOT repeat the product name or category in the banner. Zero overlap with Slot 4.
+      * features: [Assigned specs for Feature Highlight 1]
+    - Slot 4: theme "specs_part_2", title "Feature Highlight 2"
+      * Description: Exact buysanford.com single-feature focus. Dark atmospheric scene showcasing second key feature. Full-width red bottom banner showing ONLY Banner Feature (max 30 chars). Overlapping white circle with red ring on left containing one black line icon. At most 2 supporting callouts. Optional white uppercase top headline (max 40 chars).
+      * bannerFeature: Second strongest verified feature from catalogue (max 30 chars, e.g. "Adjustable Zoom Function")
+      * callout1: Supporting verified spec (optional, max 25 chars)
+      * callout2: Supporting verified spec (optional, max 25 chars)
+      * topHeadline: Optional uppercase headline (max 40 chars)
+      * promoBanner: Same as bannerFeature
+      * STRICT DEDUPLICATION: MUST NOT repeat or duplicate any feature from Slot 3.
+      * features: [Assigned specs for Feature Highlight 2]
     - Slot 5: theme "colors", title "Available Colour Models Only"
       * Description: Product lineup / swatches showing all available color models.
       * Note: If the catalogue does NOT specify multiple color options (i.e. product has only 1 color or no color options mentioned), leave "colors" empty or single color. Do NOT hallucinate fake colors.
@@ -242,15 +245,35 @@ Output MUST be valid JSON matching this schema:
     const sizeWarrantyFeatures: string[] = [];
     if (resultJson.dimensions) sizeWarrantyFeatures.push(`Dimensions: ${resultJson.dimensions}`);
     if (resultJson.warranty) sizeWarrantyFeatures.push(resultJson.warranty);
-    if (sizeWarrantyFeatures.length === 0) sizeWarrantyFeatures.push('1 Year Service Warranty');
 
     const cleanProductTitle = cleanBrandModel(resultJson.productName) || 'Product Overview';
+    const cleanSeriesName = cleanBrandModel(resultJson.seriesName || '');
     const aiSlot3 = Array.isArray(resultJson.slots) ? resultJson.slots.find((s: any) => s?.slot === 3) : undefined;
     const aiSlot4 = Array.isArray(resultJson.slots) ? resultJson.slots.find((s: any) => s?.slot === 4) : undefined;
     const slot3Headline = cleanBrandModel(aiSlot3?.headline || '') || 'DESIGNED FOR EVERYDAY USE';
-    const slot3Promo = cleanBrandModel(aiSlot3?.promoBanner || '') || cleanProductTitle;
     const slot4Headline = cleanBrandModel(aiSlot4?.headline || '') || 'BUILT FOR PERFORMANCE & RELIABILITY';
-    const slot4Promo = cleanBrandModel(aiSlot4?.promoBanner || '') || cleanBrandModel(resultJson.tagline || '') || 'Key Features & Specifications';
+
+    // Auto-suggest for Feature Highlight 1 & 2:
+    // Slot 3 banner = strongest feature (sanitizedFeatures[0]), max 30 chars
+    // Slot 4 banner = second strongest feature (sanitizedFeatures[1]), max 30 chars
+    // Up to 2 supporting callouts each, taken only from verified specs, strictly no duplicates!
+    const clampText = (str: string, maxLen: number) => {
+      if (!str) return '';
+      const clean = str.trim();
+      if (clean.length <= maxLen) return clean;
+      const sub = clean.slice(0, maxLen);
+      const lastSpace = sub.lastIndexOf(' ');
+      return (lastSpace > maxLen * 0.6 ? sub.slice(0, lastSpace) : sub).trim();
+    };
+
+    const s3Banner = clampText(cleanBrandModel(aiSlot3?.bannerFeature || '') || sanitizedFeatures[0] || '', 30);
+    const s4Banner = clampText(cleanBrandModel(aiSlot4?.bannerFeature || '') || sanitizedFeatures[1] || '', 30);
+    const s3Callout1 = clampText(cleanBrandModel(aiSlot3?.callout1 || '') || sanitizedFeatures[2] || '', 25);
+    const s3Callout2 = clampText(cleanBrandModel(aiSlot3?.callout2 || '') || sanitizedFeatures[3] || '', 25);
+    const s4Callout1 = clampText(cleanBrandModel(aiSlot4?.callout1 || '') || sanitizedFeatures[4] || '', 25);
+    const s4Callout2 = clampText(cleanBrandModel(aiSlot4?.callout2 || '') || sanitizedFeatures[5] || '', 25);
+    const s3TopHeadline = clampText(cleanBrandModel(aiSlot3?.topHeadline || ''), 40);
+    const s4TopHeadline = clampText(cleanBrandModel(aiSlot4?.topHeadline || ''), 40);
 
     const strictSlots = [
       {
@@ -266,26 +289,37 @@ Output MUST be valid JSON matching this schema:
         theme: 'lifestyle',
         title: 'Lifestyle In-Use (No Specs)',
         headline: cleanBrandModel(resultJson.tagline) || 'Built to Be Your Everyday Companion.',
-        description: 'Exact BuySanford store template: Real person in-use scene, top-left solid red corner card with rounded corners, top-right white product category typography.',
+        seriesName: cleanSeriesName,
+        description: 'Exact BuySanford store template: Real person in-use scene, top-left solid red corner card with rounded corners, top-right series name (if filled), bottom-right discreet product caption.',
         features: [],
       },
       {
         slot: 3,
         theme: 'specs_part_1',
-        title: 'Specifications — Part 1',
+        title: 'Feature Highlight 1',
         headline: slot3Headline,
-        promoBanner: slot3Promo,
-        description: 'Upper-left red circular icon badges with white symbols & divider lines; upper-right usage slogan; full-width solid red bottom promotional banner. Strictly assigned Part 1 features only with zero duplication.',
+        bannerFeature: s3Banner,
+        callout1: s3Callout1,
+        callout2: s3Callout2,
+        topHeadline: s3TopHeadline,
+        promoBanner: s3Banner,
+        seriesName: cleanSeriesName,
+        description: 'buysanford.com single-feature focus: Dark atmospheric scene, full-width red bottom banner showing Feature 1 only, overlapping white circle with red ring and black icon, at most 2 supporting callouts.',
         features: specsPart1,
         excludedFeatures: specsPart2,
       },
       {
         slot: 4,
         theme: 'specs_part_2',
-        title: 'Specifications — Part 2 (Non-Overlapping)',
+        title: 'Feature Highlight 2',
         headline: slot4Headline,
-        promoBanner: slot4Promo,
-        description: 'Upper-left red circular icon badges with white symbols & divider lines; upper-right usage slogan; full-width solid red bottom promotional banner. Strictly assigned Part 2 features only with zero duplication of Slot 3 and zero unlisted displays or hinges.',
+        bannerFeature: s4Banner,
+        callout1: s4Callout1,
+        callout2: s4Callout2,
+        topHeadline: s4TopHeadline,
+        promoBanner: s4Banner,
+        seriesName: cleanSeriesName,
+        description: 'buysanford.com single-feature focus: Dark atmospheric scene, full-width red bottom banner showing Feature 2 only, overlapping white circle with red ring and black icon, at most 2 supporting callouts.',
         features: specsPart2,
         excludedFeatures: specsPart1,
       },
@@ -310,6 +344,7 @@ Output MUST be valid JSON matching this schema:
       },
     ];
 
+    resultJson.seriesName = cleanSeriesName;
     resultJson.fullFeatures = sanitizedFeatures;
     resultJson.colors = colorsStr;
     resultJson.hasMultipleColors = hasMultipleColors;
