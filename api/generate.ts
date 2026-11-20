@@ -465,12 +465,12 @@ export default async function handler(req: any, res: any) {
         console.warn('Storage upload error:', uploadError.message);
       }
 
-      // Get public URL or signed URL
-      const { data: urlData } = supabaseAdmin.storage
+      // Get signed URL (bucket is private)
+      const { data: urlData } = await supabaseAdmin.storage
         .from('generated-images')
-        .getPublicUrl(imagePath);
+        .createSignedUrl(imagePath, 3600);
 
-      publicUrl = urlData?.publicUrl || '';
+      publicUrl = urlData?.signedUrl || '';
     } catch (storageErr) {
       console.warn('Supabase storage upload error:', storageErr);
     }

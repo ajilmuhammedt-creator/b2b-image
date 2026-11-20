@@ -105,55 +105,73 @@ CREATE INDEX IF NOT EXISTS idx_generations_project_id ON public.generations(proj
 CREATE INDEX IF NOT EXISTS idx_generations_user_created ON public.generations(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_generations_created_at ON public.generations(created_at);
 
--- 3. Storage Buckets (if not already created)
+-- 3. Storage Buckets (Private)
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('generated-images', 'generated-images', true)
-ON CONFLICT (id) DO NOTHING;
+VALUES ('generated-images', 'generated-images', false)
+ON CONFLICT (id) DO UPDATE SET public = false;
 
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('source-images', 'source-images', true)
-ON CONFLICT (id) DO NOTHING;
+VALUES ('source-images', 'source-images', false)
+ON CONFLICT (id) DO UPDATE SET public = false;
 
--- 4. Storage Bucket Policies
+-- 4. Storage Bucket Policies (Locked down to user id folder)
+-- Drop previous public/legacy policies
 DROP POLICY IF EXISTS "Allow public read on source-images" ON storage.objects;
-CREATE POLICY "Allow public read on source-images"
-  ON storage.objects FOR SELECT
-  USING (bucket_id = 'source-images');
-
 DROP POLICY IF EXISTS "Allow authenticated upload to source-images" ON storage.objects;
-CREATE POLICY "Allow authenticated upload to source-images"
-  ON storage.objects FOR INSERT
-  WITH CHECK (bucket_id = 'source-images' AND auth.role() = 'authenticated');
-
 DROP POLICY IF EXISTS "Allow authenticated update to source-images" ON storage.objects;
-CREATE POLICY "Allow authenticated update to source-images"
-  ON storage.objects FOR UPDATE
-  USING (bucket_id = 'source-images' AND auth.role() = 'authenticated');
-
 DROP POLICY IF EXISTS "Allow authenticated delete from source-images" ON storage.objects;
-CREATE POLICY "Allow authenticated delete from source-images"
-  ON storage.objects FOR DELETE
-  USING (bucket_id = 'source-images' AND auth.role() = 'authenticated');
 
 DROP POLICY IF EXISTS "Allow public read on generated-images" ON storage.objects;
-CREATE POLICY "Allow public read on generated-images"
-  ON storage.objects FOR SELECT
-  USING (bucket_id = 'generated-images');
-
 DROP POLICY IF EXISTS "Allow authenticated upload to generated-images" ON storage.objects;
-CREATE POLICY "Allow authenticated upload to generated-images"
-  ON storage.objects FOR INSERT
-  WITH CHECK (bucket_id = 'generated-images' AND auth.role() = 'authenticated');
-
 DROP POLICY IF EXISTS "Allow authenticated update to generated-images" ON storage.objects;
-CREATE POLICY "Allow authenticated update to generated-images"
-  ON storage.objects FOR UPDATE
-  USING (bucket_id = 'generated-images' AND auth.role() = 'authenticated');
-
 DROP POLICY IF EXISTS "Allow authenticated delete from generated-images" ON storage.objects;
-CREATE POLICY "Allow authenticated delete from generated-images"
+
+-- Drop user-isolated policies if existing for idempotent re-runs
+DROP POLICY IF EXISTS "Users can view own source images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload own source images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update own source images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete own source images" ON storage.objects;
+
+DROP POLICY IF EXISTS "Users can view own generated images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload own generated images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update own generated images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete own generated images" ON storage.objects;
+
+-- source-images policies: restricted to user's own root folder
+CREATE POLICY "Users can view own source images"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'source-images' AND auth.role() = 'authenticated' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+CREATE POLICY "Users can upload own source images"
+  ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id = 'source-images' AND auth.role() = 'authenticated' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+CREATE POLICY "Users can update own source images"
+  ON storage.objects FOR UPDATE
+  USING (bucket_id = 'source-images' AND auth.role() = 'authenticated' AND (storage.foldername(name))[1] = auth.uid()::text)
+  WITH CHECK (bucket_id = 'source-images' AND auth.role() = 'authenticated' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+CREATE POLICY "Users can delete own source images"
   ON storage.objects FOR DELETE
-  USING (bucket_id = 'generated-images' AND auth.role() = 'authenticated');
+  USING (bucket_id = 'source-images' AND auth.role() = 'authenticated' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+-- generated-images policies: restricted to user's own root folder
+CREATE POLICY "Users can view own generated images"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'generated-images' AND auth.role() = 'authenticated' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+CREATE POLICY "Users can upload own generated images"
+  ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id = 'generated-images' AND auth.role() = 'authenticated' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+CREATE POLICY "Users can update own generated images"
+  ON storage.objects FOR UPDATE
+  USING (bucket_id = 'generated-images' AND auth.role() = 'authenticated' AND (storage.foldername(name))[1] = auth.uid()::text)
+  WITH CHECK (bucket_id = 'generated-images' AND auth.role() = 'authenticated' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+CREATE POLICY "Users can delete own generated images"
+  ON storage.objects FOR DELETE
+  USING (bucket_id = 'generated-images' AND auth.role() = 'authenticated' AND (storage.foldername(name))[1] = auth.uid()::text);
 
 -- 5. User Profiles & Staff Approval Table
 CREATE TABLE IF NOT EXISTS public.profiles (

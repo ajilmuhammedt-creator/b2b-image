@@ -43,68 +43,74 @@ export const projectStorage = {
         console.warn('Error fetching generations for projects:', gensErr.message);
       }
 
+      const genItems: GenerationItem[] = await Promise.all(
+        (gensData || []).map(async (g: any) => {
+          let signedUrl = '';
+          if (g.image_path) {
+            const { data: urlData } = await supabase.storage
+              .from('generated-images')
+              .createSignedUrl(g.image_path, 3600);
+            signedUrl = urlData?.signedUrl || '';
+          }
+
+          return {
+            id: g.id,
+            projectId: g.project_id,
+            kind: g.kind || 'feature',
+            slot: g.slot,
+            theme: g.theme,
+            slotTitle: g.slot_title,
+            status: (g.status as any) || 'done',
+            imageUrl: signedUrl || g.image_url || '',
+            imagePath: g.image_path,
+            prompt: g.prompt,
+            usage: g.usage,
+            selected: true,
+          };
+        })
+      );
+
       const generationsByProject = new Map<string, GenerationItem[]>();
-      (gensData || []).forEach((g: any) => {
-        let publicUrl = g.image_url;
-        if (!publicUrl && g.image_path) {
-          const { data: urlData } = supabase.storage
-            .from('generated-images')
-            .getPublicUrl(g.image_path);
-          publicUrl = urlData?.publicUrl || '';
-        }
-
-        const genItem: GenerationItem = {
-          id: g.id,
-          projectId: g.project_id,
-          kind: g.kind || 'feature',
-          slot: g.slot,
-          theme: g.theme,
-          slotTitle: g.slot_title,
-          status: (g.status as any) || 'done',
-          imageUrl: publicUrl,
-          imagePath: g.image_path,
-          prompt: g.prompt,
-          usage: g.usage,
-          selected: true,
-        };
-
-        const existing = generationsByProject.get(g.project_id) || [];
+      genItems.forEach((genItem) => {
+        const existing = generationsByProject.get(genItem.projectId) || [];
         existing.push(genItem);
-        generationsByProject.set(g.project_id, existing);
+        generationsByProject.set(genItem.projectId, existing);
       });
 
-      return projectsData.map((p: any) => {
-        let sourceImageUrl = '';
-        if (p.source_image_path) {
-          const { data: urlData } = supabase.storage
-            .from('source-images')
-            .getPublicUrl(p.source_image_path);
-          sourceImageUrl = urlData?.publicUrl || '';
-        }
+      return await Promise.all(
+        projectsData.map(async (p: any) => {
+          let sourceImageUrl = '';
+          if (p.source_image_path) {
+            const { data: urlData } = await supabase.storage
+              .from('source-images')
+              .createSignedUrl(p.source_image_path, 3600);
+            sourceImageUrl = urlData?.signedUrl || '';
+          }
 
-        return {
-          id: p.id,
-          user_id: p.user_id,
-          product_name: p.product_name,
-          model_number: p.model_number || '',
-          tagline: p.tagline || '',
-          features: Array.isArray(p.features) ? p.features : [],
-          colors: p.colors || '',
-          dimensions: p.dimensions || '',
-          weight: p.weight || '',
-          whats_in_the_box: Array.isArray(p.whats_in_the_box) ? p.whats_in_the_box : [],
-          warranty: p.warranty || '',
-          feature_groups: Array.isArray(p.feature_groups) ? p.feature_groups : [],
-          source_image_path: p.source_image_path || '',
-          source_image_data_url: sourceImageUrl, // fast public CDN URL
-          catalogue_preview_url: '',
-          sanford_slots: Array.isArray(p.sanford_slots) ? p.sanford_slots : [],
-          settings: p.settings || undefined,
-          makePoster: p.make_poster ?? false,
-          created_at: p.created_at,
-          generations: generationsByProject.get(p.id) || [],
-        };
-      });
+          return {
+            id: p.id,
+            user_id: p.user_id,
+            product_name: p.product_name,
+            model_number: p.model_number || '',
+            tagline: p.tagline || '',
+            features: Array.isArray(p.features) ? p.features : [],
+            colors: p.colors || '',
+            dimensions: p.dimensions || '',
+            weight: p.weight || '',
+            whats_in_the_box: Array.isArray(p.whats_in_the_box) ? p.whats_in_the_box : [],
+            warranty: p.warranty || '',
+            feature_groups: Array.isArray(p.feature_groups) ? p.feature_groups : [],
+            source_image_path: p.source_image_path || '',
+            source_image_data_url: sourceImageUrl || p.source_image_data_url || '',
+            catalogue_preview_url: '',
+            sanford_slots: Array.isArray(p.sanford_slots) ? p.sanford_slots : [],
+            settings: p.settings || undefined,
+            makePoster: p.make_poster ?? false,
+            created_at: p.created_at,
+            generations: generationsByProject.get(p.id) || [],
+          };
+        })
+      );
     } catch (err) {
       console.error('Failed to load projects from Supabase:', err);
       return [];
@@ -135,37 +141,42 @@ export const projectStorage = {
         .eq('user_id', userId)
         .order('created_at', { ascending: true });
 
-      const generations: GenerationItem[] = (gensData || []).map((g: any) => {
-        let publicUrl = g.image_url;
-        if (!publicUrl && g.image_path) {
-          const { data: urlData } = supabase.storage
-            .from('generated-images')
-            .getPublicUrl(g.image_path);
-          publicUrl = urlData?.publicUrl || '';
-        }
+      const generations: GenerationItem[] = await Promise.all(
+        (gensData || []).map(async (g: any) => {
+          let signedUrl = '';
+          if (g.image_path) {
+            const { data: urlData } = await supabase.storage
+              .from('generated-images')
+              .createSignedUrl(g.image_path, 3600);
+            signedUrl = urlData?.signedUrl || '';
+          }
 
-        return {
-          id: g.id,
-          projectId: g.project_id,
-          kind: g.kind || 'feature',
-          slot: g.slot,
-          theme: g.theme,
-          slotTitle: g.slot_title,
-          status: (g.status as any) || 'done',
-          imageUrl: publicUrl,
-          imagePath: g.image_path,
-          prompt: g.prompt,
-          usage: g.usage,
-          selected: true,
-        };
-      });
+          return {
+            id: g.id,
+            projectId: g.project_id,
+            kind: g.kind || 'feature',
+            slot: g.slot,
+            theme: g.theme,
+            slotTitle: g.slot_title,
+            status: (g.status as any) || 'done',
+            imageUrl: signedUrl || g.image_url || '',
+            imagePath: g.image_path,
+            prompt: g.prompt,
+            usage: g.usage,
+            selected: true,
+          };
+        })
+      );
 
-      let sourceImageUrl = p.source_image_data_url || '';
-      if (!sourceImageUrl && p.source_image_path) {
-        const { data: urlData } = supabase.storage
+      let sourceImageUrl = '';
+      if (p.source_image_path) {
+        const { data: urlData } = await supabase.storage
           .from('source-images')
-          .getPublicUrl(p.source_image_path);
-        sourceImageUrl = urlData?.publicUrl || '';
+          .createSignedUrl(p.source_image_path, 3600);
+        sourceImageUrl = urlData?.signedUrl || '';
+      }
+      if (!sourceImageUrl && p.source_image_data_url) {
+        sourceImageUrl = p.source_image_data_url;
       }
 
       return {
